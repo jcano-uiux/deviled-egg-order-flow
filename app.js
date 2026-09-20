@@ -9,6 +9,7 @@
     return div;
   };
 
+  // Menu data extracted from the live ordering widget at deviledeggco.com/mckinney-tx/
   const DEVILED_EGGS = [
     { id: 'classic', name: 'Classic', price: 14.99 },
     { id: 'bacon', name: 'Bacon Cheddar Ranch', price: 15.99 },
@@ -17,10 +18,43 @@
   ];
 
   const PROTEIN_BOWLS = [
-    { id: 'southwest', name: 'Southwest Power Bowl', price: 14.99 },
-    { id: 'mediterranean', name: 'Mediterranean Bowl', price: 15.99 },
-    { id: 'ranch', name: 'Protein Ranch Bowl', price: 16.99 },
+    { id: 'avo-chick-blt', name: 'Avo Chick-BLT Eggceptional Bowl', price: 14.99, note: '79g protein' },
+    { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g protein' },
+    { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g protein' },
+    { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99 },
+    { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g protein' },
+    { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g protein' },
+    { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g protein' },
   ];
+
+  const EGG_SALADS = [
+    { id: 'half-pint', name: '1/2 Pint Deviled Egg Salad – 8oz', price: 8.99 },
+    { id: 'whole-pint', name: 'Whole Pint Deviled Egg Salad – 16oz', price: 12.99 },
+  ];
+
+  const PLATTERS = [
+    { id: '24-count', name: '24 Count Deviled Egg Platter', price: 44.99 },
+    { id: 'try-them-all', name: 'Try Them All Deviled Egg Platter', price: 54.99 },
+  ];
+
+  const CATERING = [
+    { id: 'classic-choice', name: 'The Classic Choice', price: 10, note: 'Per person · min 10 boxes' },
+    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes' },
+    { id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, note: 'Per service · serves 10–12' },
+    { id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, note: 'Per bundle · serves 10' },
+    { id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, note: 'Per bundle · serves 10' },
+    { id: 'hungry-team', name: 'The “Hungry Team”', price: 99.99, note: 'Per bundle · serves 10' },
+    { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10' },
+  ];
+
+  const BAGEL_TYPES = ['Plain', 'Everything'];
+  const BAGEL_FLAVORS = [
+    'Traditional', 'Buffalo Chicken', 'Buffalo Blue Cheese', 'Walking Taco', 'South of the Border',
+    'Bacon Wrapped Jalapeño Popper', 'Everything Bagel', 'Smoked Salmon', 'Crab Rangoon', 'Cali Roll',
+    'Cheeseburger', 'Bangin’ Brisket', 'Chicken ’n a Pickle', 'Chicken Bacon Ranch', 'BLTE',
+    'Chicken Caesar Salad', 'Ball Park', 'Sriracha Bacon', 'Chicken and Waffle',
+  ];
+  const BAGEL_PRICE = 7.49;
 
   const FLAVORS = [
     { id: 'classic', label: 'Classic' },
@@ -108,9 +142,17 @@
       eggsGrid.appendChild(card);
     });
 
-    const bowlsGrid = document.getElementById('protein-bowls-grid');
-    bowlsGrid.innerHTML = '';
-    PROTEIN_BOWLS.forEach((item) => {
+    renderRowGrid('protein-bowls-grid', PROTEIN_BOWLS, 'bowl', 'Protein bowl');
+    renderRowGrid('egg-salads-grid', EGG_SALADS, 'saladcup', 'Egg salad');
+    renderRowGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
+    renderRowGrid('catering-grid', CATERING, 'catering', 'Catering');
+    renderBagelCard();
+  }
+
+  function renderRowGrid(gridId, items, keyPrefix, cartCategory) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    items.forEach((item) => {
       const card = document.createElement('div');
       card.className = 'row-card';
       const thumb = eggThumb();
@@ -119,7 +161,11 @@
       card.appendChild(thumb);
       const body = document.createElement('div');
       body.className = 'row-card-body';
-      body.innerHTML = `<span class="item-name">${item.name}</span><span class="item-price">${money(item.price)}</span>`;
+      body.innerHTML = `
+        <span class="item-name">${item.name}</span>
+        ${item.note ? `<span class="muted" style="font-size: 12px;">${item.note}</span>` : ''}
+        <span class="item-price">${money(item.price)}</span>
+      `;
       card.appendChild(body);
       const btn = document.createElement('button');
       btn.className = 'add-btn';
@@ -128,11 +174,52 @@
       btn.setAttribute('aria-label', 'Add ' + item.name + ' to order');
       btn.textContent = '+';
       btn.addEventListener('click', () => {
-        addToCart({ key: 'bowl-' + item.id, name: item.name, sub: 'Protein bowl', price: item.price, qty: 1 });
+        addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1 });
       });
       card.appendChild(btn);
-      bowlsGrid.appendChild(card);
+      grid.appendChild(card);
     });
+  }
+
+  function renderBagelCard() {
+    const grid = document.getElementById('bagels-grid');
+    grid.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'row-card';
+    const thumb = eggThumb();
+    thumb.style.width = '72px';
+    thumb.style.height = '72px';
+    card.appendChild(thumb);
+
+    const body = document.createElement('div');
+    body.className = 'row-card-body';
+    body.style.gap = '8px';
+    const typeOptions = BAGEL_TYPES.map((t) => `<option value="${t}">${t}</option>`).join('');
+    const flavorOptions = BAGEL_FLAVORS.map((f) => `<option value="${f}">${f}</option>`).join('');
+    body.innerHTML = `
+      <span class="item-name">Full Size Bagel</span>
+      <span class="muted" style="font-size: 12px;">Choose your bagel and spread flavor</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <select id="bagel-type" aria-label="Bagel type">${typeOptions}</select>
+        <select id="bagel-flavor" aria-label="Spread flavor">${flavorOptions}</select>
+      </div>
+      <span class="item-price">${money(BAGEL_PRICE)}</span>
+    `;
+    card.appendChild(body);
+
+    const btn = document.createElement('button');
+    btn.className = 'add-btn';
+    btn.type = 'button';
+    btn.style.position = 'static';
+    btn.setAttribute('aria-label', 'Add Full Size Bagel to order');
+    btn.textContent = '+';
+    btn.addEventListener('click', () => {
+      const type = document.getElementById('bagel-type').value;
+      const flavor = document.getElementById('bagel-flavor').value;
+      addToCart({ key: 'bagel-' + type + '-' + flavor, name: 'Full Size Bagel', sub: `${type} · ${flavor} spread`, price: BAGEL_PRICE, qty: 1 });
+    });
+    card.appendChild(btn);
+    grid.appendChild(card);
   }
 
   // ---------- Category navigation ----------

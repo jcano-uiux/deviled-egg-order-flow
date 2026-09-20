@@ -87,7 +87,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 /* ---------- Fields ----------
    Text input. Every text field in the product — search, contact info,
    promo code, delivery address, item notes — uses this one rule. */
-input {
+input, select {
   font-family: var(--deg-font-body);
   font-size: 15px;
   color: var(--deg-ink-body);
@@ -98,6 +98,7 @@ input {
   min-width: 0; /* let inputs shrink inside a flex row instead of overflowing */
 }
 input::placeholder { color: var(--deg-ink-muted); }
+select { padding-right: 16px; }
 
 /* A labeled field, or a small group of them (a "Choose your flavors" label
    above a grid, a "Delivery instructions" label above its input). */

@@ -37,7 +37,7 @@
 .cat-btn.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
 .cat-btn:disabled { color: var(--deg-ink-muted); cursor: not-allowed; }
 
-.menu-content { flex-grow: 1; display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+.menu-content { flex-grow: 1; width: 100%; display: flex; flex-direction: column; gap: 32px; min-width: 0; }
 
 .feature-card {
   display: flex; gap: 28px; align-items: center; text-align: left;
@@ -66,7 +66,7 @@
 .row-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .row-card { background: var(--deg-white); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); display: flex; align-items: center; gap: 14px; padding: 14px; }
 .row-card .thumb { width: 72px; height: 72px; flex: none; }
-.row-card-body { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+.row-card-body { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 
 /* ---------- Item modal ---------- */
 .overlay { position: fixed; inset: 0; background: rgba(19,13,0,.5); z-index: 40; }
@@ -162,7 +162,7 @@
   .menu-layout { flex-direction: column; }
   .category-nav { width: 100%; flex-direction: row; flex-wrap: wrap; position: static; }
   .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .row-grid { grid-template-columns: 1fr; }
+  .row-grid { grid-template-columns: minmax(0, 1fr); }
   .feature-card { flex-direction: column; align-items: flex-start; }
   .checkout-layout { flex-direction: column; }
   .summary-panel { width: 100%; position: static; }
