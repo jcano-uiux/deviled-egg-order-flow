@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "deviled-egg-order-flow",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8420", "--directory", "/Users/joseph/Projects/deviled-egg-order-flow"],
+      "port": 8420
+    }
+  ]
+}
