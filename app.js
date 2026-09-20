@@ -11,10 +11,12 @@
 
   // Menu data extracted from the live ordering widget at deviledeggco.com/mckinney-tx/
   const DEVILED_EGGS = [
-    { id: 'classic', name: 'Classic', price: 14.99 },
-    { id: 'bacon', name: 'Bacon Cheddar Ranch', price: 15.99 },
-    { id: 'jalapeno', name: 'Jalapeño Popper', price: 15.99 },
-    { id: 'salmon', name: 'Smoked Salmon', price: 17.99 },
+    { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99 },
+    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99 },
+    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99 },
+    { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99 },
+    { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99 },
+    { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99 },
   ];
 
   const PROTEIN_BOWLS = [
@@ -140,7 +142,7 @@
         <button class="add-btn" type="button" aria-label="Add ${item.name} to order">+</button>
       `;
       body.querySelector('.add-btn').addEventListener('click', () => {
-        addToCart({ key: 'egg-' + item.id, name: item.name + ' (Dozen)', sub: 'Deviled eggs', price: item.price, qty: 1 });
+        addToCart({ key: 'egg-' + item.id, name: item.name, sub: 'Deviled eggs', price: item.price, qty: 1 });
       });
       card.appendChild(body);
       eggsGrid.appendChild(card);
