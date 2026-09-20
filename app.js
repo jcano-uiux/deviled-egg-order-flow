@@ -47,7 +47,6 @@
     { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10' },
   ];
 
-  const BAGEL_TYPES = ['Plain', 'Everything'];
   const BAGEL_FLAVORS = [
     'Traditional', 'Buffalo Chicken', 'Buffalo Blue Cheese', 'Walking Taco', 'South of the Border',
     'Bacon Wrapped Jalapeño Popper', 'Everything Bagel', 'Smoked Salmon', 'Crab Rangoon', 'Cali Roll',
@@ -73,6 +72,11 @@
     cart: [],
     modalSelected: new Set(['classic', 'bacon', 'jalapeno', 'salmon']),
     modalQty: 1,
+    bagelToast: 'Not Toasted',
+    bagelType: 'Plain',
+    bagelFlavors: {},
+    bagelOptions: new Set(),
+    bagelQty: 1,
     promo: null,
     promoAmount: 0,
     mode: 'pickup',
@@ -193,31 +197,16 @@
 
     const body = document.createElement('div');
     body.className = 'row-card-body';
-    body.style.gap = '8px';
-    const typeOptions = BAGEL_TYPES.map((t) => `<option value="${t}">${t}</option>`).join('');
-    const flavorOptions = BAGEL_FLAVORS.map((f) => `<option value="${f}">${f}</option>`).join('');
-    body.innerHTML = `
-      <span class="item-name">Full Size Bagel</span>
-      <span class="muted" style="font-size: 12px;">Choose your bagel and spread flavor</span>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <select id="bagel-type" aria-label="Bagel type">${typeOptions}</select>
-        <select id="bagel-flavor" aria-label="Spread flavor">${flavorOptions}</select>
-      </div>
-      <span class="item-price">${money(BAGEL_PRICE)}</span>
-    `;
+    body.innerHTML = `<span class="item-name">Full Size Bagel</span><span class="item-price">${money(BAGEL_PRICE)}</span>`;
     card.appendChild(body);
 
     const btn = document.createElement('button');
     btn.className = 'add-btn';
     btn.type = 'button';
     btn.style.position = 'static';
-    btn.setAttribute('aria-label', 'Add Full Size Bagel to order');
+    btn.setAttribute('aria-label', 'Customize Full Size Bagel');
     btn.textContent = '+';
-    btn.addEventListener('click', () => {
-      const type = document.getElementById('bagel-type').value;
-      const flavor = document.getElementById('bagel-flavor').value;
-      addToCart({ key: 'bagel-' + type + '-' + flavor, name: 'Full Size Bagel', sub: `${type} · ${flavor} spread`, price: BAGEL_PRICE, qty: 1 });
-    });
+    btn.addEventListener('click', openBagelModal);
     card.appendChild(btn);
     grid.appendChild(card);
   }
@@ -254,7 +243,7 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !cartDrawer.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -262,6 +251,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!itemModal.hidden) closeDozenModal();
+    else if (!bagelModal.hidden) closeBagelModal();
     else if (!cartDrawer.hidden) closeCart();
   });
 
@@ -344,6 +334,133 @@
       qty: state.modalQty,
     });
     closeDozenModal();
+    openCart();
+  });
+
+  // ---------- Bagel customization modal ----------
+  const bagelModalBackdrop = document.getElementById('bagel-modal-backdrop');
+  const bagelModal = document.getElementById('bagel-modal');
+
+  function renderBagelFlavorSteppers() {
+    const container = document.getElementById('bagel-flavor-steppers');
+    container.innerHTML = '';
+    BAGEL_FLAVORS.forEach((flavor) => {
+      const qty = state.bagelFlavors[flavor] || 0;
+      const row = document.createElement('div');
+      row.className = 'flavor-row' + (qty > 0 ? ' selected' : '');
+      row.style.justifyContent = 'space-between';
+      row.innerHTML = `
+        <span>${flavor}</span>
+        <div class="mini-stepper">
+          <button class="mini-step-btn" type="button" aria-label="Decrease ${flavor}">−</button>
+          <span>${qty}</span>
+          <button class="mini-step-btn" type="button" aria-label="Increase ${flavor}">+</button>
+        </div>
+      `;
+      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
+      decBtn.addEventListener('click', () => {
+        const current = state.bagelFlavors[flavor] || 0;
+        if (current <= 1) delete state.bagelFlavors[flavor];
+        else state.bagelFlavors[flavor] = current - 1;
+        renderBagelFlavorSteppers();
+      });
+      incBtn.addEventListener('click', () => {
+        state.bagelFlavors[flavor] = (state.bagelFlavors[flavor] || 0) + 1;
+        renderBagelFlavorSteppers();
+      });
+      container.appendChild(row);
+    });
+    const total = Object.values(state.bagelFlavors).reduce((sum, n) => sum + n, 0);
+    document.getElementById('bagel-spread-count').textContent = `${total} added`;
+  }
+
+  function renderBagelModalFooter() {
+    document.getElementById('bagel-qty-value').textContent = String(state.bagelQty);
+    const total = BAGEL_PRICE * state.bagelQty;
+    document.getElementById('add-bagel-to-order').textContent = `Add ${state.bagelQty} to order · ${money(total)}`;
+  }
+
+  function openBagelModal() {
+    lastFocusedEl = document.activeElement;
+    state.bagelToast = 'Not Toasted';
+    state.bagelType = 'Plain';
+    state.bagelFlavors = {};
+    state.bagelOptions = new Set();
+    state.bagelQty = 1;
+    document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelToast));
+    document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelType));
+    document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.remove('active'));
+    renderBagelFlavorSteppers();
+    renderBagelModalFooter();
+    bagelModalBackdrop.hidden = false;
+    bagelModal.hidden = false;
+    updateInert();
+    document.getElementById('close-bagel-modal').focus();
+  }
+
+  function closeBagelModal() {
+    bagelModalBackdrop.hidden = true;
+    bagelModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('close-bagel-modal').addEventListener('click', closeBagelModal);
+  bagelModalBackdrop.addEventListener('click', closeBagelModal);
+
+  document.getElementById('bagel-toast-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.bagelToast = btn.dataset.value;
+  });
+
+  document.getElementById('bagel-type-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.bagelType = btn.dataset.value;
+  });
+
+  document.getElementById('bagel-options-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    const value = btn.dataset.value;
+    if (state.bagelOptions.has(value)) {
+      state.bagelOptions.delete(value);
+      btn.classList.remove('active');
+    } else {
+      state.bagelOptions.add(value);
+      btn.classList.add('active');
+    }
+  });
+
+  document.getElementById('bagel-qty-dec').addEventListener('click', () => {
+    state.bagelQty = Math.max(1, state.bagelQty - 1);
+    renderBagelModalFooter();
+  });
+  document.getElementById('bagel-qty-inc').addEventListener('click', () => {
+    state.bagelQty += 1;
+    renderBagelModalFooter();
+  });
+
+  document.getElementById('add-bagel-to-order').addEventListener('click', () => {
+    const flavorParts = Object.entries(state.bagelFlavors)
+      .filter(([, qty]) => qty > 0)
+      .map(([flavor, qty]) => (qty > 1 ? `${qty}x ${flavor}` : flavor));
+    const parts = [state.bagelType, state.bagelToast];
+    if (flavorParts.length) parts.push(flavorParts.join(', '));
+    if (state.bagelOptions.size) parts.push(Array.from(state.bagelOptions).join(', '));
+    addToCart({
+      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavors, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
+      name: 'Full Size Bagel',
+      sub: parts.join(' · '),
+      price: BAGEL_PRICE,
+      qty: state.bagelQty,
+    });
+    closeBagelModal();
     openCart();
   });
 
