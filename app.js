@@ -33,14 +33,19 @@
     { id: 'walkingtaco', label: 'Walking Taco' },
   ];
 
+  const DELIVERY_FEES = { priority: 3.99, standard: 0, schedule: 0 };
+
   const state = {
     cart: [],
     modalSelected: new Set(['classic', 'bacon', 'jalapeno', 'salmon']),
     modalQty: 1,
     promo: null,
     promoAmount: 0,
+    mode: 'pickup',
     location: 'McKinney, TX',
     time: 'asap',
+    deliveryOption: 'standard',
+    dropoff: 'Meet at my door',
     payment: 'Apple Pay',
     tipPct: 18,
   };
@@ -141,11 +146,20 @@
   });
 
   // ---------- Pickup / delivery toggle ----------
+  function updateModeUI() {
+    const isDelivery = state.mode === 'delivery';
+    document.getElementById('pickup-details-card').hidden = isDelivery;
+    document.getElementById('delivery-details-card').hidden = !isDelivery;
+    renderDrawer();
+  }
+
   document.getElementById('order-mode').addEventListener('click', (e) => {
     const btn = e.target.closest('.seg-btn');
     if (!btn) return;
     document.querySelectorAll('#order-mode .seg-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    updateModeUI();
   });
 
   // ---------- Overlay focus management ----------
@@ -272,10 +286,11 @@
   function computeTotals() {
     const subtotal = cartSubtotal();
     const promoAmount = state.promo ? subtotal * state.promo : 0;
-    const taxedBase = subtotal - promoAmount;
-    const tax = Math.max(0, taxedBase) * TAX_RATE;
-    const total = Math.max(0, taxedBase) + tax;
-    return { subtotal, promoAmount, tax, total };
+    const taxedBase = Math.max(0, subtotal - promoAmount);
+    const tax = taxedBase * TAX_RATE;
+    const deliveryFee = state.mode === 'delivery' ? (DELIVERY_FEES[state.deliveryOption] || 0) : 0;
+    const total = taxedBase + tax + deliveryFee;
+    return { subtotal, promoAmount, tax, deliveryFee, total };
   }
 
   function renderDrawer() {
@@ -333,7 +348,7 @@
       list.appendChild(row);
     });
 
-    const { subtotal, promoAmount, tax, total } = computeTotals();
+    const { subtotal, promoAmount, tax, deliveryFee, total } = computeTotals();
     document.getElementById('drawer-subtotal').textContent = money(subtotal);
     document.getElementById('drawer-tax').textContent = money(tax);
     document.getElementById('drawer-total').textContent = money(total);
@@ -344,6 +359,19 @@
     } else {
       promoLine.hidden = true;
     }
+    const deliveryFeeLine = document.getElementById('drawer-delivery-fee-line');
+    if (state.mode === 'delivery') {
+      deliveryFeeLine.hidden = false;
+      document.getElementById('drawer-delivery-fee').textContent = money(deliveryFee);
+    } else {
+      deliveryFeeLine.hidden = true;
+    }
+
+    const pinIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
+    const chip = document.getElementById('fulfillment-chip');
+    chip.innerHTML = state.mode === 'delivery'
+      ? `${pinIcon}<span>Delivery · Today, ${state.deliveryOption === 'priority' ? '10–20' : '25–40'} min</span>`
+      : `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · Today, ASAP (15–20 min)</span>`;
 
     document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }
@@ -403,6 +431,16 @@
 
   bindChipGroup('location-picker', 'location');
   bindChipGroup('time-picker', 'time');
+  bindChipGroup('dropoff-picker', 'dropoff');
+
+  document.getElementById('delivery-option-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.option-row');
+    if (!btn) return;
+    document.querySelectorAll('#delivery-option-picker .option-row').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.deliveryOption = btn.dataset.value;
+    renderCheckoutTotals();
+  });
 
   document.getElementById('payment-picker').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-value]');
@@ -434,7 +472,7 @@
   }
 
   function renderCheckoutTotals() {
-    const { subtotal, promoAmount, tax, total: preTipTotal } = computeTotals();
+    const { subtotal, promoAmount, tax, deliveryFee, total: preTipTotal } = computeTotals();
     const tipAmt = (subtotal - promoAmount) * (state.tipPct / 100);
     const total = preTipTotal + tipAmt;
 
@@ -449,27 +487,66 @@
     } else {
       promoLine.hidden = true;
     }
+    const deliveryFeeLine = document.getElementById('sum-delivery-fee-line');
+    if (state.mode === 'delivery') {
+      deliveryFeeLine.hidden = false;
+      document.getElementById('sum-delivery-fee').textContent = money(deliveryFee);
+    } else {
+      deliveryFeeLine.hidden = true;
+    }
     document.getElementById('place-order').textContent = `Place order · ${money(total)}`;
     return total;
   }
 
+  const STORE_ADDRESSES = {
+    'McKinney, TX': '111 W Virginia St, McKinney, TX 75069',
+    'Denison, TX': '231 W Main St, Denison, TX 75020',
+    'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
+    'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
+  };
+
+  const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
+
   document.getElementById('place-order').addEventListener('click', () => {
     if (state.cart.length === 0) return;
+
+    if (state.mode === 'delivery') {
+      const addr = document.getElementById('delivery-address').value.trim();
+      const errEl = document.getElementById('delivery-address-error');
+      if (!addr) {
+        errEl.hidden = false;
+        document.getElementById('delivery-address').focus();
+        return;
+      }
+      errEl.hidden = true;
+    }
+
     const total = renderCheckoutTotals();
+    const orderNumber = '#DE-' + Math.floor(10000 + Math.random() * 89999);
 
-    document.getElementById('order-number').textContent = '#DE-' + Math.floor(10000 + Math.random() * 89999);
-    document.getElementById('confirm-location').textContent = state.location;
-    document.getElementById('confirm-time').textContent = state.time === 'asap' ? '12:45 PM' : 'your scheduled time';
+    const subEl = document.getElementById('confirm-sub');
+    const stepLabelEl = document.getElementById('progress-step3-label');
+    const fulfillmentCard = document.getElementById('fulfillment-card');
 
-    const addresses = {
-      'McKinney, TX': '111 W Virginia St, McKinney, TX 75069',
-      'Denison, TX': '231 W Main St, Denison, TX 75020',
-      'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
-      'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
-    };
-    const address = addresses[state.location] || addresses['McKinney, TX'];
-    document.getElementById('confirm-address').textContent = address;
-    document.getElementById('get-directions').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
+    if (state.mode === 'delivery') {
+      const addr = document.getElementById('delivery-address').value.trim();
+      const apt = document.getElementById('delivery-apt').value.trim();
+      const fullAddress = apt ? `${addr}, ${apt}` : addr;
+      const eta = state.deliveryOption === 'priority' ? '10–20 min'
+        : state.deliveryOption === 'schedule' ? 'your scheduled time'
+        : '25–40 min';
+
+      subEl.innerHTML = `Order <strong>${orderNumber}</strong> · On its way to <strong>${fullAddress}</strong> — arriving in <strong>${eta}</strong>`;
+      stepLabelEl.textContent = 'On the way';
+      fulfillmentCard.innerHTML = `${PIN_ICON}<span>${fullAddress} · ${state.dropoff}</span>`;
+    } else {
+      const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
+      const readyBy = state.time === 'asap' ? '12:45 PM' : 'your scheduled time';
+
+      subEl.innerHTML = `Order <strong>${orderNumber}</strong> · We're preparing it now — ready for pickup at <strong>${state.location}</strong> by <strong>${readyBy}</strong>`;
+      stepLabelEl.textContent = 'Ready';
+      fulfillmentCard.innerHTML = `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`;
+    }
 
     const confirmItems = document.getElementById('confirm-items');
     confirmItems.innerHTML = '';

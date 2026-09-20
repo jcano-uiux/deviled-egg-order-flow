@@ -236,6 +236,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--deg-border-input); flex: none; }
 .radio-row.active .radio-dot { border: 5px solid var(--deg-gold); background: var(--deg-white); }
 
+.field-error { color: #B3261E; font-size: 13px; margin: -8px 0 0; }
+
+.option-list { display: flex; flex-direction: column; gap: 10px; }
+.option-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; width: 100%; }
+.option-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
+.option-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--deg-cream-cool); display: flex; align-items: center; justify-content: center; flex: none; }
+.option-body { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
+.option-title { font-weight: 700; font-size: 15px; color: var(--deg-ink-body); }
+.option-sub { font-size: 13px; color: var(--deg-ink-muted); }
+.option-price { font-family: var(--deg-font-display); font-weight: 800; font-size: 14px; color: var(--deg-ink-deep); flex: none; }
+
 .summary-panel { width: 380px; flex: none; background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-ambient); padding: 28px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
 .summary-panel h2 { font-size: 19px; }
 .summary-lines { display: flex; flex-direction: column; gap: 10px; }

@@ -100,7 +100,7 @@
     <div class="checkout-main">
       <h1>Checkout</h1>
 
-      <section class="checkout-card">
+      <section class="checkout-card" id="pickup-details-card">
         <h2>Pickup details</h2>
         <div class="field-group">
           <span class="field-label">Store</span>
@@ -116,6 +116,58 @@
           <div class="chip-row" id="time-picker">
             <button class="chip active" data-value="asap" type="button">ASAP · 15–20 min</button>
             <button class="chip" data-value="later" type="button">Schedule for later</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-card" id="delivery-details-card" hidden>
+        <h2>Delivery details</h2>
+        <div class="field-group">
+          <span class="field-label">Delivery address</span>
+          <input type="text" id="delivery-address" placeholder="Street address">
+        </div>
+        <div class="input-row">
+          <input type="text" id="delivery-apt" placeholder="Apt, suite, floor (optional)">
+        </div>
+        <p class="field-error" id="delivery-address-error" hidden>Enter a delivery address to continue.</p>
+
+        <div class="field-group">
+          <span class="field-label">Dropoff options</span>
+          <div class="chip-row" id="dropoff-picker">
+            <button class="chip active" data-value="Meet at my door" type="button">Meet at my door</button>
+            <button class="chip" data-value="Hand it to me" type="button">Hand it to me</button>
+          </div>
+        </div>
+        <label class="field-group">
+          Delivery instructions (optional)
+          <input type="text" id="delivery-instructions" placeholder="e.g. gate code, building notes">
+        </label>
+
+        <div class="field-group">
+          <span class="field-label">Delivery options</span>
+          <div class="option-list" id="delivery-option-picker">
+            <button class="option-row" data-value="priority" data-fee="3.99" type="button">
+              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+              <span class="option-body">
+                <span class="option-title">Priority</span>
+                <span class="option-sub">10–20 min · Direct to you</span>
+              </span>
+              <span class="option-price">+$3.99</span>
+            </button>
+            <button class="option-row active" data-value="standard" data-fee="0" type="button">
+              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h11v8H3z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 10h4l3 3v2h-7z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="1.5" stroke="#130D00" stroke-width="1.6"/><circle cx="17" cy="17.5" r="1.5" stroke="#130D00" stroke-width="1.6"/></svg></span>
+              <span class="option-body">
+                <span class="option-title">Standard</span>
+                <span class="option-sub">25–40 min</span>
+              </span>
+            </button>
+            <button class="option-row" data-value="schedule" data-fee="0" type="button">
+              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#130D00" stroke-width="1.6"/><path d="M16 3v4M8 3v4M3 10h18" stroke="#130D00" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <span class="option-body">
+                <span class="option-title">Schedule</span>
+                <span class="option-sub">Choose a time</span>
+              </span>
+            </button>
           </div>
         </div>
       </section>
@@ -143,6 +195,7 @@
       <div id="checkout-items" class="summary-lines"></div>
       <div class="summary-divider"></div>
       <div class="summary-line"><span>Subtotal</span><span id="sum-subtotal">$0.00</span></div>
+      <div class="summary-line" id="sum-delivery-fee-line" hidden><span>Delivery Fee</span><span id="sum-delivery-fee">$0.00</span></div>
       <div class="summary-line" id="promo-line" hidden><span>Promo</span><span id="sum-promo">−$0.00</span></div>
       <div class="summary-line"><span>Tax</span><span id="sum-tax">$0.00</span></div>
 
@@ -174,7 +227,7 @@
         <svg width="42" height="42" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h1>Order confirmed!</h1>
-      <p class="confirmation-sub">Order <strong id="order-number">#DE-00000</strong> · We're preparing it now — ready for pickup at <strong id="confirm-location">McKinney, TX</strong> by <strong id="confirm-time">12:45 PM</strong></p>
+      <p class="confirmation-sub" id="confirm-sub"></p>
 
       <div class="progress-track">
         <div class="progress-step done">
@@ -189,7 +242,7 @@
         <div class="progress-line"></div>
         <div class="progress-step">
           <span class="progress-dot pending"></span>
-          <span>Ready</span>
+          <span id="progress-step3-label">Ready</span>
         </div>
       </div>
 
@@ -199,11 +252,7 @@
         <div class="summary-line total"><span>Total paid</span><span id="confirm-total">$0.00</span></div>
       </div>
 
-      <div class="address-card">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
-        <span id="confirm-address">111 W Virginia St, McKinney, TX 75069</span>
-        <a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=111+W+Virginia+St%2C+McKinney%2C+TX+75069" target="_blank" rel="noopener">Get directions</a>
-      </div>
+      <div class="address-card" id="fulfillment-card"></div>
 
       <button class="text-btn" id="back-to-menu" type="button">← Back to menu</button>
     </div>
@@ -261,10 +310,7 @@
     </button>
   </div>
 
-  <div class="pickup-chip">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
-    <span>Pickup at <strong>McKinney, TX</strong> · Today, ASAP (15–20 min)</span>
-  </div>
+  <div class="pickup-chip" id="fulfillment-chip"></div>
 
   <div class="drawer-items" id="drawer-items"></div>
 
@@ -276,6 +322,7 @@
 
   <div class="drawer-footer">
     <div class="summary-line"><span>Subtotal</span><span id="drawer-subtotal">$0.00</span></div>
+    <div class="summary-line" id="drawer-delivery-fee-line" hidden><span>Delivery Fee</span><span id="drawer-delivery-fee">$0.00</span></div>
     <div class="summary-line" id="drawer-promo-line" hidden><span>Promo</span><span id="drawer-promo">−$0.00</span></div>
     <div class="summary-line"><span>Tax</span><span id="drawer-tax">$0.00</span></div>
     <div class="summary-divider"></div>
