@@ -160,6 +160,7 @@ select { padding-right: 16px; }
 
 .segmented { display: inline-flex; gap: 4px; background: var(--deg-cream-cool); padding: 4px; border-radius: var(--deg-radius-pill); }
 .segmented .chip { background: transparent; }
+.segmented .chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
 
 /* ---------- Selectable rows ----------
    Two variants for a full-width, bordered, single- or multi-select row.
