@@ -11,12 +11,13 @@
 </head>
 <body>
 
+<div id="page-root">
 <header class="site-header">
   <div class="header-left">
     <span class="logo">Deviled Egg Co.</span>
     <button class="pill-btn location-btn" type="button">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
-      <span id="location-label">McKinney, TX</span> · Ready in 15–20 min
+      <span id="location-label">McKinney, TX</span><span class="location-detail"> · Ready in 15–20 min</span>
     </button>
   </div>
   <div class="header-search">
@@ -47,19 +48,19 @@
   <div class="menu-layout">
 
     <nav class="category-nav" aria-label="Menu categories">
-      <button class="cat-btn" type="button">Featured</button>
-      <button class="cat-btn" type="button">Deviled Eggs</button>
-      <button class="cat-btn" type="button">Bagel Spreads</button>
-      <button class="cat-btn" type="button">Egg Salads</button>
-      <button class="cat-btn" type="button">Party Platters</button>
-      <button class="cat-btn" type="button">Protein Bowls</button>
-      <button class="cat-btn active" type="button">Build Your Own Dozen</button>
-      <button class="cat-btn" type="button">Catering</button>
+      <button class="cat-btn" type="button" data-target="menu-top">Featured</button>
+      <button class="cat-btn" type="button" data-target="section-deviled-eggs">Deviled Eggs</button>
+      <button class="cat-btn" type="button" disabled title="Coming soon">Bagel Spreads</button>
+      <button class="cat-btn" type="button" disabled title="Coming soon">Egg Salads</button>
+      <button class="cat-btn" type="button" disabled title="Coming soon">Party Platters</button>
+      <button class="cat-btn" type="button" data-target="section-protein-bowls">Protein Bowls</button>
+      <button class="cat-btn active" type="button" data-target="open-dozen-modal">Build Your Own Dozen</button>
+      <button class="cat-btn" type="button" disabled title="Coming soon">Catering</button>
     </nav>
 
-    <div class="menu-content">
+    <div class="menu-content" id="menu-top">
 
-      <button class="feature-card" id="open-dozen-modal" type="button">
+      <button class="feature-card" id="open-dozen-modal" type="button" aria-label="Customize Build Your Own Dozen — $24.99">
         <span class="thumb thumb-lg">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1.5"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1.5" stroke-linecap="round"/></svg>
         </span>
@@ -69,15 +70,15 @@
           <span class="feature-desc">12 deviled eggs, your way. Choose up to 4 flavors from our full lineup.</span>
           <span class="price">$24.99</span>
         </span>
-        <span class="pill-btn primary feature-cta">Customize →</span>
+        <span class="pill-btn primary feature-cta" aria-hidden="true">Customize →</span>
       </button>
 
-      <section class="menu-section">
+      <section class="menu-section" id="section-deviled-eggs">
         <h2>Deviled Eggs</h2>
         <div class="card-grid" id="deviled-eggs-grid"></div>
       </section>
 
-      <section class="menu-section">
+      <section class="menu-section" id="section-protein-bowls">
         <h2>Protein Bowls</h2>
         <div class="row-grid" id="protein-bowls-grid"></div>
       </section>
@@ -201,16 +202,17 @@
       <div class="address-card">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
         <span id="confirm-address">111 W Virginia St, McKinney, TX 75069</span>
-        <span class="pill-btn outline">Get directions</span>
+        <a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=111+W+Virginia+St%2C+McKinney%2C+TX+75069" target="_blank" rel="noopener">Get directions</a>
       </div>
 
       <button class="text-btn" id="back-to-menu" type="button">← Back to menu</button>
     </div>
   </div>
 </main>
+</div>
 
 <div class="overlay" id="modal-backdrop" hidden></div>
-<div class="item-modal" id="item-modal" hidden>
+<div class="item-modal" id="item-modal" role="dialog" aria-modal="true" aria-labelledby="dozen-modal-title" hidden>
   <div class="item-modal-inner">
     <div class="item-modal-media">
       <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
@@ -223,7 +225,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
-        <h1>Build Your Own Dozen</h1>
+        <h1 id="dozen-modal-title">Build Your Own Dozen</h1>
         <p class="modal-desc">12 deviled eggs, hand piped fresh daily. Pick up to 4 flavors to fill your dozen.</p>
         <span class="price">$24.99</span>
         <div class="divider"></div>
@@ -251,9 +253,9 @@
 </div>
 
 <div class="overlay" id="cart-backdrop" hidden></div>
-<aside class="cart-drawer" id="cart-drawer" hidden>
+<aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title" hidden>
   <div class="drawer-header">
-    <h2>Your order</h2>
+    <h2 id="cart-drawer-title">Your order</h2>
     <button class="close-btn" id="close-cart" type="button" aria-label="Close cart">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
@@ -268,7 +270,7 @@
 
   <div class="promo-row">
     <input type="text" id="promo-input" placeholder="Promo code">
-    <button class="dark-btn" id="apply-promo" type="button">Apply</button>
+    <button class="pill-btn dark" id="apply-promo" type="button">Apply</button>
   </div>
   <p class="promo-msg" id="promo-msg"></p>
 

@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-09-20T09:33:11.959Z",
+        "reason": "item-modal-inner's zero padding is a full-bleed decorative image panel (item-modal-media), matching the Uber Eats reference modal; the text-bearing content panel (item-modal-scroll/footer) already carries 32-36px padding — verified visually, no text touches any edge"
+      }
+    ]
+  }
+}

@@ -130,12 +130,38 @@
     });
   }
 
+  // ---------- Category navigation ----------
+  document.querySelectorAll('.cat-btn[data-target]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
   // ---------- Pickup / delivery toggle ----------
   document.getElementById('order-mode').addEventListener('click', (e) => {
     const btn = e.target.closest('.seg-btn');
     if (!btn) return;
     document.querySelectorAll('#order-mode .seg-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
+  });
+
+  // ---------- Overlay focus management ----------
+  const pageRoot = document.getElementById('page-root');
+  let lastFocusedEl = null;
+
+  function updateInert() {
+    const anyOpen = !itemModal.hidden || !cartDrawer.hidden;
+    pageRoot.inert = anyOpen;
+    document.body.style.overflow = anyOpen ? 'hidden' : '';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!itemModal.hidden) closeDozenModal();
+    else if (!cartDrawer.hidden) closeCart();
   });
 
   // ---------- Item customization modal ----------
@@ -150,7 +176,8 @@
       const atLimit = state.modalSelected.size >= 4 && !selected;
       const row = document.createElement('button');
       row.type = 'button';
-      row.className = 'flavor-row' + (selected ? ' selected' : '') + (atLimit ? ' disabled' : '');
+      row.disabled = atLimit;
+      row.className = 'flavor-row' + (selected ? ' selected' : '');
       row.innerHTML = `<span class="flavor-box">${selected ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span><span>${f.label}</span>`;
       row.addEventListener('click', () => {
         if (selected) {
@@ -173,6 +200,7 @@
   }
 
   function openDozenModal() {
+    lastFocusedEl = document.activeElement;
     state.modalSelected = new Set(['classic', 'bacon', 'jalapeno', 'salmon']);
     state.modalQty = 1;
     document.getElementById('item-note').value = '';
@@ -180,11 +208,15 @@
     renderModalFooter();
     modalBackdrop.hidden = false;
     itemModal.hidden = false;
+    updateInert();
+    document.getElementById('close-modal').focus();
   }
 
   function closeDozenModal() {
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
   }
 
   document.getElementById('open-dozen-modal').addEventListener('click', openDozenModal);
@@ -219,13 +251,18 @@
   const cartDrawer = document.getElementById('cart-drawer');
 
   function openCart() {
+    lastFocusedEl = document.activeElement;
     renderDrawer();
     cartBackdrop.hidden = false;
     cartDrawer.hidden = false;
+    updateInert();
+    document.getElementById('close-cart').focus();
   }
   function closeCart() {
     cartBackdrop.hidden = true;
     cartDrawer.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
   }
 
   document.getElementById('open-cart').addEventListener('click', openCart);
@@ -308,10 +345,7 @@
       promoLine.hidden = true;
     }
 
-    const goBtn = document.getElementById('go-to-checkout');
-    goBtn.disabled = state.cart.length === 0;
-    goBtn.style.opacity = state.cart.length === 0 ? '.5' : '1';
-    goBtn.style.pointerEvents = state.cart.length === 0 ? 'none' : 'auto';
+    document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }
 
   document.getElementById('apply-promo').addEventListener('click', () => {
@@ -433,7 +467,9 @@
       'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
       'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
     };
-    document.getElementById('confirm-address').textContent = addresses[state.location] || addresses['McKinney, TX'];
+    const address = addresses[state.location] || addresses['McKinney, TX'];
+    document.getElementById('confirm-address').textContent = address;
+    document.getElementById('get-directions').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
 
     const confirmItems = document.getElementById('confirm-items');
     confirmItems.innerHTML = '';
