@@ -4,7 +4,7 @@
     {
       "name": "deviled-egg-order-flow",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8420", "--directory", "/Users/joseph/Projects/deviled-egg-order-flow"],
+      "runtimeArgs": ["/Users/joseph/Projects/deviled-egg-order-flow/serve.py", "8420"],
       "port": 8420
     }
   ]
