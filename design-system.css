@@ -143,7 +143,7 @@ input::placeholder { color: var(--deg-ink-muted); }
    justify/radius again. */
 .icon-btn, .close-btn, .cart-btn, .step-btn, .mini-step-btn, .add-btn {
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; border: none; flex: none; padding: 0;
+  border-radius: 50%; border: none; flex: none; padding: 0; line-height: 1;
 }
 
 /* ---------- Chips & segmented toggle ----------
