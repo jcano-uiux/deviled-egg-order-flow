@@ -1,0 +1,197 @@
+/* =========================================================================
+   Deviled Egg Co. — Design System
+   =========================================================================
+   Reusable tokens and primitive components shared across every screen.
+   Audited from the live deviledeggco.com site: one gold accent as the only
+   saturated color, warm cream/neutral surfaces, near-universal pill/rounded
+   radius, Nunito 800 for headings & prices, Plus Jakarta Sans for everything
+   else.
+
+   This file is the portable system: link it before any page-specific
+   stylesheet (e.g. styles.css) so page styles can build on these tokens
+   and classes without redefining them. Page-specific layout (headers,
+   menu grids, checkout layout, modal chrome, etc.) belongs in the
+   consuming stylesheet, not here — only cross-screen primitives live in
+   this file.
+   ========================================================================= */
+
+:root {
+  /* Brand accent — the only saturated color in the system */
+  --deg-gold: #F7BA17;
+  --deg-gold-on-dark: #FFD426;
+
+  /* Ink */
+  --deg-ink-deep: #130D00;       /* dark button fills, footer base */
+  --deg-ink-body: #140F0A;       /* default body text */
+  --deg-ink-on-gold: #261A00;    /* text set directly on the gold accent */
+  --deg-ink-heading: #402D00;    /* secondary heading color on cream */
+  --deg-ink-muted: #6B6155;      /* placeholders, helper text */
+  --deg-link: #8B5E00;           /* text links, eyebrows */
+
+  /* Surfaces */
+  --deg-cream: #FFF7EA;          /* dominant background */
+  --deg-white: #FFFFFF;
+  --deg-cream-alt: #FFF7E2;
+  --deg-cream-cool: #F5F0E8;
+  --deg-cream-deep: #FFEFD5;
+  --deg-dark: #1A1510;
+
+  /* Borders */
+  --deg-border: #DDDDDD;
+  --deg-border-input: #D9D1BF;
+  --deg-border-chip: #E9E1D8;
+
+  /* Radius — nothing in the system is sharp-cornered */
+  --deg-radius-pill: 999px;      /* buttons, inputs, chips, badges */
+  --deg-radius-card: 16px;       /* dominant card/image radius */
+  --deg-radius-compact: 14px;    /* small tiles, selectable rows */
+  --deg-radius-panel: 24px;      /* large feature panels, modals */
+
+  /* Elevation */
+  --deg-shadow-card: 0 8px 24px rgba(0,0,0,.08);
+  --deg-shadow-brand: 0 10px 24px rgba(247,186,23,.25); /* primary CTAs ONLY */
+  --deg-shadow-ambient: 0 12px 32px rgba(0,0,0,.08);
+  --deg-shadow-modal: 0 24px 64px rgba(19,13,0,.32);
+
+  --deg-font-display: 'Nunito', sans-serif;         /* headings & prices, weight 800 only */
+  --deg-font-body: 'Plus Jakarta Sans', sans-serif; /* everything else */
+}
+
+/* ---------- Base / reset ---------- */
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: var(--deg-font-body);
+  color: var(--deg-ink-body);
+  background: var(--deg-cream);
+}
+
+h1, h2, h3 { font-family: var(--deg-font-display); font-weight: 800; margin: 0; }
+
+button { font-family: var(--deg-font-body); cursor: pointer; }
+
+.muted { color: var(--deg-ink-muted); }
+
+/* Every focusable control gets this halo: a cream ring separates it from
+   its own fill, then a dark ring provides contrast against any background —
+   including gold primary buttons and active chips, where a flat outline in
+   the same gold would be invisible. */
+a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep);
+}
+
+/* ---------- Fields ----------
+   Text input. Every text field in the product — search, contact info,
+   promo code, delivery address, item notes — uses this one rule. */
+input {
+  font-family: var(--deg-font-body);
+  font-size: 15px;
+  color: var(--deg-ink-body);
+  border-radius: var(--deg-radius-pill);
+  border: 1px solid var(--deg-border-input);
+  padding: 14px 22px;
+  background: var(--deg-white);
+  min-width: 0; /* let inputs shrink inside a flex row instead of overflowing */
+}
+input::placeholder { color: var(--deg-ink-muted); }
+
+/* A labeled field, or a small group of them (a "Choose your flavors" label
+   above a grid, a "Delivery instructions" label above its input). */
+.field-group { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: var(--deg-ink-body); }
+
+/* Small uppercase label above a control group (STORE, PICKUP TIME, DELIVERY OPTIONS). */
+.field-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Inline validation message below a field. */
+.field-error { color: #B3261E; font-size: 13px; margin: -8px 0 0; }
+
+/* Two or more inputs side by side; stacks on narrow viewports (see the
+   responsive block at the bottom of this file). */
+.input-row { display: flex; gap: 14px; }
+.input-row input { flex-grow: 1; }
+
+/* ---------- Buttons ----------
+   One base class, `.pill-btn`, with fill/weight modifiers. Never introduce
+   a new one-off button class for another filled or outlined pill — add a
+   modifier here instead. */
+.pill-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: none; border-radius: var(--deg-radius-pill);
+  font-weight: 700; font-size: 15px; padding: 14px 26px;
+  background: var(--deg-cream-cool); color: var(--deg-ink-body);
+  text-decoration: none;
+}
+.pill-btn.primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand); }
+.pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; }
+.pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); padding: 10px 20px; font-size: 13px; box-shadow: none; }
+.pill-btn.full { width: 100%; justify-content: center; padding: 17px; font-size: 16px; }
+.pill-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+
+/* Plain text action — tertiary, no fill (Sign in, Back to cart, Back to menu). */
+.text-btn { background: none; border: none; color: var(--deg-ink-body); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+
+/* Icon-only circular button. This base rule is intentionally applied to
+   every concrete icon button in the product (cart, close, quantity
+   steppers, add-to-cart) via one grouped selector, so they share centering
+   and shape from a single place — each one then sets only its own size,
+   color, and (if it needs one) fixed position in its page stylesheet. Use
+   `.icon-btn` directly for any new one rather than writing display/align/
+   justify/radius again. */
+.icon-btn, .close-btn, .cart-btn, .step-btn, .mini-step-btn, .add-btn {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none; flex: none; padding: 0;
+}
+
+/* ---------- Chips & segmented toggle ----------
+   `.chip` is the one single-select pill control in the system — it backs
+   the Pickup/Delivery toggle, store picker, pickup/delivery time, dropoff
+   option, and tip percentage. Never fork a second "toggle button" class;
+   give it a `.chip` and, if it needs a track background (a 2–3 option
+   exclusive switch rather than a wrapping filter row), wrap it in
+   `.segmented` instead of `.chip-row`. */
+.chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip { background: var(--deg-cream-cool); border: none; border-radius: var(--deg-radius-pill); padding: 11px 24px; font-weight: 600; font-size: 14px; color: var(--deg-ink-body); }
+.chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
+
+.segmented { display: inline-flex; gap: 4px; background: var(--deg-cream-cool); padding: 4px; border-radius: var(--deg-radius-pill); }
+.segmented .chip { background: transparent; }
+
+/* ---------- Selectable rows ----------
+   Two variants for a full-width, bordered, single- or multi-select row.
+   Both share the same selected-state treatment (gold border + cream fill)
+   so a user learns the pattern once. Pick by content shape — don't merge
+   them, they serve different jobs:
+     .radio-row  — single-select, label only (payment method).
+     .option-row — single-select, icon + two-line body + optional price
+                   (delivery options: Priority/Standard/Schedule).
+     .flavor-row — multi-select, label only, supports a disabled state
+                   when a selection cap is reached (flavor picker). */
+.radio-list, .option-list { display: flex; flex-direction: column; gap: 10px; }
+
+.radio-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 15px; color: var(--deg-ink-body); width: 100%; }
+.radio-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
+.radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--deg-border-input); flex: none; }
+.radio-row.active .radio-dot { border: 5px solid var(--deg-gold); background: var(--deg-white); }
+
+.option-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; width: 100%; }
+.option-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
+.option-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--deg-cream-cool); display: flex; align-items: center; justify-content: center; flex: none; }
+.option-body { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
+.option-title { font-weight: 700; font-size: 15px; color: var(--deg-ink-body); }
+.option-sub { font-size: 13px; color: var(--deg-ink-muted); }
+.option-price { font-family: var(--deg-font-display); font-weight: 800; font-size: 14px; color: var(--deg-ink-deep); flex: none; }
+
+.flavor-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 14px; color: var(--deg-ink-body); width: 100%; }
+.flavor-row.selected { border-color: var(--deg-gold); background: var(--deg-cream); }
+.flavor-row:disabled { opacity: .45; cursor: not-allowed; }
+.flavor-box { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--deg-border-input); flex: none; display: flex; align-items: center; justify-content: center; }
+.flavor-row.selected .flavor-box { background: var(--deg-gold); border-color: var(--deg-gold); color: var(--deg-ink-on-gold); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .input-row { flex-direction: column; }
+}

@@ -1,88 +1,6 @@
-:root {
-  --deg-gold: #F7BA17;
-  --deg-gold-on-dark: #FFD426;
-
-  --deg-ink-deep: #130D00;
-  --deg-ink-body: #140F0A;
-  --deg-ink-on-gold: #261A00;
-  --deg-ink-heading: #402D00;
-  --deg-ink-muted: #6B6155;
-  --deg-link: #8B5E00;
-
-  --deg-cream: #FFF7EA;
-  --deg-white: #FFFFFF;
-  --deg-cream-alt: #FFF7E2;
-  --deg-cream-cool: #F5F0E8;
-  --deg-cream-deep: #FFEFD5;
-  --deg-dark: #1A1510;
-
-  --deg-border: #DDDDDD;
-  --deg-border-input: #D9D1BF;
-  --deg-border-chip: #E9E1D8;
-
-  --deg-radius-pill: 999px;
-  --deg-radius-card: 16px;
-  --deg-radius-compact: 14px;
-  --deg-radius-panel: 24px;
-
-  --deg-shadow-card: 0 8px 24px rgba(0,0,0,.08);
-  --deg-shadow-brand: 0 10px 24px rgba(247,186,23,.25);
-  --deg-shadow-ambient: 0 12px 32px rgba(0,0,0,.08);
-  --deg-shadow-modal: 0 24px 64px rgba(19,13,0,.32);
-
-  --deg-font-display: 'Nunito', sans-serif;
-  --deg-font-body: 'Plus Jakarta Sans', sans-serif;
-}
-
-* { box-sizing: border-box; }
-
-[hidden] { display: none !important; }
-
-body {
-  margin: 0;
-  font-family: var(--deg-font-body);
-  color: var(--deg-ink-body);
-  background: var(--deg-cream);
-}
-
-h1, h2, h3 { font-family: var(--deg-font-display); font-weight: 800; margin: 0; }
-
-button { font-family: var(--deg-font-body); cursor: pointer; }
-
-input {
-  font-family: var(--deg-font-body);
-  font-size: 15px;
-  color: var(--deg-ink-body);
-  border-radius: var(--deg-radius-pill);
-  border: 1px solid var(--deg-border-input);
-  padding: 14px 22px;
-  background: var(--deg-white);
-  min-width: 0;
-}
-input::placeholder { color: var(--deg-ink-muted); }
-
-a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep);
-}
-
-.muted { color: var(--deg-ink-muted); }
-
-/* ---------- Buttons ---------- */
-.pill-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  border: none; border-radius: var(--deg-radius-pill);
-  font-weight: 700; font-size: 15px; padding: 14px 26px;
-  background: var(--deg-cream-cool); color: var(--deg-ink-body);
-  text-decoration: none;
-}
-.pill-btn.primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand); }
-.pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; }
-.pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); padding: 10px 20px; font-size: 13px; box-shadow: none; }
-.pill-btn.full { width: 100%; justify-content: center; padding: 17px; font-size: 16px; }
-.pill-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
-
-.text-btn { background: none; border: none; color: var(--deg-ink-body); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+/* Tokens and shared primitives (buttons, chips, fields, selectable rows)
+   live in design-system.css, linked before this file. Everything below is
+   page-specific layout that builds on that system. */
 
 /* ---------- Header ---------- */
 .site-header {
@@ -99,10 +17,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .header-search { flex-grow: 1; max-width: 420px; }
 .header-search input { width: 100%; background: var(--deg-cream); }
 .header-right { display: flex; align-items: center; gap: 18px; }
-.cart-btn {
-  position: relative; width: 44px; height: 44px; border-radius: 50%;
-  background: var(--deg-ink-deep); border: none; display: flex; align-items: center; justify-content: center;
-}
+.cart-btn { position: relative; width: 44px; height: 44px; background: var(--deg-ink-deep); }
 .cart-badge {
   position: absolute; top: -4px; right: -4px; background: var(--deg-gold); color: var(--deg-ink-on-gold);
   font-size: 11px; font-weight: 800; width: 20px; height: 20px; border-radius: 50%;
@@ -113,9 +28,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .view { max-width: 1360px; margin: 0 auto; padding: 0 40px 60px; }
 
 .toolbar { display: flex; align-items: center; justify-content: space-between; padding: 24px 0 20px; }
-.segmented { display: inline-flex; gap: 4px; background: var(--deg-cream-cool); padding: 4px; border-radius: var(--deg-radius-pill); }
-.seg-btn { background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 11px 24px; font-weight: 600; font-size: 14px; color: var(--deg-ink-body); }
-.seg-btn.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
 .rating-line { display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .rating { font-family: var(--deg-font-display); font-weight: 800; color: var(--deg-ink-heading); }
 
@@ -149,7 +61,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .item-card-body { padding: 14px; position: relative; display: flex; flex-direction: column; gap: 4px; }
 .item-name { font-weight: 700; font-size: 14px; }
 .item-price { font-family: var(--deg-font-display); font-weight: 800; font-size: 15px; color: var(--deg-ink-deep); }
-.add-btn { position: absolute; right: 12px; bottom: 12px; width: 32px; height: 32px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; border: none; font-size: 17px; line-height: 1; }
+.add-btn { position: absolute; right: 12px; bottom: 12px; width: 32px; height: 32px; background: var(--deg-ink-deep); color: #fff; font-size: 17px; }
 
 .row-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .row-card { background: var(--deg-white); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); display: flex; align-items: center; gap: 14px; padding: 14px; }
@@ -164,24 +76,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .item-modal-body { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .item-modal-scroll { flex-grow: 1; overflow-y: auto; padding: 32px 36px 8px; display: flex; flex-direction: column; gap: 16px; }
 .item-modal-top { display: flex; align-items: flex-start; justify-content: space-between; }
-.close-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--deg-cream-cool); border: none; display: flex; align-items: center; justify-content: center; }
+.close-btn { width: 34px; height: 34px; background: var(--deg-cream-cool); }
 .modal-desc { color: var(--deg-ink-muted); font-size: 15px; margin: 0; }
 .divider { height: 1px; background: var(--deg-border-chip); }
 .modal-row { display: flex; align-items: center; justify-content: space-between; }
 .count-pill { font-weight: 700; font-size: 13px; color: var(--deg-link); background: var(--deg-cream-alt); padding: 8px 16px; border-radius: var(--deg-radius-pill); }
 
 .flavor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.flavor-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 14px; color: var(--deg-ink-body); }
-.flavor-row.selected { border-color: var(--deg-gold); background: var(--deg-cream); }
-.flavor-box { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--deg-border-input); flex: none; display: flex; align-items: center; justify-content: center; }
-.flavor-row.selected .flavor-box { background: var(--deg-gold); border-color: var(--deg-gold); color: var(--deg-ink-on-gold); }
-.flavor-row:disabled { opacity: .45; cursor: not-allowed; }
-
-.field-group { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: var(--deg-ink-body); }
 
 .item-modal-footer { flex: none; display: flex; align-items: center; gap: 18px; padding: 18px 36px 28px; border-top: 1px solid var(--deg-border-chip); }
 .stepper { display: flex; align-items: center; gap: 14px; }
-.step-btn { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); font-size: 18px; color: var(--deg-ink-deep); }
+.step-btn { width: 40px; height: 40px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); font-size: 18px; color: var(--deg-ink-deep); }
 .stepper span { font-family: var(--deg-font-display); font-weight: 800; font-size: 17px; min-width: 14px; text-align: center; }
 .item-modal-footer .pill-btn { flex-grow: 1; }
 
@@ -202,7 +107,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .drawer-item-sub { font-size: 12.5px; color: var(--deg-ink-muted); }
 .drawer-item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .mini-stepper { display: flex; align-items: center; gap: 8px; }
-.mini-step-btn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); font-size: 13px; }
+.mini-step-btn { width: 26px; height: 26px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); font-size: 13px; }
 .mini-stepper span { font-weight: 800; font-size: 13px; min-width: 10px; text-align: center; }
 .remove-btn { background: none; border: none; padding: 2px; }
 .empty-cart { text-align: center; padding: 32px 0; color: var(--deg-ink-muted); font-size: 14px; }
@@ -224,28 +129,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .checkout-main h1 { font-size: 28px; color: var(--deg-ink-deep); }
 .checkout-card { background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-card); padding: 26px; display: flex; flex-direction: column; gap: 16px; }
 .checkout-card h2 { font-size: 18px; color: var(--deg-ink-deep); }
-.field-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .06em; }
-.chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.chip { background: var(--deg-cream-cool); border: none; border-radius: var(--deg-radius-pill); padding: 11px 24px; font-weight: 600; font-size: 14px; color: var(--deg-ink-body); }
-.chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
-.input-row { display: flex; gap: 14px; }
-.input-row input { flex-grow: 1; }
-.radio-list { display: flex; flex-direction: column; gap: 10px; }
-.radio-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 15px; color: var(--deg-ink-body); }
-.radio-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
-.radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--deg-border-input); flex: none; }
-.radio-row.active .radio-dot { border: 5px solid var(--deg-gold); background: var(--deg-white); }
-
-.field-error { color: #B3261E; font-size: 13px; margin: -8px 0 0; }
-
-.option-list { display: flex; flex-direction: column; gap: 10px; }
-.option-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; width: 100%; }
-.option-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
-.option-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--deg-cream-cool); display: flex; align-items: center; justify-content: center; flex: none; }
-.option-body { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; }
-.option-title { font-weight: 700; font-size: 15px; color: var(--deg-ink-body); }
-.option-sub { font-size: 13px; color: var(--deg-ink-muted); }
-.option-price { font-family: var(--deg-font-display); font-weight: 800; font-size: 14px; color: var(--deg-ink-deep); flex: none; }
 
 .summary-panel { width: 380px; flex: none; background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-ambient); padding: 28px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
 .summary-panel h2 { font-size: 19px; }
@@ -302,6 +185,4 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 
   .address-card { flex-wrap: wrap; }
   .address-card span:nth-child(2) { flex-basis: 100%; }
-
-  .input-row { flex-direction: column; }
 }

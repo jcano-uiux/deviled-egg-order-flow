@@ -154,9 +154,9 @@
   }
 
   document.getElementById('order-mode').addEventListener('click', (e) => {
-    const btn = e.target.closest('.seg-btn');
+    const btn = e.target.closest('.chip');
     if (!btn) return;
-    document.querySelectorAll('#order-mode .seg-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('#order-mode .chip').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     state.mode = btn.dataset.mode;
     updateModeUI();
