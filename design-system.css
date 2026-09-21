@@ -136,7 +136,7 @@ select { padding-right: 16px; }
   text-decoration: none;
 }
 .pill-btn.primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand); }
-.pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; }
+.pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; font-weight: 500; }
 .pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); padding: 10px 20px; font-size: 13px; box-shadow: none; }
 .pill-btn.full { width: 100%; justify-content: center; padding: 17px; font-size: 16px; }
 .pill-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
