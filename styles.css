@@ -5,7 +5,7 @@
 /* ---------- Header ---------- */
 .site-header { background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); padding: 8px 0; }
 .nav-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding: 0 12px; }
-.logo { font-family: var(--deg-font-display); font-weight: 800; font-size: 21px; color: var(--deg-ink-deep); white-space: nowrap; margin-right: 16px; }
+.logo { height: 24px; width: auto; flex: none; margin-right: 16px; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; column-gap: 4px; }
 .nav-link { padding: 10px; font-size: 13px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; }
 .cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
@@ -202,7 +202,7 @@
 
 @media (max-width: 640px) {
   .nav-inner { padding: 0 16px; gap: 10px; flex-wrap: wrap; }
-  .logo { font-size: 17px; margin-right: 8px; }
+  .logo { height: 20px; margin-right: 8px; }
   .nav-links { flex-basis: 100%; order: 3; justify-content: flex-start; flex-grow: 0; }
   .nav-link { font-size: 12px; padding: 8px 6px; }
 
