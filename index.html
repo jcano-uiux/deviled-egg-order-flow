@@ -14,18 +14,18 @@
 
 <div id="page-root">
 <header class="site-header">
-  <div class="header-left">
+  <div class="nav-inner">
     <span class="logo">Deviled Egg Co.</span>
-    <button class="pill-btn location-btn" type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
-      <span id="location-label">McKinney, TX</span><span class="location-detail"> · Ready in 15–20 min</span>
-    </button>
-  </div>
-  <div class="header-search">
-    <input type="text" placeholder="Search the menu" aria-label="Search the menu">
-  </div>
-  <div class="header-right">
-    <button class="text-btn" type="button">Sign in</button>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="nav-link" href="#">Pickup &amp; Delivery</a>
+      <a class="nav-link" href="#">Nationwide Shipping</a>
+      <a class="nav-link" href="#">Catering</a>
+      <a class="nav-link" href="#">Gift Cards</a>
+      <a class="nav-link" href="#">Corporate Gifting</a>
+      <a class="nav-link" href="#">About</a>
+      <a class="nav-link" href="#">Franchise</a>
+      <a class="nav-link" href="#">Contact</a>
+    </nav>
     <button class="cart-btn" id="open-cart" type="button" aria-label="View cart">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 8h12l-1 12H7L6 8Z" stroke="#FBF3E3" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="#FBF3E3" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="cart-badge" id="cart-badge">0</span>
@@ -35,38 +35,69 @@
 
 <main id="view-menu" class="view">
 
-  <div class="toolbar">
-    <div class="segmented" id="order-mode">
-      <button class="chip active" data-mode="pickup" type="button">Pickup</button>
-      <button class="chip" data-mode="delivery" type="button">Delivery</button>
-    </div>
-    <div class="rating-line">
-      <span class="rating">★ 4.9 (600+)</span>
-      <span class="muted">· McKinney, TX · Open until 8:00 PM</span>
-    </div>
-  </div>
-
   <div class="menu-layout">
 
-    <nav class="category-nav" aria-label="Menu categories">
-      <button class="cat-btn" type="button" data-target="menu-top">Featured</button>
-      <button class="cat-btn" type="button" data-target="section-deviled-eggs">Deviled Eggs</button>
-      <button class="cat-btn" type="button" data-target="section-bagels">Bagels</button>
-      <button class="cat-btn" type="button" data-target="section-egg-salads">Egg Salads</button>
-      <button class="cat-btn" type="button" data-target="section-platters">Platters</button>
-      <button class="cat-btn" type="button" data-target="section-protein-bowls">Protein Bowls</button>
-      <button class="cat-btn active" type="button" data-target="open-dozen-modal">Build Your Own Dozen</button>
-      <button class="cat-btn" type="button" data-target="section-catering">Catering</button>
-    </nav>
+    <aside class="store-sidebar" aria-label="Store details and menu categories">
+      <div class="store-card">
+        <h1 class="store-name">McKinney, Tx</h1>
+        <p class="store-tagline">Fresh deviled eggs, made daily</p>
+        <p class="store-address">111 W Virginia St, McKinney, TX 75069</p>
+        <button class="pill-btn dark store-info-btn" type="button">Store info</button>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-menu-head">
+        <span class="sidebar-menu-label">Menu</span>
+        <span class="sidebar-menu-hours">10:00 AM – 8:00 PM</span>
+      </div>
+      <nav class="drawer-nav" aria-label="Menu categories">
+        <button class="category-item active" type="button" data-target="menu-top">Featured items</button>
+        <button class="category-item" type="button" data-target="section-deviled-eggs">Deviled Eggs</button>
+        <button class="category-item" type="button" data-target="section-bagels">Bagels</button>
+        <button class="category-item" type="button" data-target="section-egg-salads">Egg Salads</button>
+        <button class="category-item" type="button" data-target="section-platters">Platters</button>
+        <button class="category-item" type="button" data-target="section-protein-bowls">Protein Bowls</button>
+        <button class="category-item" type="button" data-target="open-dozen-modal">Build Your Own Dozen</button>
+        <button class="category-item" type="button" data-target="section-catering">Catering</button>
+      </nav>
+    </aside>
 
     <div class="menu-content" id="menu-top">
+
+      <div class="store-hero">
+        <div class="hero-media">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1.5"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <button class="hero-more-btn" type="button" aria-label="View more photos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.6" fill="#130D00"/><circle cx="12" cy="12" r="1.6" fill="#130D00"/><circle cx="19" cy="12" r="1.6" fill="#130D00"/></svg>
+        </button>
+      </div>
+
+      <label class="menu-search" for="menu-search-input">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="#7C766F" stroke-width="1.8"/><path d="m21 21-4.3-4.3" stroke="#7C766F" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="text" id="menu-search-input" placeholder="Search McKinney, Tx Menu" aria-label="Search McKinney, Tx Menu">
+      </label>
+
+      <div class="order-mode-row">
+        <div class="segmented order-mode-toggle" id="order-mode">
+          <button class="order-mode-option active" data-mode="pickup" type="button">Pickup</button>
+          <button class="order-mode-option" data-mode="delivery" type="button">Delivery</button>
+        </div>
+        <div class="delivery-info">
+          <svg class="delivery-info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>
+          <div class="delivery-info-divider"></div>
+          <div class="delivery-info-text">
+            <span class="delivery-info-location">McKinney, Tx</span>
+            <span class="delivery-info-address">111 W Virginia St, McKinney, TX 75069</span>
+          </div>
+        </div>
+      </div>
 
       <button class="feature-card" id="open-dozen-modal" type="button" aria-label="Customize Build Your Own Dozen — $24.99">
         <span class="thumb thumb-lg">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1.5"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1.5" stroke-linecap="round"/></svg>
         </span>
         <span class="feature-body">
-          <span class="eyebrow">Signature</span>
+          <span class="feature-eyebrow">Signature</span>
           <span class="feature-title">Build Your Own Dozen</span>
           <span class="feature-desc">12 deviled eggs, your way. Choose up to 4 flavors from our full lineup.</span>
           <span class="price">$24.99</span>
@@ -76,32 +107,32 @@
 
       <section class="menu-section" id="section-deviled-eggs">
         <h2>Deviled Eggs</h2>
-        <div class="card-grid" id="deviled-eggs-grid"></div>
+        <div class="shop-grid" id="deviled-eggs-grid"></div>
       </section>
 
       <section class="menu-section" id="section-bagels">
         <h2>Bagels</h2>
-        <div class="row-grid" id="bagels-grid"></div>
+        <div class="shop-grid" id="bagels-grid"></div>
       </section>
 
       <section class="menu-section" id="section-egg-salads">
         <h2>Egg Salads</h2>
-        <div class="row-grid" id="egg-salads-grid"></div>
+        <div class="shop-grid" id="egg-salads-grid"></div>
       </section>
 
       <section class="menu-section" id="section-platters">
         <h2>Platters</h2>
-        <div class="row-grid" id="platters-grid"></div>
+        <div class="shop-grid" id="platters-grid"></div>
       </section>
 
       <section class="menu-section" id="section-protein-bowls">
         <h2>Protein Bowls</h2>
-        <div class="row-grid" id="protein-bowls-grid"></div>
+        <div class="shop-grid" id="protein-bowls-grid"></div>
       </section>
 
       <section class="menu-section" id="section-catering">
         <h2>Catering</h2>
-        <div class="row-grid" id="catering-grid"></div>
+        <div class="shop-grid" id="catering-grid"></div>
       </section>
 
     </div>

@@ -25,7 +25,8 @@
   --deg-ink-body: #140F0A;       /* default body text */
   --deg-ink-on-gold: #261A00;    /* text set directly on the gold accent */
   --deg-ink-heading: #402D00;    /* secondary heading color on cream */
-  --deg-ink-muted: #6B6155;      /* placeholders, helper text */
+  --deg-ink-muted: #635E57;      /* placeholders, helper text — colors/text/body-2 */
+  --deg-ink-placeholder: #7C766F; /* input placeholder text — colors/text/placeholder */
   --deg-link: #8B5E00;           /* text links, eyebrows */
 
   /* Surfaces */
@@ -35,23 +36,31 @@
   --deg-cream-cool: #F5F0E8;
   --deg-cream-deep: #FFEFD5;
   --deg-dark: #1A1510;
+  --deg-gold-tint: #FFDEA0;      /* colors/surface/secondary — active nav-drawer item fill */
+  --deg-track-gray: #E8E8E8;     /* segmented-toggle track background */
+  --deg-error: #F04438;          /* colors/icon/error — cart count badge */
 
   /* Borders */
   --deg-border: #DDDDDD;
   --deg-border-input: #D9D1BF;
   --deg-border-chip: #E9E1D8;
+  --deg-border-card: #F3F3F3;    /* card borders — colors/border/neutral */
+  --deg-border-primary: #88754F; /* colors/border/primary — inputs, active drawer-item accent */
 
   /* Radius — nothing in the system is sharp-cornered */
   --deg-radius-pill: 999px;      /* buttons, inputs, chips, badges */
-  --deg-radius-card: 16px;       /* dominant card/image radius */
+  --deg-radius-tight: 8px;       /* small controls: search field, active nav-drawer item */
+  --deg-radius-card: 12px;       /* dominant card radius (menu cards, feature card) */
   --deg-radius-compact: 14px;    /* small tiles, selectable rows */
+  --deg-radius-media: 16px;      /* standalone photo/hero containers */
   --deg-radius-panel: 24px;      /* large feature panels, modals */
 
   /* Elevation */
-  --deg-shadow-card: 0 8px 24px rgba(0,0,0,.08);
-  --deg-shadow-brand: 0 10px 24px rgba(247,186,23,.25); /* primary CTAs ONLY */
+  --deg-shadow-card: 0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04);
+  --deg-shadow-brand: 0 10px 12px rgba(247,186,23,.25); /* primary CTAs ONLY */
   --deg-shadow-ambient: 0 12px 32px rgba(0,0,0,.08);
   --deg-shadow-modal: 0 24px 64px rgba(19,13,0,.32);
+  --deg-shadow-float: 0 2px 12px rgba(0,0,0,.12); /* small floating controls over media */
 
   --deg-font-display: 'Nunito', sans-serif;         /* headings & prices, weight 800 only */
   --deg-font-body: 'Plus Jakarta Sans', sans-serif; /* everything else */

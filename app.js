@@ -128,61 +128,46 @@
 
   // ---------- Menu grids ----------
   function renderGrids() {
-    const eggsGrid = document.getElementById('deviled-eggs-grid');
-    eggsGrid.innerHTML = '';
-    DEVILED_EGGS.forEach((item) => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.appendChild(eggThumb());
-      const body = document.createElement('div');
-      body.className = 'item-card-body';
-      body.innerHTML = `
-        <span class="item-name">${item.name}</span>
-        <span class="item-price">${money(item.price)}</span>
-        <button class="add-btn" type="button" aria-label="Add ${item.name} to order">+</button>
-      `;
-      body.querySelector('.add-btn').addEventListener('click', () => {
-        addToCart({ key: 'egg-' + item.id, name: item.name, sub: 'Deviled eggs', price: item.price, qty: 1 });
-      });
-      card.appendChild(body);
-      eggsGrid.appendChild(card);
-    });
-
-    renderRowGrid('protein-bowls-grid', PROTEIN_BOWLS, 'bowl', 'Protein bowl');
-    renderRowGrid('egg-salads-grid', EGG_SALADS, 'saladcup', 'Egg salad');
-    renderRowGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
-    renderRowGrid('catering-grid', CATERING, 'catering', 'Catering');
+    renderShopGrid('deviled-eggs-grid', DEVILED_EGGS, 'egg', 'Deviled eggs');
+    renderShopGrid('protein-bowls-grid', PROTEIN_BOWLS, 'bowl', 'Protein bowl');
+    renderShopGrid('egg-salads-grid', EGG_SALADS, 'saladcup', 'Egg salad');
+    renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
+    renderShopGrid('catering-grid', CATERING, 'catering', 'Catering');
     renderBagelCard();
   }
 
-  function renderRowGrid(gridId, items, keyPrefix, cartCategory) {
+  function renderShopGrid(gridId, items, keyPrefix, cartCategory) {
     const grid = document.getElementById(gridId);
     grid.innerHTML = '';
     items.forEach((item) => {
       const card = document.createElement('div');
-      card.className = 'row-card';
-      const thumb = eggThumb();
-      thumb.style.width = '72px';
-      thumb.style.height = '72px';
-      card.appendChild(thumb);
+      card.className = 'shop-card';
+
       const body = document.createElement('div');
-      body.className = 'row-card-body';
+      body.className = 'shop-card-body';
       body.innerHTML = `
-        <span class="item-name">${item.name}</span>
-        ${item.note ? `<span class="muted" style="font-size: 12px;">${item.note}</span>` : ''}
-        <span class="item-price">${money(item.price)}</span>
+        <span class="shop-card-name">${item.name}</span>
+        <span class="shop-card-meta">
+          <span class="shop-card-price">${money(item.price)}</span>
+          ${item.note ? `<span aria-hidden="true">•</span><span class="shop-card-note">${item.note}</span>` : ''}
+        </span>
       `;
       card.appendChild(body);
+
+      const media = document.createElement('div');
+      media.className = 'shop-card-media';
+      media.appendChild(eggThumb());
       const btn = document.createElement('button');
       btn.className = 'add-btn';
       btn.type = 'button';
-      btn.style.position = 'static';
       btn.setAttribute('aria-label', 'Add ' + item.name + ' to order');
       btn.textContent = '+';
       btn.addEventListener('click', () => {
         addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1 });
       });
-      card.appendChild(btn);
+      media.appendChild(btn);
+      card.appendChild(media);
+
       grid.appendChild(card);
     });
   }
@@ -191,32 +176,32 @@
     const grid = document.getElementById('bagels-grid');
     grid.innerHTML = '';
     const card = document.createElement('div');
-    card.className = 'row-card';
-    const thumb = eggThumb();
-    thumb.style.width = '72px';
-    thumb.style.height = '72px';
-    card.appendChild(thumb);
+    card.className = 'shop-card';
 
     const body = document.createElement('div');
-    body.className = 'row-card-body';
-    body.innerHTML = `<span class="item-name">Full Size Bagel</span><span class="item-price">${money(BAGEL_PRICE)}</span>`;
+    body.className = 'shop-card-body';
+    body.innerHTML = `<span class="shop-card-name">Full Size Bagel</span><span class="shop-card-meta"><span class="shop-card-price">${money(BAGEL_PRICE)}</span></span>`;
     card.appendChild(body);
 
+    const media = document.createElement('div');
+    media.className = 'shop-card-media';
+    media.appendChild(eggThumb());
     const btn = document.createElement('button');
     btn.className = 'add-btn';
     btn.type = 'button';
-    btn.style.position = 'static';
     btn.setAttribute('aria-label', 'Customize Full Size Bagel');
     btn.textContent = '+';
     btn.addEventListener('click', openBagelModal);
-    card.appendChild(btn);
+    media.appendChild(btn);
+    card.appendChild(media);
+
     grid.appendChild(card);
   }
 
   // ---------- Category navigation ----------
-  document.querySelectorAll('.cat-btn[data-target]').forEach((btn) => {
+  document.querySelectorAll('.category-item[data-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.cat-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.category-item').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       const target = document.getElementById(btn.dataset.target);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -232,9 +217,9 @@
   }
 
   document.getElementById('order-mode').addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
+    const btn = e.target.closest('.order-mode-option');
     if (!btn) return;
-    document.querySelectorAll('#order-mode .chip').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     state.mode = btn.dataset.mode;
     updateModeUI();
