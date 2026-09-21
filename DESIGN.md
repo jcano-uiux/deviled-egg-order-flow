@@ -229,9 +229,21 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Focus:** a two-ring halo — Eggshell Cream ring, then Deep Ink ring — so focus reads against any background, including gold buttons and active chips where a same-hue outline would vanish.
 
 ### Navigation
-- **Top nav:** Pure White bar, `8px` vertical padding, hairline bottom border. Links are bold (700) 13px Plus Jakarta Sans, uppercase, Warm Black, `10px` padding each, no letter-spacing and no gap beyond that padding. The cart button is a `40px` Deep Ink circle with an 18px icon and a Signal Red count badge.
-- **Sidebar category drawer:** Body-weight (500) 16px items, `14px 12px 14px 16px` padding, Warm Taupe text at rest. The active item gets a `4px` Bronze Border left accent, `8px` radius, Golden Wash fill, and steps its text color to Toasted Umber.
-- **Mobile:** the top nav's link list wraps to its own full-width row below the logo and cart button; the sidebar drawer becomes a horizontal wrapping row instead of a vertical list.
+
+**Top nav** — measured against the Figma frame (node `29:18791`), not approximated:
+
+- **Bar:** Pure White background, hairline (`1px #F3F3F3`) bottom border, `8px` vertical padding. Content max-width `1360px`, centered, `12px` horizontal padding on the row itself.
+- **Logo:** the wordmark image at `37px` tall, width auto (native ratio ~5:1, renders ~185px wide). This is a deliberate, measured size — Figma's own Link node is `190×37.289px`, and the source logo asset is natively `190×38px`, so the two agree almost exactly. `16px` margin to its right before the link list.
+- **Links:** bold (700) `13px` Plus Jakarta Sans, uppercase, Warm Black (`#140F0A`), `10px` padding on each link, centered as a group in the remaining space. No letter-spacing and no gap beyond each link's own padding — Figma's link list has neither; the uppercase weight and padding alone carry the rhythm. `16px` margin between the link list and the cart button.
+- **Cart button:** `40px` Deep Ink (`#130D00`) circle, centered `18px` icon. The count badge is `18px` (grows via `min-width` for 2+ digits), Signal Red fill, white bold `11px` text, positioned `4px` above and `6px` right of the button's own edges (i.e. it overhangs the circle on the top-right corner, not flush-inset).
+- **A found-and-fixed rhythm bug:** the nav previously stacked a container-level `gap: 16px` *on top of* the logo's own `margin-right: 16px` and the cart button's own `margin-left: 16px`, doubling both side gaps to 32px. The container has no gap of its own — spacing comes entirely from each element's individual margin, matching Figma's own per-element (not per-container) spacing model.
+- **Mobile (<640px):** the link list wraps to its own full-width row below the logo/cart row (this breakpoint is not in the Figma file — an original responsive decision). The container's `gap` splits into `row-gap` only, so the vertical gap before the wrapped link row doesn't re-introduce the same doubling against the logo's horizontal margin.
+
+**Sidebar category drawer** — a second navigation surface, not shown in the top-nav frame but part of the same menu page:
+
+- Medium-weight (500) `16px` Plus Jakarta Sans items, `14px 12px 14px 16px` padding, Warm Taupe (`#635E57`) text at rest.
+- The active item gets a `4px` Bronze Border (`#88754F`) left accent, `8px` corner radius, Golden Wash (`#FFDEA0`) fill, and its text steps to Toasted Umber (`#402D00`).
+- **Mobile:** becomes a horizontal wrapping row instead of a vertical list.
 
 ## Do's and Don'ts
 
