@@ -38,7 +38,7 @@
   --deg-dark: #1A1510;
   --deg-gold-tint: #FFDEA0;      /* colors/surface/secondary — active nav-drawer item fill */
   --deg-track-gray: #E8E8E8;     /* segmented-toggle track background */
-  --deg-error: #F04438;          /* colors/icon/error — cart count badge */
+  --deg-error: #DC2626;          /* colors/icon/error — cart count badge (darkened from Figma's #F04438: white-on-fill only hit 3.8:1, below the 4.5:1 AA floor for the 11px bold badge text) */
 
   /* Borders */
   --deg-border: #DDDDDD;
