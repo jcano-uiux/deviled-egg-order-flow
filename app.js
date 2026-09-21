@@ -2,6 +2,8 @@
   const TAX_RATE = 0.0825;
   const PROMO_CODES = { EGGSTRA10: 0.10 };
 
+  const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
+
   const eggThumb = () => {
     const div = document.createElement('div');
     div.className = 'thumb';
@@ -161,7 +163,7 @@
       btn.className = 'add-btn';
       btn.type = 'button';
       btn.setAttribute('aria-label', 'Add ' + item.name + ' to order');
-      btn.textContent = '+';
+      btn.innerHTML = ADD_ICON;
       btn.addEventListener('click', () => {
         addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1 });
       });
@@ -190,7 +192,7 @@
     btn.className = 'add-btn';
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Customize Full Size Bagel');
-    btn.textContent = '+';
+    btn.innerHTML = ADD_ICON;
     btn.addEventListener('click', openBagelModal);
     media.appendChild(btn);
     card.appendChild(media);
