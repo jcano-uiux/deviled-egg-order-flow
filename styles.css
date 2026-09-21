@@ -7,7 +7,7 @@
 .nav-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; padding: 0 12px; }
 .logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
-.nav-link { padding: 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; }
+.nav-link { padding: 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; text-decoration: none; }
 .cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
 .cart-badge {
   position: absolute; top: -4px; right: -6px; background: var(--deg-error); color: var(--deg-white);
