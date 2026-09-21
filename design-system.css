@@ -52,7 +52,7 @@
   --deg-radius-tight: 8px;       /* small controls: search field, active nav-drawer item */
   --deg-radius-card: 12px;       /* dominant card radius (menu cards, feature card) */
   --deg-radius-compact: 14px;    /* small tiles, selectable rows */
-  --deg-radius-media: 16px;      /* standalone photo/hero containers */
+  --deg-radius-media: 16px;      /* standalone photo/hero containers; also the order-mode/delivery-info card */
   --deg-radius-panel: 24px;      /* large feature panels, modals */
 
   /* Elevation */

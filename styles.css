@@ -51,7 +51,11 @@
 .menu-search input::placeholder { color: var(--deg-ink-placeholder); }
 .menu-search input:focus-visible { box-shadow: none; outline: none; }
 
-.order-mode-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+.order-mode-row {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  margin-top: 20px; min-height: 62px; padding: 12px 16px;
+  background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media);
+}
 .order-mode-toggle { background: var(--deg-track-gray); padding: 2px; gap: 0; }
 .order-mode-option { background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); }
 .order-mode-option.active { background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14); font-weight: 500; }
