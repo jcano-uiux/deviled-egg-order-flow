@@ -422,7 +422,7 @@
       "kind": "input",
       "refersTo": "input",
       "description": "Every text field in the product shares this one rule.",
-      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search McKinney, Tx Menu\">",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search McKinney, TX Menu\">",
       "css": ".ds-input { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: var(--deg-ink-body,#140F0A); border-radius: 999px; border: 1px solid var(--deg-border-input,#D9D1BF); padding: 14px 22px; background: var(--deg-white,#fff); width: 100%; box-sizing: border-box; } .ds-input::placeholder { color: var(--deg-ink-muted,#635E57); } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream,#FFF7EA), 0 0 0 4px var(--deg-ink-deep,#130D00); }"
     },
     {
