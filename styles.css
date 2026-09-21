@@ -16,7 +16,7 @@
 }
 
 /* ---------- Menu view ---------- */
-.view { max-width: 1360px; margin: 0 auto; padding: 24px 40px 60px; }
+.view { max-width: 1280px; margin: 0 auto; padding: 24px 40px 60px; }
 
 .menu-layout { display: flex; gap: 40px; align-items: flex-start; }
 
@@ -46,12 +46,12 @@
 .store-hero { position: relative; border-radius: var(--deg-radius-media); aspect-ratio: 876 / 210; background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .hero-more-btn { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-.menu-search { display: flex; align-items: center; gap: 6px; padding: 12px; border: 1px solid var(--deg-border-primary); border-radius: var(--deg-radius-tight); background: var(--deg-white); max-width: 357px; }
+.menu-search { display: flex; align-items: center; gap: 6px; padding: 12px; border: 1px solid var(--deg-border-primary); border-radius: var(--deg-radius-tight); background: var(--deg-white); max-width: 357px; margin-top: 20px; }
 .menu-search input { flex-grow: 1; border: none; padding: 0; font-size: 16px; }
 .menu-search input::placeholder { color: var(--deg-ink-placeholder); }
 .menu-search input:focus-visible { box-shadow: none; outline: none; }
 
-.order-mode-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.order-mode-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
 .order-mode-toggle { background: var(--deg-track-gray); padding: 2px; gap: 0; }
 .order-mode-option { background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); }
 .order-mode-option.active { background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14); font-weight: 500; }
@@ -66,7 +66,7 @@
 .feature-card {
   display: flex; gap: 28px; align-items: center; text-align: left;
   background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card);
-  box-shadow: var(--deg-shadow-card); padding: 24px; width: 100%;
+  box-shadow: var(--deg-shadow-card); padding: 24px; width: 100%; margin-top: 32px;
 }
 .thumb { border-radius: var(--deg-radius-card); background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); display: flex; align-items: center; justify-content: center; flex: none; }
 .thumb-lg { width: 220px; height: 160px; }
@@ -77,6 +77,7 @@
 .price { font-family: var(--deg-font-display); font-weight: 800; font-size: 20px; color: var(--deg-ink-deep); }
 .feature-cta { flex: none; }
 
+.menu-section { margin-top: 56px; }
 .menu-section h2 { font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--deg-ink-deep); margin-bottom: 14px; }
 
 /* ---- Unified shop card — used by every menu category ---- */
@@ -203,6 +204,8 @@
 
   .view, .checkout-header, .checkout-layout, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
   .order-mode-row { flex-direction: column; align-items: flex-start; }
+  .feature-card { margin-top: 24px; }
+  .menu-section { margin-top: 40px; }
 
   .address-card { flex-wrap: wrap; }
   .address-card span:nth-child(2) { flex-basis: 100%; }
