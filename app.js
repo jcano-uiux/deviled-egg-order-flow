@@ -25,42 +25,42 @@
 
   // Menu data extracted from the live ordering widget at deviledeggco.com/mckinney-tx/
   const DEVILED_EGGS = [
-    { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99, image: 'assets/products/2-pack.jpg' },
-    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99, image: 'assets/products/6-pack-3-flavors.jpg' },
-    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99, image: 'assets/products/6-pack-6-flavors.jpg' },
-    { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99, image: 'assets/products/12-pack.jpg' },
-    { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99, image: 'assets/products/24-count-platter.jpg' },
-    { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99, image: 'assets/products/try-them-all-platter.jpg' },
+    { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99, note: '140 Cal.', desc: 'Two of our signature gourmet deviled eggs — perfect for a quick snack or a tasty add-on to any meal.', image: 'assets/products/2-pack.jpg' },
+    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99, note: '420 Cal.', desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', image: 'assets/products/6-pack-3-flavors.jpg' },
+    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99, note: '420 Cal.', desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', image: 'assets/products/6-pack-6-flavors.jpg' },
+    { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99, note: '840 Cal.', desc: 'A dozen of our gourmet deviled eggs — perfect for sharing at parties, picnics, or family gatherings.', image: 'assets/products/12-pack.jpg' },
+    { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg' },
+    { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
   ];
 
   const PROTEIN_BOWLS = [
-    { id: 'avo-chick-blt', name: 'Avo Chick-BLT Eggceptional Bowl', price: 14.99, note: '79g protein', image: 'assets/products/avo-chick-blt-bowl.jpg' },
-    { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g protein', image: 'assets/products/cheeseburger-bowl.jpg' },
-    { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g protein', image: 'assets/products/caesar-bowl.jpg' },
-    { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99, image: 'assets/products/buffalo-bowl.jpg' },
-    { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g protein', image: 'assets/products/walking-taco-bowl.jpg' },
-    { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g protein', image: 'assets/products/bangin-brisket-bowl.jpg' },
-    { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g protein', image: 'assets/products/pok-egg-bowl.jpg' },
+    { id: 'avo-chick-blt', name: 'Avo Chick-BLT Eggceptional Bowl', price: 14.99, note: '79g Protein', desc: 'Avocado, grilled chicken, crispy bacon, lettuce, tomato, and our signature deviled eggs.', image: 'assets/products/avo-chick-blt-bowl.jpg' },
+    { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g Protein', desc: 'Seasoned beef, cheese, pickles, and our famous deviled eggs in bowl form.', image: 'assets/products/cheeseburger-bowl.jpg' },
+    { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Crisp romaine, parmesan, croutons, and our signature deviled eggs.', image: 'assets/products/caesar-bowl.jpg' },
+    { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99, desc: 'Bold buffalo flavors paired with cool ranch and our signature deviled eggs.', image: 'assets/products/buffalo-bowl.jpg' },
+    { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Seasoned meat, crunchy chips, cheese, salsa, and deviled eggs in one bowl.', image: 'assets/products/walking-taco-bowl.jpg' },
+    { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g Protein', desc: 'Slow-smoked brisket paired with our deviled eggs for bold Texas flavor.', image: 'assets/products/bangin-brisket-bowl.jpg' },
+    { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g Protein', desc: 'Hawaiian-inspired poke-style bowl with crisp vegetables and deviled eggs.', image: 'assets/products/pok-egg-bowl.jpg' },
   ];
 
   const EGG_SALADS = [
-    { id: 'half-pint', name: '1/2 Pint Deviled Egg Salad – 8oz', price: 8.99, image: 'assets/products/egg-salad-half-pint.jpg' },
-    { id: 'whole-pint', name: 'Whole Pint Deviled Egg Salad – 16oz', price: 12.99, image: 'assets/products/egg-salad-pint.jpg' },
+    { id: 'half-pint', name: '1/2 Pint Deviled Egg Salad – 8oz', price: 8.99, note: '320 Cal.', desc: 'Our creamy, tangy deviled egg salad in a convenient half-pint portion.', image: 'assets/products/egg-salad-half-pint.jpg' },
+    { id: 'whole-pint', name: 'Whole Pint Deviled Egg Salad – 16oz', price: 12.99, note: '640 Cal.', desc: 'A full pint of our signature deviled egg salad — perfect for sharing.', image: 'assets/products/egg-salad-pint.jpg' },
   ];
 
   const PLATTERS = [
-    { id: '24-count', name: '24 Count Deviled Egg Platter', price: 44.99, image: 'assets/products/24-count-platter.jpg' },
-    { id: 'try-them-all', name: 'Try Them All Deviled Egg Platter', price: 54.99, image: 'assets/products/try-them-all-platter.jpg' },
+    { id: '24-count', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg' },
+    { id: 'try-them-all', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
   ];
 
   const CATERING = [
-    { id: 'classic-choice', name: 'The Classic Choice', price: 10, note: 'Per person · min 10 boxes' },
-    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes', image: 'assets/products/all-in-power-lunch.jpg' },
-    { id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, note: 'Per service · serves 10–12' },
-    { id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, note: 'Per bundle · serves 10' },
-    { id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, note: 'Per bundle · serves 10' },
-    { id: 'hungry-team', name: 'The “Hungry Team”', price: 99.99, note: 'Per bundle · serves 10' },
-    { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10' },
+    { id: 'classic-choice', name: 'The Classic Choice', price: 10, note: 'Per person · min 10 boxes', desc: 'A crowd-pleasing catering option with our classic deviled egg selection.' },
+    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes', desc: 'The complete lunch experience — deviled eggs, sides, and drinks for your team.', image: 'assets/products/all-in-power-lunch.jpg' },
+    { id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, note: 'Per service · serves 10–12', desc: 'A full coffee bar service to complement your catering order.' },
+    { id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, note: 'Per bundle · serves 10', desc: 'Two of our most popular items bundled together for easy group ordering.' },
+    { id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, note: 'Per bundle · serves 10', desc: 'Fresh bagels with deviled egg salad plus our coffee bar — perfect for morning meetings.' },
+    { id: 'hungry-team', name: 'The “Hungry Team”', price: 99.99, note: 'Per bundle · serves 10', desc: 'Our biggest catering bundle — feeds a hungry team with all the favorites.' },
+    { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10', desc: 'A lighter catering option that still packs all the deviled egg flavor.' },
   ];
 
   const BAGEL_FLAVORS = [
@@ -71,6 +71,8 @@
   ];
   const BAGEL_PRICE = 7.49;
   const BAGEL_IMAGE = 'assets/products/full-size-bagel.jpg';
+  const BAGEL_NOTE = '350 Cal.';
+  const BAGEL_DESC = 'A fresh bagel loaded with our signature deviled egg salad — the perfect quick bite.';
 
   const FLAVORS = [
     { id: 'classic', label: 'Classic' },
@@ -166,6 +168,7 @@
           <span class="shop-card-price">${money(item.price)}</span>
           ${item.note ? `<span aria-hidden="true">•</span><span class="shop-card-note">${item.note}</span>` : ''}
         </span>
+        ${item.desc ? `<span class="shop-card-desc">${item.desc}</span>` : ''}
       `;
       card.appendChild(body);
 
@@ -205,7 +208,7 @@
 
     const body = document.createElement('div');
     body.className = 'shop-card-body';
-    body.innerHTML = `<span class="shop-card-name">Full Size Bagel</span><span class="shop-card-meta"><span class="shop-card-price">${money(BAGEL_PRICE)}</span></span>`;
+    body.innerHTML = `<span class="shop-card-name">Full Size Bagel</span><span class="shop-card-meta"><span class="shop-card-price">${money(BAGEL_PRICE)}</span><span aria-hidden="true">•</span><span class="shop-card-note">${BAGEL_NOTE}</span></span><span class="shop-card-desc">${BAGEL_DESC}</span>`;
     card.appendChild(body);
 
     const media = document.createElement('div');
