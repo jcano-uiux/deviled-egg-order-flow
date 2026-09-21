@@ -61,8 +61,9 @@
 .order-mode-option.active { background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14); font-weight: 500; }
 
 .delivery-info { display: flex; align-items: center; gap: 12px; }
+.delivery-info-icon { width: 36px; height: 36px; object-fit: contain; flex: none; }
 .delivery-info-divider { width: 1px; height: 36px; background: var(--deg-border-card); }
-.delivery-info-text { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; text-align: right; }
+.delivery-info-text { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; }
 .delivery-info-location { font-size: 12px; font-weight: 600; color: var(--deg-ink-heading); }
 .delivery-info-address { font-size: 12px; color: var(--deg-ink-muted); }
 
@@ -193,7 +194,6 @@
   .category-item { margin-left: 0; }
   .shop-grid { grid-template-columns: minmax(0, 1fr); }
   .feature-card { flex-direction: column; align-items: flex-start; }
-  .delivery-info-text { align-items: flex-start; text-align: left; }
   .checkout-layout { flex-direction: column; }
   .summary-panel { width: 100%; position: static; }
   .item-modal-inner { flex-direction: column; max-height: 92vh; }
