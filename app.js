@@ -487,20 +487,35 @@
   // ---------- Cart drawer ----------
   const cartBackdrop = document.getElementById('cart-backdrop');
   const cartDrawer = document.getElementById('cart-drawer');
+  let cartCloseTimer = null;
 
   function openCart() {
+    if (cartCloseTimer) { window.clearTimeout(cartCloseTimer); cartCloseTimer = null; }
     lastFocusedEl = document.activeElement;
     renderDrawer();
     cartBackdrop.hidden = false;
     cartDrawer.hidden = false;
     updateInert();
+    // Force layout so the browser commits the off-screen/transparent
+    // starting state before the class below changes it — otherwise the
+    // transition has no "from" to animate away from and just snaps in.
+    cartDrawer.getBoundingClientRect();
+    cartBackdrop.classList.add('is-open');
+    cartDrawer.classList.add('is-open');
     document.getElementById('close-cart').focus();
   }
   function closeCart() {
-    cartBackdrop.hidden = true;
-    cartDrawer.hidden = true;
-    updateInert();
+    if (cartDrawer.hidden) return;
+    cartBackdrop.classList.remove('is-open');
+    cartDrawer.classList.remove('is-open');
     if (lastFocusedEl) lastFocusedEl.focus();
+    if (cartCloseTimer) window.clearTimeout(cartCloseTimer);
+    cartCloseTimer = window.setTimeout(() => {
+      cartBackdrop.hidden = true;
+      cartDrawer.hidden = true;
+      updateInert();
+      cartCloseTimer = null;
+    }, 220);
   }
 
   document.getElementById('open-cart').addEventListener('click', openCart);

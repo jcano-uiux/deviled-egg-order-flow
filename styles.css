@@ -142,11 +142,27 @@
 .stepper span { font-family: var(--deg-font-display); font-weight: 800; font-size: 17px; min-width: 14px; text-align: center; }
 .item-modal-footer .pill-btn { flex-grow: 1; }
 
-/* ---------- Cart drawer ---------- */
+/* ---------- Cart drawer ----------
+   The panel starts translated fully off-screen and the backdrop starts
+   transparent; JS removes `hidden` first (so these become the actual
+   starting state, not a snap-in), then adds `.is-open` a frame later to
+   trigger the transition to their resting state. Exit reverses that and
+   is quicker, per the "exit faster than entrance" motion guidance. */
+#cart-backdrop { opacity: 0; transition: opacity .2s ease; }
+#cart-backdrop.is-open { opacity: 1; transition: opacity .28s cubic-bezier(.16,1,.3,1); }
+
 .cart-drawer {
   position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 92vw;
   background: var(--deg-white); box-shadow: var(--deg-shadow-modal); z-index: 51;
   display: flex; flex-direction: column; padding: 28px; gap: 16px; overflow-y: auto;
+  transform: translateX(100%); transition: transform .2s cubic-bezier(.4,0,1,1);
+}
+.cart-drawer.is-open { transform: translateX(0); transition: transform .32s cubic-bezier(.16,1,.3,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  #cart-backdrop, .cart-drawer, .cart-drawer.is-open, #cart-backdrop.is-open { transition-duration: .15s; transition-timing-function: ease; }
+  .cart-drawer { transform: none; opacity: 0; }
+  .cart-drawer.is-open { transform: none; opacity: 1; }
 }
 .drawer-header { display: flex; align-items: center; justify-content: space-between; }
 .pickup-chip { display: flex; align-items: center; gap: 10px; background: var(--deg-cream); border-radius: var(--deg-radius-pill); padding: 12px 18px; font-size: 13.5px; }
