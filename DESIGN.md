@@ -211,7 +211,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight — secondary actions like "Store info" and the cart drawer's "Apply" promo button.
 - **Outline:** transparent fill, 1.5px Deep Ink border, Deep Ink text, no shadow — tertiary/back actions.
 - **Icon buttons** (cart, close, quantity steppers, add-to-cart): circular, no border, centered icon; float above photo media use the Float shadow.
-- **Icon button hover (dark fill):** Deep Ink lightens to Warm Ember (`#554523`) on hover, a 150ms background transition. Confirmed on the shop-card Quick Add button; apply the same swap anywhere else a Deep Ink icon button is interactive.
+- **Icon button hover (dark fill):** Deep Ink lightens to Warm Ember (`#554523`) on hover, a 150ms background transition.
 
 ### Chips
 - **Style:** Cool Linen fill, Warm Black text, pill radius, no border.
@@ -222,6 +222,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Background:** Pure White on a Eggshell Cream page — the white-on-cream contrast is the only way cards separate from the page; there's no border-heavy treatment.
 - **Shadow Strategy:** the Card shadow — see Elevation & Depth.
 - **Border:** 1px Hairline Gray, present but nearly invisible; it reinforces the shadow rather than replacing it.
+- **Shop card as one interactive unit:** in the source Figma component, the Quick Add button sits inside a single card-wide `Link`, and the component's "hover" variant is defined at the card level — hovering it is what changes the button's fill, not a hover rule on the button alone. Implemented as: the whole card is `cursor: pointer` and clickable (same action as the button — add to cart, or open the customization modal for items that need one), `.shop-card:hover .add-btn`/`:focus-within` drives the Warm Ember fill, and a click listener on the card guards against double-firing when the click actually lands on the button (`.add-btn` keeps its own listener for keyboard/focus users; the card's listener no-ops when the event target is inside it).
 
 ### Inputs / Fields
 - **Style:** pill radius, 1px Sand Border, Pure White fill, generous `14px 22px` padding.

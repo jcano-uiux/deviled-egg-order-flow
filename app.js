@@ -164,11 +164,21 @@
       btn.type = 'button';
       btn.setAttribute('aria-label', 'Add ' + item.name + ' to order');
       btn.innerHTML = ADD_ICON;
-      btn.addEventListener('click', () => {
+      const activate = () => {
         addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1 });
-      });
+      };
+      btn.addEventListener('click', activate);
       media.appendChild(btn);
       card.appendChild(media);
+
+      // The whole card is one clickable target (matches the Figma shop_list_item
+      // component, where the Quick Add button sits inside a single card-wide Link).
+      // The button keeps its own listener for keyboard/focus; this only handles
+      // clicks elsewhere on the card, so the action never fires twice.
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.add-btn')) return;
+        activate();
+      });
 
       grid.appendChild(card);
     });
@@ -196,6 +206,11 @@
     btn.addEventListener('click', openBagelModal);
     media.appendChild(btn);
     card.appendChild(media);
+
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.add-btn')) return;
+      openBagelModal();
+    });
 
     grid.appendChild(card);
   }
