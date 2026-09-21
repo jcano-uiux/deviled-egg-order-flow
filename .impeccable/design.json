@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-21T23:10:00Z",
+  "title": "Design System: Deviled Egg Co. — Order Online",
+  "extensions": {
+    "colorMeta": {
+      "golden-yolk": {
+        "role": "primary",
+        "displayName": "Golden Yolk",
+        "canonical": "#F7BA17",
+        "tonalRamp": [
+          "#4A3703",
+          "#856205",
+          "#C08E07",
+          "#F7B70D",
+          "#F9C949",
+          "#FBDA84",
+          "#FDECBF",
+          "#FEF8E6"
+        ]
+      },
+      "deep-ink": {
+        "role": "neutral",
+        "displayName": "Deep Ink",
+        "canonical": "#130D00",
+        "tonalRamp": [
+          "#4C3400",
+          "#8A5E00",
+          "#C78800",
+          "#FFB005",
+          "#FFC342",
+          "#FFD780",
+          "#FFEABD",
+          "#FFF7E5"
+        ]
+      },
+      "warm-black": {
+        "role": "neutral",
+        "displayName": "Warm Black",
+        "canonical": "#140F0A",
+        "tonalRamp": [
+          "#33261A",
+          "#5C452E",
+          "#856342",
+          "#AC8258",
+          "#C0A181",
+          "#D4BFAA",
+          "#E9DED3",
+          "#F6F2EE"
+        ]
+      },
+      "espresso-on-gold": {
+        "role": "neutral",
+        "displayName": "Espresso on Gold",
+        "canonical": "#261A00",
+        "tonalRamp": [
+          "#4C3400",
+          "#8A5E00",
+          "#C78800",
+          "#FFB005",
+          "#FFC342",
+          "#FFD780",
+          "#FFEABD",
+          "#FFF7E5"
+        ]
+      },
+      "toasted-umber": {
+        "role": "neutral",
+        "displayName": "Toasted Umber",
+        "canonical": "#402D00",
+        "tonalRamp": [
+          "#4C3600",
+          "#8A6100",
+          "#C78C00",
+          "#FFB505",
+          "#FFC742",
+          "#FFD980",
+          "#FFEBBD",
+          "#FFF7E5"
+        ]
+      },
+      "warm-taupe": {
+        "role": "neutral",
+        "displayName": "Warm Taupe",
+        "canonical": "#635E57",
+        "tonalRamp": [
+          "#292724",
+          "#494640",
+          "#6A655D",
+          "#8A837A",
+          "#A7A29B",
+          "#C3C0BB",
+          "#E0DEDC",
+          "#F3F2F1"
+        ]
+      },
+      "soft-taupe": {
+        "role": "neutral",
+        "displayName": "Soft Taupe",
+        "canonical": "#7C766F",
+        "tonalRamp": [
+          "#282624",
+          "#494541",
+          "#69645E",
+          "#89837B",
+          "#A6A19B",
+          "#C3C0BC",
+          "#E0DEDC",
+          "#F3F2F2"
+        ]
+      },
+      "amber-link": {
+        "role": "neutral",
+        "displayName": "Amber Link",
+        "canonical": "#8B5E00",
+        "tonalRamp": [
+          "#4C3400",
+          "#8A5D00",
+          "#C78700",
+          "#FFAE05",
+          "#FFC242",
+          "#FFD680",
+          "#FFEABD",
+          "#FFF7E5"
+        ]
+      },
+      "eggshell-cream": {
+        "role": "neutral",
+        "displayName": "Eggshell Cream",
+        "canonical": "#FFF7EA",
+        "tonalRamp": [
+          "#4C2F00",
+          "#8A5500",
+          "#C77B00",
+          "#FFA005",
+          "#FFB742",
+          "#FFCE80",
+          "#FFE6BD",
+          "#FFF5E5"
+        ]
+      },
+      "pure-white": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#636363",
+          "#828282",
+          "#A1A1A1",
+          "#BFBFBF",
+          "#DEDEDE",
+          "#F2F2F2"
+        ]
+      },
+      "pale-cream": {
+        "role": "neutral",
+        "displayName": "Pale Cream",
+        "canonical": "#FFF7E2",
+        "tonalRamp": [
+          "#4C3700",
+          "#8A6400",
+          "#C79000",
+          "#FFBA05",
+          "#FFCB42",
+          "#FFDC80",
+          "#FFEDBD",
+          "#FFF8E5"
+        ]
+      },
+      "cool-linen": {
+        "role": "neutral",
+        "displayName": "Cool Linen",
+        "canonical": "#F5F0E8",
+        "tonalRamp": [
+          "#352A17",
+          "#604B2A",
+          "#8B6C3C",
+          "#B38D51",
+          "#C6A97B",
+          "#D8C5A6",
+          "#EBE1D1",
+          "#F7F3ED"
+        ]
+      },
+      "warm-sand": {
+        "role": "neutral",
+        "displayName": "Warm Sand",
+        "canonical": "#FFEFD5",
+        "tonalRamp": [
+          "#4C2F00",
+          "#8A5500",
+          "#C77B00",
+          "#FFA005",
+          "#FFB742",
+          "#FFCE80",
+          "#FFE6BD",
+          "#FFF5E5"
+        ]
+      },
+      "golden-wash": {
+        "role": "neutral",
+        "displayName": "Golden Wash",
+        "canonical": "#FFDEA0",
+        "tonalRamp": [
+          "#4C3200",
+          "#8A5A00",
+          "#C78200",
+          "#FFA805",
+          "#FFBD42",
+          "#FFD380",
+          "#FFE8BD",
+          "#FFF6E5"
+        ]
+      },
+      "track-gray": {
+        "role": "neutral",
+        "displayName": "Track Gray",
+        "canonical": "#E8E8E8",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#636363",
+          "#828282",
+          "#A1A1A1",
+          "#BFBFBF",
+          "#DEDEDE",
+          "#F2F2F2"
+        ]
+      },
+      "signal-red": {
+        "role": "neutral",
+        "displayName": "Signal Red",
+        "canonical": "#DC2626",
+        "tonalRamp": [
+          "#420B0B",
+          "#771313",
+          "#AB1C1C",
+          "#DC2828",
+          "#E55D5D",
+          "#ED9191",
+          "#F6C6C6",
+          "#FBE9E9"
+        ]
+      },
+      "sand-border": {
+        "role": "neutral",
+        "displayName": "Sand Border",
+        "canonical": "#D9D1BF",
+        "tonalRamp": [
+          "#302A1C",
+          "#564C33",
+          "#7D6D4A",
+          "#A28E62",
+          "#B9AA89",
+          "#D0C6AF",
+          "#E6E1D5",
+          "#F5F3EF"
+        ]
+      },
+      "linen-border": {
+        "role": "neutral",
+        "displayName": "Linen Border",
+        "canonical": "#E9E1D8",
+        "tonalRamp": [
+          "#31271C",
+          "#584632",
+          "#7F6548",
+          "#A5845F",
+          "#BBA286",
+          "#D1C0AD",
+          "#E7DED5",
+          "#F6F2EF"
+        ]
+      },
+      "hairline-gray": {
+        "role": "neutral",
+        "displayName": "Hairline Gray",
+        "canonical": "#F3F3F3",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#636363",
+          "#828282",
+          "#A1A1A1",
+          "#BFBFBF",
+          "#DEDEDE",
+          "#F2F2F2"
+        ]
+      },
+      "bronze-border": {
+        "role": "neutral",
+        "displayName": "Bronze Border",
+        "canonical": "#88754F",
+        "tonalRamp": [
+          "#302A1C",
+          "#574B33",
+          "#7E6C49",
+          "#A38D61",
+          "#BAA988",
+          "#D0C5AE",
+          "#E7E1D5",
+          "#F6F3EF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero moments only: store name, feature-card title, confirmation heading."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings across every view — menu categories, checkout cards, order summary."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Sidebar drawer-nav items and default paragraph copy."
+      },
+      "body-sm": {
+        "displayName": "Body Small",
+        "purpose": "Card prices, meta text, toggle labels, form copy."
+      },
+      "body-xs": {
+        "displayName": "Body Extra Small",
+        "purpose": "Address lines, hours, delivery-info copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Top navigation only — uppercase bold caps, no tracking."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04)",
+        "purpose": "Default resting shadow for every card."
+      },
+      {
+        "name": "brand",
+        "value": "0 10px 12px rgba(247,186,23,.25)",
+        "purpose": "Primary CTAs only — the sole colored shadow in the system."
+      },
+      {
+        "name": "ambient",
+        "value": "0 12px 32px rgba(0,0,0,.08)",
+        "purpose": "Larger floating panels, e.g. the checkout order-summary panel."
+      },
+      {
+        "name": "modal",
+        "value": "0 24px 64px rgba(19,13,0,.32)",
+        "purpose": "Item-customization modals."
+      },
+      {
+        "name": "float",
+        "value": "0 2px 12px rgba(0,0,0,.12)",
+        "purpose": "Small circular controls sitting on top of photo/hero media."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "900px"
+      },
+      {
+        "name": "mobile",
+        "value": "640px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single loudest element per screen — gold fill, brand glow shadow.",
+      "html": "<button class=\"ds-btn-primary\">Customize →</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 15px; padding: 14px 26px; background: var(--deg-gold, #F7BA17); color: var(--deg-ink-on-gold, #261A00); box-shadow: 0 10px 12px rgba(247,186,23,.25); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 16px rgba(247,186,23,.32); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream,#FFF7EA), 0 0 0 4px var(--deg-ink-deep,#130D00); }"
+    },
+    {
+      "name": "Dark Button",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "Secondary action fill — 'Store info', the cart drawer's 'Apply' promo button.",
+      "html": "<button class=\"ds-btn-dark\">Store info</button>",
+      "css": ".ds-btn-dark { display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 999px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 14px; padding: 14px 26px; background: var(--deg-ink-deep, #130D00); color: #FBF3E3; cursor: pointer; transition: opacity .15s ease; } .ds-btn-dark:hover { opacity: .88; } .ds-btn-dark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream,#FFF7EA), 0 0 0 4px var(--deg-ink-deep,#130D00); }"
+    },
+    {
+      "name": "Chip / Segmented Toggle",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "The one single-select pill control — pickup/delivery, store picker, tip percentage.",
+      "html": "<div class=\"ds-segmented\"><button class=\"ds-chip ds-chip--active\">Pickup</button><button class=\"ds-chip\">Delivery</button></div>",
+      "css": ".ds-segmented { display: inline-flex; gap: 4px; background: var(--deg-cream-cool, #F5F0E8); padding: 4px; border-radius: 999px; } .ds-chip { background: transparent; border: none; border-radius: 999px; padding: 11px 24px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 14px; color: var(--deg-ink-body, #140F0A); cursor: pointer; } .ds-chip--active { background: var(--deg-gold, #F7BA17); color: var(--deg-ink-on-gold, #261A00); font-weight: 700; } .ds-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream,#FFF7EA), 0 0 0 4px var(--deg-ink-deep,#130D00); }"
+    },
+    {
+      "name": "Shop Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The one unified card component reused across every menu category.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-body\"><span class=\"ds-card-name\">2 Pack Deviled Egg</span><span class=\"ds-card-meta\"><span class=\"ds-card-price\">$4.99</span></span></div></div>",
+      "css": ".ds-card { display: flex; background: var(--deg-white,#fff); border: 1px solid var(--deg-border-card,#F3F3F3); border-radius: 12px; box-shadow: 0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04); overflow: hidden; min-height: 100px; } .ds-card-body { flex-grow: 1; padding: 16px; display: flex; flex-direction: column; } .ds-card-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading,#402D00); } .ds-card-meta { padding-top: 4px; font-size: 14px; } .ds-card-price { font-weight: 600; color: var(--deg-ink-heading,#402D00); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Every text field in the product shares this one rule.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search McKinney, Tx Menu\">",
+      "css": ".ds-input { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: var(--deg-ink-body,#140F0A); border-radius: 999px; border: 1px solid var(--deg-border-input,#D9D1BF); padding: 14px 22px; background: var(--deg-white,#fff); width: 100%; box-sizing: border-box; } .ds-input::placeholder { color: var(--deg-ink-muted,#635E57); } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream,#FFF7EA), 0 0 0 4px var(--deg-ink-deep,#130D00); }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "nav-top",
+      "description": "White bar, hairline bottom border, bold uppercase 13px links, dark circular cart button with red count badge.",
+      "html": "<div class=\"ds-nav\"><span class=\"ds-nav-logo\">Deviled Egg Co.</span><nav class=\"ds-nav-links\"><a href=\"#\" class=\"ds-nav-link\">Pickup &amp; Delivery</a><a href=\"#\" class=\"ds-nav-link\">Catering</a><a href=\"#\" class=\"ds-nav-link\">About</a></nav><button class=\"ds-nav-cart\">3</button></div>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 16px; background: var(--deg-white,#fff); border-bottom: 1px solid var(--deg-border-card,#F3F3F3); padding: 8px 12px; } .ds-nav-logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 21px; color: var(--deg-ink-deep,#130D00); } .ds-nav-links { flex-grow: 1; display: flex; justify-content: center; } .ds-nav-link { padding: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body,#140F0A); text-decoration: none; } .ds-nav-link:hover { text-decoration: underline; } .ds-nav-cart { position: relative; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--deg-ink-deep,#130D00); color: transparent; cursor: pointer; } .ds-nav-cart::after { content: attr(class); }"
+    },
+    {
+      "name": "Sidebar Category Item",
+      "kind": "custom",
+      "refersTo": "drawer-nav-item",
+      "description": "The menu-category drawer in the sidebar — active state gets a bronze left accent and a golden-wash fill.",
+      "html": "<div class=\"ds-drawer\"><button class=\"ds-drawer-item ds-drawer-item--active\">Featured items</button><button class=\"ds-drawer-item\">Deviled Eggs</button></div>",
+      "css": ".ds-drawer { display: flex; flex-direction: column; width: 260px; } .ds-drawer-item { text-align: left; background: transparent; border: none; border-left: 4px solid transparent; border-radius: 8px; padding: 14px 12px 14px 16px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px; color: var(--deg-ink-muted,#635E57); cursor: pointer; } .ds-drawer-item--active { background: var(--deg-gold-tint,#FFDEA0); border-left-color: var(--deg-border-primary,#88754F); color: var(--deg-ink-heading,#402D00); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Golden Yolk Standard",
+    "overview": "One earned, confident gold sits against warm cream and near-black ink — everything else in the system stays quiet on purpose, so the gold reads as quality rather than decoration. The palette, radius language, and shadow system all reinforce the same restraint: a single saturated accent, a near-universal pill/rounded corner, and a warm gold glow that appears exclusively on primary calls to action. Nothing competes with the yolk.\n\nTypography carries the same discipline in two voices: Nunito at extrabold/bold weight is reserved for headings and prices only, never body copy; Plus Jakarta Sans handles everything else, from paragraph text down to the all-caps 13px navigation labels. The system was audited from the live deviledeggco.com site and cross-checked against the DECo_Order_260920 Figma file — it is a real, evidenced brand system, not an invented one.",
+    "keyCharacteristics": [
+      "One saturated accent (#F7BA17), rare and rule-bound to primary actions",
+      "Warm cream surfaces (#FFF7EA) as the dominant background, never stark white",
+      "Near-universal pill (999px) or soft (8–16px) corner radius; nothing sharp",
+      "Two-voice type system: Nunito extrabold/bold for headings & prices, Plus Jakarta Sans for everything else",
+      "Low-contrast, tonal card shadows; the only colored shadow is the gold CTA glow"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Golden Yolk is the only saturated color anywhere in the system. It appears on primary buttons, active toggle/chip states, and nowhere else.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Rule",
+        "body": "Nunito extrabold/bold is reserved for headings and prices — never body copy, never buttons, never labels. Plus Jakarta Sans carries every other voice.",
+        "section": "typography"
+      },
+      {
+        "name": "The Earned Glow Rule",
+        "body": "The one colored shadow in the system is bound to primary CTAs and nothing else. A card, a chip, a hover state — none of them borrow the gold glow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No-Sharp-Corner Rule",
+        "body": "Every rectangle in the system carries a radius from the scale. A border-radius: 0 anywhere is a bug, not a style.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do keep Golden Yolk to primary CTAs and active-selection states only — one per screen is the target.",
+      "Do use Nunito extrabold/bold exclusively for headings and prices; everything else is Plus Jakarta Sans.",
+      "Do make the gap between content groups larger than the gap within a group.",
+      "Do reuse an existing radius/shadow/spacing token before introducing a new value.",
+      "Do prefer a project token over a raw Figma literal when a source color is unbound to a variable."
+    ],
+    "donts": [
+      "Don't add a second saturated color.",
+      "Don't use a colored shadow anywhere except the primary-CTA brand glow.",
+      "Don't introduce a sharp (0px) corner anywhere.",
+      "Don't letter-space the nav labels or add extra gap between them."
+    ]
+  }
+}
