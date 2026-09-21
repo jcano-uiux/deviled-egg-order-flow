@@ -4,13 +4,13 @@
 
 /* ---------- Header ---------- */
 .site-header { background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); padding: 8px 0; }
-.nav-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 16px; padding: 0 12px; }
-.logo { height: 24px; width: auto; flex: none; margin-right: 16px; }
+.nav-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; padding: 0 12px; }
+.logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
 .nav-link { padding: 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; }
 .cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
 .cart-badge {
-  position: absolute; top: -4px; right: -4px; background: var(--deg-error); color: var(--deg-white);
+  position: absolute; top: -4px; right: -6px; background: var(--deg-error); color: var(--deg-white);
   font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
 }
@@ -225,7 +225,7 @@
 }
 
 @media (max-width: 640px) {
-  .nav-inner { padding: 0 16px; gap: 10px; flex-wrap: wrap; }
+  .nav-inner { padding: 0 16px; row-gap: 10px; flex-wrap: wrap; }
   .logo { height: 20px; margin-right: 8px; }
   .nav-links { flex-basis: 100%; order: 3; justify-content: flex-start; flex-grow: 0; }
   .nav-link { font-size: 12px; padding: 8px 6px; }
