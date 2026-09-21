@@ -22,6 +22,7 @@
 
   /* Ink */
   --deg-ink-deep: #130D00;       /* dark button fills, footer base */
+  --deg-ink-deep-hover: #554523; /* colors/surface/action-2-hover — hover fill for dark icon buttons */
   --deg-ink-body: #140F0A;       /* default body text */
   --deg-ink-on-gold: #261A00;    /* text set directly on the gold accent */
   --deg-ink-heading: #402D00;    /* secondary heading color on cream */

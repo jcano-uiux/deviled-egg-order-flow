@@ -303,6 +303,21 @@
           "#E7E1D5",
           "#F6F3EF"
         ]
+      },
+      "warm-ember": {
+        "role": "neutral",
+        "displayName": "Warm Ember",
+        "canonical": "#554523",
+        "tonalRamp": [
+          "#362C16",
+          "#624F28",
+          "#8D723A",
+          "#B6954E",
+          "#C8AF79",
+          "#DAC9A5",
+          "#ECE3D0",
+          "#F8F4ED"
+        ]
       }
     },
     "typographyMeta": {
@@ -398,9 +413,9 @@
       "name": "Shop Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "The one unified card component reused across every menu category.",
-      "html": "<div class=\"ds-card\"><div class=\"ds-card-body\"><span class=\"ds-card-name\">2 Pack Deviled Egg</span><span class=\"ds-card-meta\"><span class=\"ds-card-price\">$4.99</span></span></div></div>",
-      "css": ".ds-card { display: flex; background: var(--deg-white,#fff); border: 1px solid var(--deg-border-card,#F3F3F3); border-radius: 12px; box-shadow: 0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04); overflow: hidden; min-height: 100px; } .ds-card-body { flex-grow: 1; padding: 16px; display: flex; flex-direction: column; } .ds-card-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading,#402D00); } .ds-card-meta { padding-top: 4px; font-size: 14px; } .ds-card-price { font-weight: 600; color: var(--deg-ink-heading,#402D00); }"
+      "description": "The one unified card component reused across every menu category, with its Quick Add button's default and hover states.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-body\"><span class=\"ds-card-name\">2 Pack Deviled Egg</span><span class=\"ds-card-meta\"><span class=\"ds-card-price\">$4.99</span></span></div><div class=\"ds-card-media\"><button class=\"ds-quick-add\" aria-label=\"Add to order\">+</button></div></div>",
+      "css": ".ds-card { display: flex; background: var(--deg-white,#fff); border: 1px solid var(--deg-border-card,#F3F3F3); border-radius: 12px; box-shadow: 0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04); overflow: hidden; min-height: 100px; } .ds-card-body { flex-grow: 1; padding: 16px; display: flex; flex-direction: column; } .ds-card-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading,#402D00); } .ds-card-meta { padding-top: 4px; font-size: 14px; } .ds-card-price { font-weight: 600; color: var(--deg-ink-heading,#402D00); } .ds-card-media { position: relative; width: 100px; background: var(--deg-cream-deep,#FFEFD5); flex: none; } .ds-quick-add { position: absolute; right: 8px; bottom: 8px; width: 36px; height: 36px; border-radius: 999px; border: 2px solid #fff; background: var(--deg-ink-deep,#130D00); color: #fff; font-size: 18px; line-height: 1; box-shadow: 0 2px 12px rgba(0,0,0,.12); cursor: pointer; transition: background-color .15s ease; } .ds-quick-add:hover { background: var(--deg-ink-deep-hover,#554523); }"
     },
     {
       "name": "Text Input",

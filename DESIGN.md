@@ -4,6 +4,7 @@ description: A warm, cream-and-gold ordering flow built around one earned accent
 colors:
   golden-yolk: "#F7BA17"
   deep-ink: "#130D00"
+  warm-ember: "#554523"
   warm-black: "#140F0A"
   espresso-on-gold: "#261A00"
   toasted-umber: "#402D00"
@@ -81,6 +82,12 @@ components:
     typography: "{typography.body-sm}"
     rounded: "{rounded.pill}"
     padding: "14px 26px"
+  icon-button-dark:
+    backgroundColor: "{colors.deep-ink}"
+    rounded: "{rounded.pill}"
+    size: "36px"
+  icon-button-dark-hover:
+    backgroundColor: "{colors.warm-ember}"
   button-outline:
     backgroundColor: "transparent"
     textColor: "{colors.deep-ink}"
@@ -127,6 +134,7 @@ Warm and restrained: a cream-and-ink neutral base carries almost the entire inte
 
 ### Neutral
 - **Deep Ink** (`#130D00`): headings, prices, dark button fills (Add-to-cart, cart icon, Customize→ dozen builder), footer base.
+- **Warm Ember** (`#554523`): the hover fill for dark icon buttons — a shop card's Quick Add button lightens from Deep Ink to Warm Ember on hover. The only documented hover-state color in the system.
 - **Warm Black** (`#140F0A`): default body text color.
 - **Espresso on Gold** (`#261A00`): text set directly on the gold accent — never black-on-gold.
 - **Toasted Umber** (`#402D00`): secondary heading tier — card titles, feature-card title, active drawer-nav item text.
@@ -203,6 +211,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight — secondary actions like "Store info" and the cart drawer's "Apply" promo button.
 - **Outline:** transparent fill, 1.5px Deep Ink border, Deep Ink text, no shadow — tertiary/back actions.
 - **Icon buttons** (cart, close, quantity steppers, add-to-cart): circular, no border, centered icon; float above photo media use the Float shadow.
+- **Icon button hover (dark fill):** Deep Ink lightens to Warm Ember (`#554523`) on hover, a 150ms background transition. Confirmed on the shop-card Quick Add button; apply the same swap anywhere else a Deep Ink icon button is interactive.
 
 ### Chips
 - **Style:** Cool Linen fill, Warm Black text, pill radius, no border.
