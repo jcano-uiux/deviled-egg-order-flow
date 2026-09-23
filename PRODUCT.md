@@ -12,7 +12,7 @@ Everyday pickup/delivery customers ordering lunch or dinner near one of Deviled 
 
 ## Product Purpose
 
-Let customers browse the Deviled Egg Co. menu and place a real pickup or delivery order online: pick items, customize a Build Your Own Dozen, manage a cart, check out, and get a confirmed order with a fulfillment estimate.
+Let customers browse the Deviled Egg Co. menu and place a real pickup order online: pick items, customize a Build Your Own Dozen, manage a cart, check out, and get a confirmed order with a fulfillment estimate. Customers who want delivery are routed to the third-party delivery platform that fulfills it, rather than checking out on this site.
 
 ## Positioning
 
@@ -20,22 +20,24 @@ Freshness and made-to-order customization are the mechanism, not a generic deliv
 
 ## Operating Context
 
-- Four physical storefronts fulfill orders: McKinney, Denison, Rockwall, and Coppell, TX. Each has a real street address.
-- Both Pickup and Delivery are first-class fulfillment modes, not one bolted onto the other as an afterthought.
-- Texas sales tax (8.25%) applies to orders.
+- Four physical storefronts fulfill pickup orders: McKinney, Denison, Rockwall, and Coppell, TX. Each has a real street address.
+- Direction change (confirmed): Deviled Egg Co. only fulfills Pickup in-house. Delivery is handled entirely by third-party delivery platforms (DoorDash, Uber Eats, Grubhub) — the site links out to them rather than fulfilling delivery itself.
+- Texas sales tax (8.25%) applies to pickup orders placed on this site.
 - Customers already have a mental model from mainstream delivery apps (Uber Eats); the flow intentionally follows that familiar interaction pattern (menu → item customization → cart → checkout → confirmation) rather than inventing a new one, while carrying the Deviled Egg Co. brand identity throughout.
 
 ## Capabilities and Constraints
 
 Confirmed and built:
 - Menu browsing by category, with a scrollable single-page layout.
-- Build Your Own Dozen item customization (choose up to 4 of 8 flavors, quantity, kitchen note).
+- Build Your Own Dozen item customization (choose up to 4 flavors from the full 19-flavor lineup — the same flavors listed on the live site's 24 Count Deviled Egg Platter — plus quantity and a kitchen note).
 - Cart with live subtotal/tax/total, quantity edits, and a promo code (`EGGSTRA10`).
 - Pickup flow: store selection (one of the 4 locations) and pickup time (ASAP or schedule).
-- Delivery flow: address entry, dropoff options (Meet at my door / Hand it to me), delivery instructions, and tiered delivery options (Priority +$3.99, Standard, Schedule) that change the delivery fee.
-- Tip selection and order confirmation with a Placed → Preparing → Ready/On the way progress tracker.
+- Delivery mode on the menu page: toggling "Delivery" replaces the menu content with a "We deliver through" section linking out to DoorDash, Uber Eats, and Grubhub (each opens in a new tab). This site does not take delivery orders itself.
+- Tip selection and order confirmation with a Placed → Preparing → Ready/On the way progress tracker (pickup orders only).
 
 Known, explicit constraint (not a gap to fill silently): this is currently a front-end-only prototype. The cart persists via `localStorage`; there is no real payment processor, no backend that routes orders to a store's POS system, and no persistent user accounts. Real payment processing, POS/order-routing integration, and account persistence are known future requirements — future work should treat them as unbuilt, not assume they exist, and should not claim real payment or fulfillment is happening today.
+
+Known inconsistency (pending cleanup, not yet resolved): the checkout page still has a full in-house delivery flow built before the third-party-delivery direction was confirmed — address entry, dropoff options (Meet at my door / Hand it to me), delivery instructions, and tiered delivery fees (Priority +$3.99, Standard, Schedule). It's unreachable from the menu page's new Delivery toggle (which now exits to third-party apps instead), but the code and the Pickup/Delivery segmented control on the checkout page itself still assume in-house delivery is offered. Future work should reconcile or remove this rather than build more on top of it.
 
 ## Brand Commitments
 
@@ -45,14 +47,16 @@ Known, explicit constraint (not a gap to fill silently): this is currently a fro
 
 ## Evidence on Hand
 
-- Real menu items and prices: deviled egg flavors (Classic $14.99, Bacon Cheddar Ranch $15.99, Jalapeño Popper $15.99, Smoked Salmon $17.99), Build Your Own Dozen ($24.99, up to 4 flavors), protein bowls ($14.99–$16.99).
-- Real store addresses for all four locations (used in pickup directions and delivery confirmation copy).
+- Real menu items and prices, sourced from deviledeggco.com: packaged deviled egg counts (2 Pack $4.99 up to the 24 Count Platter $44.99), Build Your Own Dozen ($24.99, up to 4 of 19 flavors), protein bowls (from $14.99).
+- The 19-flavor lineup is copied verbatim from the live site's 24 Count Deviled Egg Platter product page.
+- Real store addresses for all four locations (used in pickup directions).
 - Real customer review language and a 4.9-star rating claim sourced from the deviledeggco.com homepage.
+- The three delivery-partner logos (DoorDash, Uber Eats, Grubhub) are real, official brand assets — fine for identifying actual delivery partners, but worth keeping in mind before sharing this prototype outside a design-mockup context.
 - No real payment or backend integration exists yet — do not fabricate transaction IDs, POS confirmations, or account data beyond what the prototype already generates client-side (e.g. the mock order number).
 
 ## Product Principles
 
 1. Every screen sells freshness and flavor customization as the hero — never just a scrollable item list like a generic delivery app.
-2. Pickup and Delivery are equal, fully-built paths; neither is a stub next to the other.
+2. Pickup is the only in-house fulfillment path. Delivery is intentionally handed off to third-party partners rather than rebuilt here — routing a Delivery customer out to DoorDash/Uber Eats/Grubhub is correct behavior, not a shortcut or a stub.
 3. Borrow the interaction pattern customers already know from mainstream delivery apps, but never the visual identity — every control stays on the Deviled Egg Co. gold/cream/pill design system.
-4. Be honest about what's real: this prototype does not process real payments or route orders to a store today, and nothing in the UI should imply otherwise.
+4. Be honest about what's real: this prototype does not process real payments or route pickup orders to a store today, and nothing in the UI should imply otherwise.

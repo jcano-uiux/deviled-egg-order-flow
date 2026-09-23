@@ -3,6 +3,13 @@
   const PROMO_CODES = { EGGSTRA10: 0.10 };
 
   const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
+  const LAUNCH_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const DELIVERY_APPS = [
+    { id: 'doordash', name: 'DoorDash', url: 'https://www.doordash.com', logo: 'assets/logos/doordash.svg', color: '#FF3008' },
+    { id: 'ubereats', name: 'Uber Eats', url: 'https://www.ubereats.com', logo: 'assets/logos/ubereats.svg', color: '#06C167' },
+    { id: 'grubhub', name: 'Grubhub', url: 'https://www.grubhub.com', logo: 'assets/logos/grubhub.svg', color: '#FF5500' },
+  ];
 
   const eggThumb = () => {
     const div = document.createElement('div');
@@ -75,21 +82,30 @@
   const BAGEL_DESC = 'A fresh bagel loaded with our signature deviled egg salad — the perfect quick bite.';
 
   const FLAVORS = [
-    { id: 'classic', label: 'Classic' },
-    { id: 'bacon', label: 'Bacon Cheddar Ranch' },
-    { id: 'jalapeno', label: 'Jalapeño Popper' },
-    { id: 'buffalo', label: 'Buffalo Chicken' },
-    { id: 'salmon', label: 'Smoked Salmon' },
-    { id: 'everything', label: 'Everything Bagel' },
-    { id: 'greek', label: 'Greek' },
-    { id: 'walkingtaco', label: 'Walking Taco' },
+    { id: 'blte', label: 'BLTE' },
+    { id: 'backyard-bbq', label: 'Backyard BBQ' },
+    { id: 'ballpark-special', label: 'Ballpark Special' },
+    { id: 'buffalo-blue-cheese', label: 'Buffalo Blue Cheese' },
+    { id: 'buffalo-chicken-ranch', label: 'Buffalo Chicken Ranch' },
+    { id: 'cali-roll', label: 'Cali Roll' },
+    { id: 'cheeseburger', label: 'Cheeseburger' },
+    { id: 'chicken-bacon-ranch', label: 'Chicken Bacon Ranch' },
+    { id: 'chicken-caesar', label: 'Chicken Caesar' },
+    { id: 'chicken-pickle-egg', label: 'Chicken and Pickle Egg' },
+    { id: 'chicken-waffle', label: 'Chicken and Waffle' },
+    { id: 'crab-rangoon', label: 'Crab Rangoon' },
+    { id: 'everything-seasoning', label: 'Everything Seasoning' },
+    { id: 'jalapeno-popper', label: 'Jalapeño Popper' },
+    { id: 'smoked-salmon', label: 'Smoked Salmon' },
+    { id: 'south-of-the-border', label: 'South of the Border' },
+    { id: 'sriracha-bacon', label: 'Sriracha Bacon' },
+    { id: 'traditional', label: 'Traditional' },
+    { id: 'walking-taco', label: 'Walking Taco' },
   ];
-
-  const DELIVERY_FEES = { priority: 3.99, standard: 0, schedule: 0 };
 
   const state = {
     cart: [],
-    modalSelected: new Set(['classic', 'bacon', 'jalapeno', 'salmon']),
+    modalSelected: new Set(['traditional', 'buffalo-chicken-ranch', 'jalapeno-popper', 'smoked-salmon']),
     modalQty: 1,
     bagelToast: 'Not Toasted',
     bagelType: 'Plain',
@@ -100,9 +116,9 @@
     promoAmount: 0,
     mode: 'pickup',
     location: 'McKinney, TX',
-    time: 'asap',
-    deliveryOption: 'standard',
-    dropoff: 'Meet at my door',
+    pickupDateKey: null,
+    pickupTimeId: null,
+    pickupTimeLabel: null,
     payment: 'Apple Pay',
     tipPct: 18,
   };
@@ -151,6 +167,41 @@
     renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
     renderShopGrid('catering-grid', CATERING, 'catering', 'Catering');
     renderBagelCard();
+    renderDeliveryGrid();
+  }
+
+  function renderDeliveryGrid() {
+    const grid = document.getElementById('delivery-grid');
+    grid.innerHTML = '';
+    DELIVERY_APPS.forEach((app) => {
+      const card = document.createElement('a');
+      card.className = 'shop-card';
+      card.href = app.url;
+      card.target = '_blank';
+      card.rel = 'noopener';
+
+      const body = document.createElement('div');
+      body.className = 'shop-card-body';
+      body.innerHTML = `<span class="shop-card-name">${app.name}</span>`;
+      card.appendChild(body);
+
+      const media = document.createElement('div');
+      media.className = 'shop-card-media';
+      media.style.background = app.color;
+      const logo = document.createElement('img');
+      logo.className = 'delivery-logo';
+      logo.src = app.logo;
+      logo.alt = app.name + ' logo';
+      media.appendChild(logo);
+      const launch = document.createElement('span');
+      launch.className = 'add-btn';
+      launch.setAttribute('aria-hidden', 'true');
+      launch.innerHTML = LAUNCH_ICON;
+      media.appendChild(launch);
+      card.appendChild(media);
+
+      grid.appendChild(card);
+    });
   }
 
   function renderShopGrid(gridId, items, keyPrefix, cartCategory) {
@@ -242,11 +293,13 @@
   });
 
   // ---------- Pickup / delivery toggle ----------
+  // Pickup is fulfilled in-house; Delivery hands off to third-party apps
+  // (see #delivery-apps), so nothing past this toggle — cart, checkout,
+  // confirmation — needs to know about a delivery mode.
   function updateModeUI() {
     const isDelivery = state.mode === 'delivery';
-    document.getElementById('pickup-details-card').hidden = isDelivery;
-    document.getElementById('delivery-details-card').hidden = !isDelivery;
-    renderDrawer();
+    document.getElementById('pickup-menu-content').hidden = isDelivery;
+    document.getElementById('delivery-apps').hidden = !isDelivery;
   }
 
   document.getElementById('order-mode').addEventListener('click', (e) => {
@@ -263,7 +316,7 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -273,6 +326,8 @@
     if (!itemModal.hidden) closeDozenModal();
     else if (!bagelModal.hidden) closeBagelModal();
     else if (!cartDrawer.hidden) closeCart();
+    else if (!pickupSettingsModal.hidden) closePickupSettings();
+    else if (!storeLocatorModal.hidden) closeStoreLocator();
   });
 
   // ---------- Item customization modal ----------
@@ -289,7 +344,7 @@
       row.type = 'button';
       row.disabled = atLimit;
       row.className = 'flavor-row' + (selected ? ' selected' : '');
-      row.innerHTML = `<span class="flavor-box">${selected ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span><span>${f.label}</span>`;
+      row.innerHTML = `<span>${f.label}</span><span class="flavor-box">${selected ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>`;
       row.addEventListener('click', () => {
         if (selected) {
           state.modalSelected.delete(f.id);
@@ -304,17 +359,28 @@
     document.getElementById('flavor-count').textContent = `${state.modalSelected.size}/4 selected`;
   }
 
+  function populateQtySelect(select, max = 10) {
+    select.innerHTML = '';
+    for (let n = 1; n <= max; n++) {
+      const opt = document.createElement('option');
+      opt.value = String(n);
+      opt.textContent = String(n);
+      select.appendChild(opt);
+    }
+  }
+
   function renderModalFooter() {
-    document.getElementById('qty-value').textContent = String(state.modalQty);
+    document.getElementById('qty-select').value = String(state.modalQty);
     const total = 24.99 * state.modalQty;
     document.getElementById('add-to-order').textContent = `Add ${state.modalQty} to order · ${money(total)}`;
   }
 
   function openDozenModal() {
     lastFocusedEl = document.activeElement;
-    state.modalSelected = new Set(['classic', 'bacon', 'jalapeno', 'salmon']);
+    state.modalSelected = new Set(['traditional', 'buffalo-chicken-ranch', 'jalapeno-popper', 'smoked-salmon']);
     state.modalQty = 1;
     document.getElementById('item-note').value = '';
+    populateQtySelect(document.getElementById('qty-select'));
     renderFlavorGrid();
     renderModalFooter();
     modalBackdrop.hidden = false;
@@ -334,12 +400,8 @@
   document.getElementById('close-modal').addEventListener('click', closeDozenModal);
   modalBackdrop.addEventListener('click', closeDozenModal);
 
-  document.getElementById('qty-dec').addEventListener('click', () => {
-    state.modalQty = Math.max(1, state.modalQty - 1);
-    renderModalFooter();
-  });
-  document.getElementById('qty-inc').addEventListener('click', () => {
-    state.modalQty += 1;
+  document.getElementById('qty-select').addEventListener('change', (e) => {
+    state.modalQty = Number(e.target.value);
     renderModalFooter();
   });
 
@@ -395,7 +457,7 @@
   }
 
   function renderBagelModalFooter() {
-    document.getElementById('bagel-qty-value').textContent = String(state.bagelQty);
+    document.getElementById('bagel-qty-select').value = String(state.bagelQty);
     const total = BAGEL_PRICE * state.bagelQty;
     document.getElementById('add-bagel-to-order').textContent = `Add ${state.bagelQty} to order · ${money(total)}`;
   }
@@ -407,6 +469,7 @@
     state.bagelFlavors = {};
     state.bagelOptions = new Set();
     state.bagelQty = 1;
+    populateQtySelect(document.getElementById('bagel-qty-select'));
     document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelToast));
     document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelType));
     document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.remove('active'));
@@ -457,12 +520,8 @@
     }
   });
 
-  document.getElementById('bagel-qty-dec').addEventListener('click', () => {
-    state.bagelQty = Math.max(1, state.bagelQty - 1);
-    renderBagelModalFooter();
-  });
-  document.getElementById('bagel-qty-inc').addEventListener('click', () => {
-    state.bagelQty += 1;
+  document.getElementById('bagel-qty-select').addEventListener('change', (e) => {
+    state.bagelQty = Number(e.target.value);
     renderBagelModalFooter();
   });
 
@@ -527,9 +586,8 @@
     const promoAmount = state.promo ? subtotal * state.promo : 0;
     const taxedBase = Math.max(0, subtotal - promoAmount);
     const tax = taxedBase * TAX_RATE;
-    const deliveryFee = state.mode === 'delivery' ? (DELIVERY_FEES[state.deliveryOption] || 0) : 0;
-    const total = taxedBase + tax + deliveryFee;
-    return { subtotal, promoAmount, tax, deliveryFee, total };
+    const total = taxedBase + tax;
+    return { subtotal, promoAmount, tax, total };
   }
 
   function renderDrawer() {
@@ -587,7 +645,7 @@
       list.appendChild(row);
     });
 
-    const { subtotal, promoAmount, tax, deliveryFee, total } = computeTotals();
+    const { subtotal, promoAmount, tax, total } = computeTotals();
     document.getElementById('drawer-subtotal').textContent = money(subtotal);
     document.getElementById('drawer-tax').textContent = money(tax);
     document.getElementById('drawer-total').textContent = money(total);
@@ -598,19 +656,10 @@
     } else {
       promoLine.hidden = true;
     }
-    const deliveryFeeLine = document.getElementById('drawer-delivery-fee-line');
-    if (state.mode === 'delivery') {
-      deliveryFeeLine.hidden = false;
-      document.getElementById('drawer-delivery-fee').textContent = money(deliveryFee);
-    } else {
-      deliveryFeeLine.hidden = true;
-    }
 
     const pinIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
     const chip = document.getElementById('fulfillment-chip');
-    chip.innerHTML = state.mode === 'delivery'
-      ? `${pinIcon}<span>Delivery · Today, ${state.deliveryOption === 'priority' ? '10–20' : '25–40'} min</span>`
-      : `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · Today, ASAP (15–20 min)</span>`;
+    chip.innerHTML = `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · ${pickupDateLabel(state.pickupDateKey)}, ${state.pickupTimeLabel}</span>`;
 
     document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }
@@ -656,29 +705,239 @@
   });
 
   // ---------- Checkout view ----------
-  function bindChipGroup(containerId, stateKey, onChange) {
-    const container = document.getElementById(containerId);
-    container.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-value]');
-      if (!btn) return;
-      container.querySelectorAll('[data-value]').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      state[stateKey] = btn.dataset.value;
-      if (onChange) onChange();
+  const STORE_ADDRESSES = {
+    'McKinney, TX': '111 W Virginia St, McKinney, TX 75069',
+    'Denison, TX': '231 W Main St, Denison, TX 75020',
+    'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
+    'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
+  };
+
+  // ---------- Store locator modal (store list + map) ----------
+  let pendingStoreLocation = null;
+
+  function renderStoreLocatorSummary() {
+    document.getElementById('store-locator-name').textContent = state.location;
+    document.getElementById('store-locator-address').textContent = STORE_ADDRESSES[state.location];
+  }
+
+  function renderStoreLocatorMap() {
+    const address = STORE_ADDRESSES[pendingStoreLocation];
+    document.getElementById('store-locator-map-frame').src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+  }
+
+  function renderStoreLocatorList() {
+    const list = document.getElementById('store-locator-list');
+    list.innerHTML = '';
+    Object.keys(STORE_ADDRESSES).forEach((name) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'store-locator-row' + (name === pendingStoreLocation ? ' active' : '');
+      btn.innerHTML = `<span class="store-locator-row-name">${name}</span><span class="store-locator-row-address">${STORE_ADDRESSES[name]}</span>`;
+      btn.addEventListener('click', () => {
+        if (name === pendingStoreLocation) return;
+        pendingStoreLocation = name;
+        renderStoreLocatorList();
+        renderStoreLocatorMap();
+      });
+      list.appendChild(btn);
     });
   }
 
-  bindChipGroup('location-picker', 'location');
-  bindChipGroup('time-picker', 'time');
-  bindChipGroup('dropoff-picker', 'dropoff');
+  const storeLocatorBackdrop = document.getElementById('store-locator-backdrop');
+  const storeLocatorModal = document.getElementById('store-locator-modal');
 
-  document.getElementById('delivery-option-picker').addEventListener('click', (e) => {
-    const btn = e.target.closest('.option-row');
-    if (!btn) return;
-    document.querySelectorAll('#delivery-option-picker .option-row').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.deliveryOption = btn.dataset.value;
-    renderCheckoutTotals();
+  function openStoreLocator() {
+    lastFocusedEl = document.activeElement;
+    pendingStoreLocation = state.location;
+    renderStoreLocatorList();
+    renderStoreLocatorMap();
+    storeLocatorBackdrop.hidden = false;
+    storeLocatorModal.hidden = false;
+    updateInert();
+    document.getElementById('close-store-locator').focus();
+  }
+
+  function closeStoreLocator() {
+    storeLocatorBackdrop.hidden = true;
+    storeLocatorModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('open-store-locator').addEventListener('click', openStoreLocator);
+  document.getElementById('close-store-locator').addEventListener('click', closeStoreLocator);
+  document.getElementById('cancel-store-locator').addEventListener('click', closeStoreLocator);
+  storeLocatorBackdrop.addEventListener('click', closeStoreLocator);
+  document.getElementById('confirm-store-locator').addEventListener('click', () => {
+    state.location = pendingStoreLocation;
+    renderStoreLocatorSummary();
+    renderDrawer();
+    closeStoreLocator();
+  });
+
+  // ---------- Pickup settings modal (date + time picker) ----------
+  const PICKUP_OPEN_HOUR = 10; // store hours: 10:00 AM – 8:00 PM
+  const PICKUP_CLOSE_HOUR = 20;
+  let pickupDatesCache = [];
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function dateKey(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+
+  function formatClock(hour, minute) {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    return `${h12}:${pad2(minute)} ${period}`;
+  }
+
+  function buildPickupDates(count = 7) {
+    const now = new Date();
+    const dates = [];
+    for (let i = 0; i < count; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      const tileTop = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
+      const tileSub = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const label = i <= 1 ? tileTop : `${tileTop}, ${tileSub}`;
+      dates.push({ key: dateKey(d), label, tileTop, tileSub });
+    }
+    return dates;
+  }
+
+  function nextHalfHour(d) {
+    const rounded = new Date(d);
+    rounded.setSeconds(0, 0);
+    const m = rounded.getMinutes();
+    const add = m === 0 ? 0 : m <= 30 ? 30 - m : 60 - m;
+    rounded.setMinutes(m + add);
+    return rounded;
+  }
+
+  function buildTimeSlots(dateKeyValue) {
+    const now = new Date();
+    const isToday = dateKeyValue === dateKey(now);
+    let cursor;
+    if (isToday) {
+      cursor = nextHalfHour(now);
+      const openToday = new Date(now);
+      openToday.setHours(PICKUP_OPEN_HOUR, 0, 0, 0);
+      if (cursor < openToday) cursor = openToday;
+    } else {
+      cursor = new Date(now);
+      cursor.setHours(PICKUP_OPEN_HOUR, 0, 0, 0);
+    }
+    const close = new Date(cursor);
+    close.setHours(PICKUP_CLOSE_HOUR, 0, 0, 0);
+    const slots = [];
+    while (cursor.getTime() + 30 * 60000 <= close.getTime()) {
+      const start = new Date(cursor);
+      const end = new Date(cursor.getTime() + 30 * 60000);
+      slots.push({
+        id: `${pad2(start.getHours())}${pad2(start.getMinutes())}`,
+        label: `${formatClock(start.getHours(), start.getMinutes())} – ${formatClock(end.getHours(), end.getMinutes())}`,
+      });
+      cursor = end;
+    }
+    return slots;
+  }
+
+  function pickupDateLabel(key) {
+    const found = pickupDatesCache.find((d) => d.key === key);
+    return found ? found.label : key;
+  }
+
+  function initPickupDefaults() {
+    pickupDatesCache = buildPickupDates();
+    let dateIdx = 0;
+    let slots = buildTimeSlots(pickupDatesCache[0].key);
+    while (slots.length === 0 && dateIdx < pickupDatesCache.length - 1) {
+      dateIdx += 1;
+      slots = buildTimeSlots(pickupDatesCache[dateIdx].key);
+    }
+    state.pickupDateKey = pickupDatesCache[dateIdx].key;
+    state.pickupTimeId = slots[0].id;
+    state.pickupTimeLabel = slots[0].label;
+  }
+
+  function renderPickupSummary() {
+    document.getElementById('pickup-time-summary').textContent = `${pickupDateLabel(state.pickupDateKey)} · ${state.pickupTimeLabel}`;
+  }
+
+  // Selections apply only to this staging object while the modal is open;
+  // Confirm commits it to state, Cancel/X/backdrop just discard it.
+  let pendingPickup = null;
+
+  function renderPickupDateList() {
+    const list = document.getElementById('pickup-date-list');
+    list.innerHTML = '';
+    pickupDatesCache.forEach((d) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pickup-date-tile' + (d.key === pendingPickup.dateKey ? ' active' : '');
+      btn.innerHTML = `${d.tileTop}<span class="pickup-date-sub">${d.tileSub}</span>`;
+      btn.addEventListener('click', () => {
+        if (d.key === pendingPickup.dateKey) return;
+        const slots = buildTimeSlots(d.key);
+        if (slots.length === 0) return; // store isn't open again before closing that day
+        pendingPickup = { dateKey: d.key, timeId: slots[0].id, timeLabel: slots[0].label };
+        renderPickupDateList();
+        renderPickupTimeList();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  function renderPickupTimeList() {
+    const list = document.getElementById('pickup-time-list');
+    list.innerHTML = '';
+    buildTimeSlots(pendingPickup.dateKey).forEach((slot) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'radio-row' + (slot.id === pendingPickup.timeId ? ' active' : '');
+      btn.innerHTML = `<span class="radio-dot"></span>${slot.label}`;
+      btn.addEventListener('click', () => {
+        pendingPickup.timeId = slot.id;
+        pendingPickup.timeLabel = slot.label;
+        renderPickupTimeList();
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  const pickupSettingsBackdrop = document.getElementById('pickup-settings-backdrop');
+  const pickupSettingsModal = document.getElementById('pickup-settings-modal');
+
+  function openPickupSettings() {
+    lastFocusedEl = document.activeElement;
+    pendingPickup = { dateKey: state.pickupDateKey, timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel };
+    renderPickupDateList();
+    renderPickupTimeList();
+    pickupSettingsBackdrop.hidden = false;
+    pickupSettingsModal.hidden = false;
+    updateInert();
+    document.getElementById('close-pickup-settings').focus();
+  }
+
+  function closePickupSettings() {
+    pickupSettingsBackdrop.hidden = true;
+    pickupSettingsModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('open-pickup-settings').addEventListener('click', openPickupSettings);
+  document.getElementById('close-pickup-settings').addEventListener('click', closePickupSettings);
+  document.getElementById('cancel-pickup-settings').addEventListener('click', closePickupSettings);
+  pickupSettingsBackdrop.addEventListener('click', closePickupSettings);
+  document.getElementById('pickup-date-scroll-next').addEventListener('click', () => {
+    document.getElementById('pickup-date-list').scrollBy({ left: 200, behavior: 'smooth' });
+  });
+  document.getElementById('confirm-pickup-settings').addEventListener('click', () => {
+    state.pickupDateKey = pendingPickup.dateKey;
+    state.pickupTimeId = pendingPickup.timeId;
+    state.pickupTimeLabel = pendingPickup.timeLabel;
+    renderPickupSummary();
+    renderDrawer();
+    closePickupSettings();
   });
 
   document.getElementById('payment-picker').addEventListener('click', (e) => {
@@ -711,7 +970,7 @@
   }
 
   function renderCheckoutTotals() {
-    const { subtotal, promoAmount, tax, deliveryFee, total: preTipTotal } = computeTotals();
+    const { subtotal, promoAmount, tax, total: preTipTotal } = computeTotals();
     const tipAmt = (subtotal - promoAmount) * (state.tipPct / 100);
     const total = preTipTotal + tipAmt;
 
@@ -726,66 +985,28 @@
     } else {
       promoLine.hidden = true;
     }
-    const deliveryFeeLine = document.getElementById('sum-delivery-fee-line');
-    if (state.mode === 'delivery') {
-      deliveryFeeLine.hidden = false;
-      document.getElementById('sum-delivery-fee').textContent = money(deliveryFee);
-    } else {
-      deliveryFeeLine.hidden = true;
-    }
     document.getElementById('place-order').textContent = `Place order · ${money(total)}`;
     return total;
   }
-
-  const STORE_ADDRESSES = {
-    'McKinney, TX': '111 W Virginia St, McKinney, TX 75069',
-    'Denison, TX': '231 W Main St, Denison, TX 75020',
-    'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
-    'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
-  };
 
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
 
   document.getElementById('place-order').addEventListener('click', () => {
     if (state.cart.length === 0) return;
 
-    if (state.mode === 'delivery') {
-      const addr = document.getElementById('delivery-address').value.trim();
-      const errEl = document.getElementById('delivery-address-error');
-      if (!addr) {
-        errEl.hidden = false;
-        document.getElementById('delivery-address').focus();
-        return;
-      }
-      errEl.hidden = true;
-    }
-
     const total = renderCheckoutTotals();
     const orderNumber = '#DE-' + Math.floor(10000 + Math.random() * 89999);
 
     const subEl = document.getElementById('confirm-sub');
-    const stepLabelEl = document.getElementById('progress-step3-label');
     const fulfillmentCard = document.getElementById('fulfillment-card');
 
-    if (state.mode === 'delivery') {
-      const addr = document.getElementById('delivery-address').value.trim();
-      const apt = document.getElementById('delivery-apt').value.trim();
-      const fullAddress = apt ? `${addr}, ${apt}` : addr;
-      const eta = state.deliveryOption === 'priority' ? '10–20 min'
-        : state.deliveryOption === 'schedule' ? 'your scheduled time'
-        : '25–40 min';
+    const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
+    const dateLabel = pickupDateLabel(state.pickupDateKey);
+    const readyBy = state.pickupTimeLabel.split(' – ')[1] || state.pickupTimeLabel;
+    const whenPhrase = dateLabel === 'Today' ? `by <strong>${readyBy}</strong>` : `on <strong>${dateLabel}</strong>, <strong>${readyBy}</strong>`;
 
-      subEl.innerHTML = `Order <strong>${orderNumber}</strong> · On its way to <strong>${fullAddress}</strong> — arriving in <strong>${eta}</strong>`;
-      stepLabelEl.textContent = 'On the way';
-      fulfillmentCard.innerHTML = `${PIN_ICON}<span>${fullAddress} · ${state.dropoff}</span>`;
-    } else {
-      const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
-      const readyBy = state.time === 'asap' ? '12:45 PM' : 'your scheduled time';
-
-      subEl.innerHTML = `Order <strong>${orderNumber}</strong> · We're preparing it now — ready for pickup at <strong>${state.location}</strong> by <strong>${readyBy}</strong>`;
-      stepLabelEl.textContent = 'Ready';
-      fulfillmentCard.innerHTML = `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`;
-    }
+    subEl.innerHTML = `Order <strong>${orderNumber}</strong> · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`;
+    fulfillmentCard.innerHTML = `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`;
 
     const confirmItems = document.getElementById('confirm-items');
     confirmItems.innerHTML = '';
@@ -810,6 +1031,9 @@
   });
 
   // ---------- Init ----------
+  initPickupDefaults();
+  renderPickupSummary();
+  renderStoreLocatorSummary();
   renderGrids();
   renderCartBadge();
   renderDrawer();

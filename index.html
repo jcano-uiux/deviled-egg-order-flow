@@ -91,47 +91,54 @@
         </div>
       </div>
 
-      <button class="feature-card" id="open-dozen-modal" type="button" aria-label="Customize Build Your Own Dozen — $24.99">
-        <img class="feature-photo" src="assets/products/24-count-platter.jpg" alt="">
-        <span class="feature-content">
-          <span class="feature-body">
-            <span class="feature-eyebrow">Signature</span>
-            <span class="feature-title">Build Your Own Dozen</span>
-            <span class="feature-desc">12 deviled eggs, your way. Choose up to 4 flavors from our full lineup.</span>
-            <span class="price">$24.99</span>
+      <div id="pickup-menu-content">
+        <button class="feature-card" id="open-dozen-modal" type="button" aria-label="Customize Build Your Own Dozen — $24.99">
+          <img class="feature-photo" src="assets/products/24-count-platter.jpg" alt="">
+          <span class="feature-content">
+            <span class="feature-body">
+              <span class="feature-eyebrow">Signature</span>
+              <span class="feature-title">Build Your Own Dozen</span>
+              <span class="feature-desc">12 deviled eggs, your way. Choose up to 4 flavors from our full lineup.</span>
+              <span class="price">$24.99</span>
+            </span>
+            <span class="pill-btn primary feature-cta" aria-hidden="true">Customize →</span>
           </span>
-          <span class="pill-btn primary feature-cta" aria-hidden="true">Customize →</span>
-        </span>
-      </button>
+        </button>
 
-      <section class="menu-section" id="section-deviled-eggs">
-        <h2>Deviled Eggs</h2>
-        <div class="shop-grid" id="deviled-eggs-grid"></div>
-      </section>
+        <section class="menu-section" id="section-deviled-eggs">
+          <h2>Deviled Eggs</h2>
+          <div class="shop-grid" id="deviled-eggs-grid"></div>
+        </section>
 
-      <section class="menu-section" id="section-bagels">
-        <h2>Bagels</h2>
-        <div class="shop-grid" id="bagels-grid"></div>
-      </section>
+        <section class="menu-section" id="section-bagels">
+          <h2>Bagels</h2>
+          <div class="shop-grid" id="bagels-grid"></div>
+        </section>
 
-      <section class="menu-section" id="section-egg-salads">
-        <h2>Egg Salads</h2>
-        <div class="shop-grid" id="egg-salads-grid"></div>
-      </section>
+        <section class="menu-section" id="section-egg-salads">
+          <h2>Egg Salads</h2>
+          <div class="shop-grid" id="egg-salads-grid"></div>
+        </section>
 
-      <section class="menu-section" id="section-platters">
-        <h2>Platters</h2>
-        <div class="shop-grid" id="platters-grid"></div>
-      </section>
+        <section class="menu-section" id="section-platters">
+          <h2>Platters</h2>
+          <div class="shop-grid" id="platters-grid"></div>
+        </section>
 
-      <section class="menu-section" id="section-protein-bowls">
-        <h2>Protein Bowls</h2>
-        <div class="shop-grid" id="protein-bowls-grid"></div>
-      </section>
+        <section class="menu-section" id="section-protein-bowls">
+          <h2>Protein Bowls</h2>
+          <div class="shop-grid" id="protein-bowls-grid"></div>
+        </section>
 
-      <section class="menu-section" id="section-catering">
-        <h2>Catering</h2>
-        <div class="shop-grid" id="catering-grid"></div>
+        <section class="menu-section" id="section-catering">
+          <h2>Catering</h2>
+          <div class="shop-grid" id="catering-grid"></div>
+        </section>
+      </div>
+
+      <section class="menu-section" id="delivery-apps" hidden>
+        <h2>We deliver through</h2>
+        <div class="shop-grid" id="delivery-grid"></div>
       </section>
 
     </div>
@@ -150,75 +157,24 @@
     <div class="checkout-main">
       <h1>Checkout</h1>
 
-      <section class="checkout-card" id="pickup-details-card">
+      <section class="checkout-card">
         <h2>Pickup details</h2>
         <div class="field-group">
           <span class="field-label">Store</span>
-          <div class="chip-row" id="location-picker">
-            <button class="chip active" data-value="McKinney, TX" type="button">McKinney</button>
-            <button class="chip" data-value="Denison, TX" type="button">Denison</button>
-            <button class="chip" data-value="Rockwall, TX" type="button">Rockwall</button>
-            <button class="chip" data-value="Coppell, TX" type="button">Coppell</button>
-          </div>
+          <button class="pickup-time-btn store-locator-btn" id="open-store-locator" type="button">
+            <span class="store-locator-btn-text">
+              <strong id="store-locator-name">McKinney, TX</strong>
+              <span class="store-locator-btn-sub" id="store-locator-address">111 W Virginia St, McKinney, TX 75069</span>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
         <div class="field-group">
           <span class="field-label">Pickup time</span>
-          <div class="chip-row" id="time-picker">
-            <button class="chip active" data-value="asap" type="button">ASAP · 15–20 min</button>
-            <button class="chip" data-value="later" type="button">Schedule for later</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="checkout-card" id="delivery-details-card" hidden>
-        <h2>Delivery details</h2>
-        <div class="field-group">
-          <span class="field-label">Delivery address</span>
-          <input type="text" id="delivery-address" placeholder="Street address">
-        </div>
-        <div class="input-row">
-          <input type="text" id="delivery-apt" placeholder="Apt, suite, floor (optional)">
-        </div>
-        <p class="field-error" id="delivery-address-error" hidden>Enter a delivery address to continue.</p>
-
-        <div class="field-group">
-          <span class="field-label">Dropoff options</span>
-          <div class="chip-row" id="dropoff-picker">
-            <button class="chip active" data-value="Meet at my door" type="button">Meet at my door</button>
-            <button class="chip" data-value="Hand it to me" type="button">Hand it to me</button>
-          </div>
-        </div>
-        <label class="field-group">
-          Delivery instructions (optional)
-          <input type="text" id="delivery-instructions" placeholder="e.g. gate code, building notes">
-        </label>
-
-        <div class="field-group">
-          <span class="field-label">Delivery options</span>
-          <div class="option-list" id="delivery-option-picker">
-            <button class="option-row" data-value="priority" data-fee="3.99" type="button">
-              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-              <span class="option-body">
-                <span class="option-title">Priority</span>
-                <span class="option-sub">10–20 min · Direct to you</span>
-              </span>
-              <span class="option-price">+$3.99</span>
-            </button>
-            <button class="option-row active" data-value="standard" data-fee="0" type="button">
-              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h11v8H3z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 10h4l3 3v2h-7z" stroke="#130D00" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="1.5" stroke="#130D00" stroke-width="1.6"/><circle cx="17" cy="17.5" r="1.5" stroke="#130D00" stroke-width="1.6"/></svg></span>
-              <span class="option-body">
-                <span class="option-title">Standard</span>
-                <span class="option-sub">25–40 min</span>
-              </span>
-            </button>
-            <button class="option-row" data-value="schedule" data-fee="0" type="button">
-              <span class="option-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#130D00" stroke-width="1.6"/><path d="M16 3v4M8 3v4M3 10h18" stroke="#130D00" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-              <span class="option-body">
-                <span class="option-title">Schedule</span>
-                <span class="option-sub">Choose a time</span>
-              </span>
-            </button>
-          </div>
+          <button class="pickup-time-btn" id="open-pickup-settings" type="button">
+            <span id="pickup-time-summary">Today</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </section>
 
@@ -245,7 +201,6 @@
       <div id="checkout-items" class="summary-lines"></div>
       <div class="summary-divider"></div>
       <div class="summary-line"><span>Subtotal</span><span id="sum-subtotal">$0.00</span></div>
-      <div class="summary-line" id="sum-delivery-fee-line" hidden><span>Delivery Fee</span><span id="sum-delivery-fee">$0.00</span></div>
       <div class="summary-line" id="promo-line" hidden><span>Promo</span><span id="sum-promo">−$0.00</span></div>
       <div class="summary-line"><span>Tax</span><span id="sum-tax">$0.00</span></div>
 
@@ -310,40 +265,43 @@
 <div class="overlay" id="modal-backdrop" hidden></div>
 <div class="item-modal" id="item-modal" role="dialog" aria-modal="true" aria-labelledby="dozen-modal-title" hidden>
   <div class="item-modal-inner">
-    <div class="item-modal-media">
-      <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
+    <div class="item-modal-header">
+      <button class="close-btn" id="close-modal" type="button" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
-    <div class="item-modal-body">
-      <div class="item-modal-scroll">
-        <div class="item-modal-top">
-          <span class="eyebrow">Signature</span>
-          <button class="close-btn" id="close-modal" type="button" aria-label="Close">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
+    <div class="item-modal-scroll">
+      <div class="item-modal-row">
+        <div class="item-modal-media">
+          <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
         </div>
-        <h1 id="dozen-modal-title">Build Your Own Dozen</h1>
-        <p class="modal-desc">12 deviled eggs, hand piped fresh daily. Pick up to 4 flavors to fill your dozen.</p>
-        <span class="price">$24.99</span>
-        <div class="divider"></div>
-        <div class="modal-row">
-          <span class="field-label" style="margin:0;">Choose your flavors</span>
-          <span class="count-pill" id="flavor-count">0/4 selected</span>
+        <div class="item-modal-content">
+          <div class="item-modal-title-block">
+            <h1 id="dozen-modal-title">Build Your Own Dozen</h1>
+            <span class="modal-price">$24.99</span>
+          </div>
+          <p class="modal-desc">12 deviled eggs, hand piped fresh daily. Pick up to 4 flavors to fill your dozen.</p>
+          <div class="divider thick"></div>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Choose your flavors</span>
+              <span class="modal-section-sub" id="flavor-count">0/4 selected</span>
+            </div>
+            <div class="flavor-grid" id="flavor-grid"></div>
+          </div>
+          <label class="field-group">
+            Add a note for the kitchen
+            <input type="text" id="item-note" placeholder="e.g. extra paprika, no chives">
+          </label>
+          <label class="field-group qty-field">
+            Qty
+            <select id="qty-select" class="qty-select"></select>
+          </label>
         </div>
-        <div class="flavor-grid" id="flavor-grid"></div>
-        <div class="divider"></div>
-        <label class="field-group">
-          Add a note for the kitchen
-          <input type="text" id="item-note" placeholder="e.g. extra paprika, no chives">
-        </label>
       </div>
-      <div class="item-modal-footer">
-        <div class="stepper">
-          <button class="step-btn" id="qty-dec" type="button" aria-label="Decrease quantity">−</button>
-          <span id="qty-value">1</span>
-          <button class="step-btn" id="qty-inc" type="button" aria-label="Increase quantity">+</button>
-        </div>
-        <button class="pill-btn primary full" id="add-to-order" type="button">Add 1 to order · $24.99</button>
-      </div>
+    </div>
+    <div class="item-modal-footer">
+      <button class="pill-btn primary full" id="add-to-order" type="button">Add 1 to order · $24.99</button>
     </div>
   </div>
 </div>
@@ -351,62 +309,67 @@
 <div class="overlay" id="bagel-modal-backdrop" hidden></div>
 <div class="item-modal" id="bagel-modal" role="dialog" aria-modal="true" aria-labelledby="bagel-modal-title" hidden>
   <div class="item-modal-inner">
-    <div class="item-modal-media">
-      <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
+    <div class="item-modal-header">
+      <button class="close-btn" id="close-bagel-modal" type="button" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
-    <div class="item-modal-body">
-      <div class="item-modal-scroll">
-        <div class="item-modal-top">
-          <span class="eyebrow">Bagels</span>
-          <button class="close-btn" id="close-bagel-modal" type="button" aria-label="Close">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
+    <div class="item-modal-scroll">
+      <div class="item-modal-row">
+        <div class="item-modal-media">
+          <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
         </div>
-        <h1 id="bagel-modal-title">Full Size Bagel</h1>
-        <p class="modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
-        <span class="price">$7.49</span>
-        <div class="divider"></div>
-
-        <div class="field-group">
-          <span class="field-label">Toast</span>
-          <div class="chip-row" id="bagel-toast-picker">
-            <button class="chip active" data-value="Not Toasted" type="button">Not Toasted</button>
-            <button class="chip" data-value="Toasted" type="button">Toasted</button>
+        <div class="item-modal-content">
+          <div class="item-modal-title-block">
+            <h1 id="bagel-modal-title">Full Size Bagel</h1>
+            <span class="modal-price">$7.49</span>
           </div>
-        </div>
+          <p class="modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
+          <div class="divider thick"></div>
 
-        <div class="field-group">
-          <span class="field-label">Bagel Type</span>
-          <div class="chip-row" id="bagel-type-picker">
-            <button class="chip active" data-value="Plain" type="button">Plain</button>
-            <button class="chip" data-value="Everything" type="button">Everything</button>
+          <div class="field-group">
+            <span class="field-label">Toast</span>
+            <div class="chip-row" id="bagel-toast-picker">
+              <button class="chip active" data-value="Not Toasted" type="button">Not Toasted</button>
+              <button class="chip" data-value="Toasted" type="button">Toasted</button>
+            </div>
           </div>
-        </div>
 
-        <div class="divider"></div>
-        <div class="modal-row">
-          <span class="field-label" style="margin:0;">Yolk Spread Flavor</span>
-          <span class="count-pill" id="bagel-spread-count">0 added</span>
-        </div>
-        <div id="bagel-flavor-steppers" style="display: flex; flex-direction: column; gap: 8px;"></div>
-
-        <div class="divider"></div>
-        <div class="field-group">
-          <span class="field-label">Options</span>
-          <div class="chip-row" id="bagel-options-picker">
-            <button class="chip" data-value="Sauce on Side" type="button">Sauce on Side</button>
-            <button class="chip" data-value="Light Yolk Spread" type="button">Light Yolk Spread</button>
+          <div class="field-group">
+            <span class="field-label">Bagel Type</span>
+            <div class="chip-row" id="bagel-type-picker">
+              <button class="chip active" data-value="Plain" type="button">Plain</button>
+              <button class="chip" data-value="Everything" type="button">Everything</button>
+            </div>
           </div>
+
+          <div class="divider"></div>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Yolk Spread Flavor</span>
+              <span class="modal-section-sub" id="bagel-spread-count">0 added</span>
+            </div>
+            <div id="bagel-flavor-steppers" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="field-group">
+            <span class="field-label">Options</span>
+            <div class="chip-row" id="bagel-options-picker">
+              <button class="chip" data-value="Sauce on Side" type="button">Sauce on Side</button>
+              <button class="chip" data-value="Light Yolk Spread" type="button">Light Yolk Spread</button>
+            </div>
+          </div>
+
+          <label class="field-group qty-field">
+            Qty
+            <select id="bagel-qty-select" class="qty-select"></select>
+          </label>
         </div>
       </div>
-      <div class="item-modal-footer">
-        <div class="stepper">
-          <button class="step-btn" id="bagel-qty-dec" type="button" aria-label="Decrease quantity">−</button>
-          <span id="bagel-qty-value">1</span>
-          <button class="step-btn" id="bagel-qty-inc" type="button" aria-label="Increase quantity">+</button>
-        </div>
-        <button class="pill-btn primary full" id="add-bagel-to-order" type="button">Add 1 to order · $7.49</button>
-      </div>
+    </div>
+    <div class="item-modal-footer">
+      <button class="pill-btn primary full" id="add-bagel-to-order" type="button">Add 1 to order · $7.49</button>
     </div>
   </div>
 </div>
@@ -432,7 +395,6 @@
 
   <div class="drawer-footer">
     <div class="summary-line"><span>Subtotal</span><span id="drawer-subtotal">$0.00</span></div>
-    <div class="summary-line" id="drawer-delivery-fee-line" hidden><span>Delivery Fee</span><span id="drawer-delivery-fee">$0.00</span></div>
     <div class="summary-line" id="drawer-promo-line" hidden><span>Promo</span><span id="drawer-promo">−$0.00</span></div>
     <div class="summary-line"><span>Tax</span><span id="drawer-tax">$0.00</span></div>
     <div class="summary-divider"></div>
@@ -440,6 +402,49 @@
     <button class="pill-btn primary full" id="go-to-checkout" type="button">Go to checkout</button>
   </div>
 </aside>
+
+<div class="overlay" id="pickup-settings-backdrop" hidden></div>
+<div class="pickup-settings-modal" id="pickup-settings-modal" role="dialog" aria-modal="true" aria-labelledby="pickup-settings-title" hidden>
+  <div class="pickup-settings-inner">
+    <button class="close-btn" id="close-pickup-settings" type="button" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h1 id="pickup-settings-title">Schedule pickup</h1>
+    <div class="pickup-date-row-wrap">
+      <div class="pickup-date-row" id="pickup-date-list"></div>
+      <button class="pickup-date-nav" id="pickup-date-scroll-next" type="button" aria-label="Show more dates">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="pickup-time-scroll">
+      <div class="radio-list" id="pickup-time-list"></div>
+    </div>
+    <div class="pickup-settings-actions">
+      <button class="pill-btn primary full" id="confirm-pickup-settings" type="button">Confirm</button>
+      <button class="pill-btn outline full" id="cancel-pickup-settings" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="store-locator-backdrop" hidden></div>
+<div class="pickup-settings-modal" id="store-locator-modal" role="dialog" aria-modal="true" aria-labelledby="store-locator-title" hidden>
+  <div class="store-locator-inner">
+    <button class="close-btn" id="close-store-locator" type="button" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h1 id="store-locator-title">Choose a store</h1>
+    <div class="store-locator-body">
+      <div class="store-locator-list" id="store-locator-list"></div>
+      <div class="store-locator-map">
+        <iframe id="store-locator-map-frame" title="Store location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+    <div class="pickup-settings-actions">
+      <button class="pill-btn primary full" id="confirm-store-locator" type="button">Confirm</button>
+      <button class="pill-btn outline full" id="cancel-store-locator" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>
