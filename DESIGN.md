@@ -34,6 +34,11 @@ typography:
     fontSize: "20px"
     fontWeight: 700
     lineHeight: "28px"
+  price:
+    fontFamily: "Plus Jakarta Sans, sans-serif"
+    fontSize: "20px"
+    fontWeight: 700
+    lineHeight: "26px"
   body:
     fontFamily: "Plus Jakarta Sans, sans-serif"
     fontSize: "16px"
@@ -116,13 +121,13 @@ components:
 
 One earned, confident gold sits against warm cream and near-black ink — everything else in the system stays quiet on purpose, so the gold reads as quality rather than decoration. The palette, radius language, and shadow system all reinforce the same restraint: a single saturated accent, a near-universal pill/rounded corner, and a warm gold glow that appears exclusively on primary calls to action. Nothing competes with the yolk.
 
-Typography carries the same discipline in two voices: Nunito at extrabold/bold weight is reserved for headings and prices only, never body copy; Plus Jakarta Sans handles everything else, from paragraph text down to the all-caps 13px navigation labels. The system was audited from the live deviledeggco.com site and cross-checked against the DECo_Order_260920 Figma file — it is a real, evidenced brand system, not an invented one.
+Typography carries the same discipline in two voices: Nunito at extrabold/bold weight is reserved for headings only, never body copy and never a number; Plus Jakarta Sans handles everything else — paragraph text, the all-caps 13px navigation labels, and every price or total figure in the product. The system was audited from the live deviledeggco.com site and cross-checked against the DECo_Order_260920 Figma file — it is a real, evidenced brand system, not an invented one.
 
 **Key Characteristics:**
 - One saturated accent (`#F7BA17`), rare and rule-bound to primary actions
 - Warm cream surfaces (`#FFF7EA`) as the dominant background, never stark white
 - Near-universal pill (`999px`) or soft (`8–16px`) corner radius; nothing sharp
-- Two-voice type system: Nunito extrabold/bold for headings & prices, Plus Jakarta Sans for everything else
+- Two-voice type system: Nunito extrabold/bold for headings only, Plus Jakarta Sans for everything else — prices and totals included
 - Low-contrast, tonal card shadows; the only colored shadow is the gold CTA glow
 
 ## Colors
@@ -165,12 +170,15 @@ Warm and restrained: a cream-and-ink neutral base carries almost the entire inte
 - **Display** (800, 28px/32px): page-level and card-level hero moments — store name, feature-card title ("Build Your Own Dozen"), confirmation heading.
 - **Headline** (700, 20px/28px): section headings — menu category titles ("Deviled Eggs"), checkout card headings ("Pickup details"), order-summary heading. Bold, not extrabold — this is the one deliberate weight step down from Display.
 - **Body** (400, 16px/24px): sidebar drawer-nav items, default paragraph text.
-- **Body Small** (400–600, 14px/20px): card prices (semibold), meta text and toggle labels (medium), form copy (regular).
+- **Body Small** (400–600, 14px/20px): small card prices (semibold), meta text and toggle labels (medium), form copy (regular).
+- **Price/Total** (700, Plus Jakarta Sans): every price and "Total" row is bold Plus Jakarta Sans, but size follows context, not a fixed step. The feature-card price, checkout order-total, and confirmation total stand alone and run 20px/28px — the same scale as Headline, deliberately, so a number reads with as much weight as a section title. The cart drawer's Total is compact instead: 14px/20px, flush with its own Subtotal/Tax neighbors (per the Figma order-dialog reference), told apart only by weight and `--deg-ink-deep` color, not a size jump.
 - **Body XS** (400–600, 12px/18px): address lines, sidebar hours, delivery-info copy.
 - **Label** (700, 13px, uppercase): the top navigation only — the single place in the system that uses uppercase tracking-free bold caps.
 
 ### Named Rules
-**The Two-Voice Rule.** Nunito extrabold/bold is reserved for headings and prices — never body copy, never buttons, never labels. Plus Jakarta Sans carries every other voice in the system, including the uppercase nav labels.
+**The Two-Voice Rule.** Nunito extrabold/bold is reserved for headings — never body copy, never buttons, never labels, and never a price or total. Plus Jakarta Sans carries every other voice in the system, including the uppercase nav labels and every number a customer has to read as money.
+
+**The Numbers-Are-Never-Nunito Rule.** An earlier pass in this file wrongly grouped "prices" in with Nunito's headings; a rounded extrabold display face reads as a logotype, not a ledger, and set a dollar figure it looks like a toy-store price tag. Every price and every "Total" — the feature-card price, the cart drawer total, the checkout order-total, the confirmation total — is Plus Jakarta Sans Bold (700) in `--deg-ink-deep`, at whatever size its own context calls for (see Price/Total above). Nunito's domain is strictly `h1`/`h2`/`h3` and named heading classes (`.feature-title`, `.menu-section h2`, `.checkout-card h2`, `.summary-panel h2`).
 
 ## Layout
 
@@ -208,7 +216,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 ### Buttons
 - **Shape:** pill (`999px` radius) for every variant.
 - **Primary:** Golden Yolk fill, Espresso-on-Gold text, bold (700) 15px, the brand glow shadow. One per screen — the single loudest element in view.
-- **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight — secondary actions like "Store info" and the cart drawer's "Apply" promo button.
+- **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight — secondary actions like "Store info".
 - **Outline:** transparent fill, 1.5px Deep Ink border, Deep Ink text, no shadow — tertiary/back actions.
 - **Icon buttons** (cart, close, quantity steppers, add-to-cart): circular, no border, centered icon; float above photo media use the Float shadow.
 - **Icon button hover (dark fill):** Deep Ink lightens to Warm Ember (`#554523`) on hover, a 150ms background transition.
@@ -249,7 +257,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 
 ### Do:
 - **Do** keep Golden Yolk to primary CTAs and active-selection states only — one per screen is the target.
-- **Do** use Nunito extrabold/bold exclusively for headings and prices; everything else is Plus Jakarta Sans.
+- **Do** use Nunito extrabold/bold exclusively for headings; everything else — including every price and total — is Plus Jakarta Sans.
 - **Do** make the gap between content groups larger than the gap within a group — that's the entire grouping mechanism in this system, not borders or dividers.
 - **Do** reuse an existing radius/shadow/spacing token before introducing a new value; the scales above already cover buttons, cards, panels, and photo containers.
 - **Do** prefer a project token over a raw Figma literal when a source design's color is unbound to a variable — several near-duplicate grays in the Figma file (`#4b4b4b`, `#5e5e5e`, `#6b6155`) are one-off authoring slips a few percent off Warm Taupe (`#635E57`), which is the bound, repeated token and the real source of truth.

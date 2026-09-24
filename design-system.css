@@ -90,7 +90,7 @@ button { font-family: var(--deg-font-body); cursor: pointer; }
    its own fill, then a dark ring provides contrast against any background —
    including gold primary buttons and active chips, where a flat outline in
    the same gold would be invisible. */
-a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep);
 }
@@ -109,7 +109,20 @@ input, select {
   min-width: 0; /* let inputs shrink inside a flex row instead of overflowing */
 }
 input::placeholder { color: var(--deg-ink-muted); }
-select { padding-right: 16px; }
+/* The browser's own dropdown arrow sits flush against whatever padding you
+   give it, with no visual gap of its own — a plain `select` reads as
+   cramped against the field's edge unless the arrow is drawn and placed
+   deliberately. Every dropdown in the product (quantity, country, and any
+   future one) inherits this rather than repeating it per field. */
+select {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23130D00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 16px 16px;
+}
 
 /* A labeled field, or a small group of them (a "Choose your flavors" label
    above a grid, a "Delivery instructions" label above its input). */
@@ -124,7 +137,7 @@ select { padding-right: 16px; }
 /* Two or more inputs side by side; stacks on narrow viewports (see the
    responsive block at the bottom of this file). */
 .input-row { display: flex; gap: 14px; }
-.input-row input { flex-grow: 1; }
+.input-row > * { flex-grow: 1; min-width: 0; }
 
 /* ---------- Buttons ----------
    One base class, `.pill-btn`, with fill/weight modifiers. Never introduce
@@ -179,8 +192,9 @@ select { padding-right: 16px; }
    so a user learns the pattern once. Pick by content shape — don't merge
    them, they serve different jobs:
      .radio-row  — single-select, label only (payment method).
-     .flavor-row — multi-select, label only, supports a disabled state
-                   when a selection cap is reached (flavor picker). */
+     .flavor-row — multi-select with a per-item quantity stepper (bagel
+                   spread, Build Your Own Dozen); the cap is enforced by
+                   disabling the +/- buttons, not the row itself. */
 .radio-list { display: flex; flex-direction: column; gap: 10px; }
 
 .radio-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 15px; color: var(--deg-ink-body); width: 100%; }
@@ -190,9 +204,6 @@ select { padding-right: 16px; }
 
 .flavor-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 13px 16px 13px 19px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); width: 100%; }
 .flavor-row.selected { border-color: var(--deg-gold); background: var(--deg-cream); }
-.flavor-row:disabled { opacity: .45; cursor: not-allowed; }
-.flavor-box { width: 24px; height: 24px; border-radius: 4px; border: 2px solid var(--deg-border-primary); flex: none; display: flex; align-items: center; justify-content: center; }
-.flavor-row.selected .flavor-box { background: var(--deg-gold); border-color: var(--deg-gold); color: var(--deg-ink-on-gold); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {

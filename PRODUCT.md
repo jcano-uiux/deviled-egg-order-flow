@@ -29,8 +29,8 @@ Freshness and made-to-order customization are the mechanism, not a generic deliv
 
 Confirmed and built:
 - Menu browsing by category, with a scrollable single-page layout.
-- Build Your Own Dozen item customization (choose up to 4 flavors from the full 19-flavor lineup — the same flavors listed on the live site's 24 Count Deviled Egg Platter — plus quantity and a kitchen note).
-- Cart with live subtotal/tax/total, quantity edits, and a promo code (`EGGSTRA10`).
+- Flavor customization across the whole Deviled Eggs lineup, not just the dozen: every packaged size (2 Pack, 6 Pack – 3 Flavors, 6 Pack – 6 Flavors, 12 Pack, 24 Count Platter) opens the same picker, allocating that size's own total piece count across up to that size's own max-flavor cap, in fixed steps (total ÷ max flavors) — verified per size against the live site rather than assumed from a formula, since the max-flavor cap and step size both vary independently per pack (e.g. the 24 Count Platter caps at 3 flavors with a step of 8, not the naive 4/6). Each flavor also exposes its own real "NO: ingredient" exclusion toggles. The Try Them All Platter is the one exception — it has no picker on the live site (a fixed platter of every flavor) and stays a plain one-click add here too.
+- Cart with live subtotal/tax/total and quantity edits.
 - Pickup flow: store selection (one of the 4 locations) and pickup time (ASAP or schedule).
 - Delivery mode on the menu page: toggling "Delivery" replaces the menu content with a "We deliver through" section linking out to DoorDash, Uber Eats, and Grubhub (each opens in a new tab). This site does not take delivery orders itself.
 - Tip selection and order confirmation with a Placed → Preparing → Ready/On the way progress tracker (pickup orders only).
@@ -47,8 +47,8 @@ Known inconsistency (pending cleanup, not yet resolved): the checkout page still
 
 ## Evidence on Hand
 
-- Real menu items and prices, sourced from deviledeggco.com: packaged deviled egg counts (2 Pack $4.99 up to the 24 Count Platter $44.99), Build Your Own Dozen ($24.99, up to 4 of 19 flavors), protein bowls (from $14.99).
-- The 19-flavor lineup is copied verbatim from the live site's 24 Count Deviled Egg Platter product page.
+- Real menu items and prices, sourced from deviledeggco.com: packaged deviled egg counts (2 Pack $4.99 up to the 24 Count Platter $44.99), protein bowls (from $14.99).
+- The 19-flavor lineup, each flavor's own "NO: ingredient" exclusion list, and every pack size's own flavor-picker limits are copied verbatim from each product's live page: 2 Pack (2 pieces, up to 2 flavors, step 1), 6 Pack – 3 Flavors (6 pieces, up to 3 flavors, step 2), 6 Pack – 6 Flavors (6 pieces, up to 6 flavors, step 1), 12 Pack / Build Your Own Dozen (12 pieces, up to 4 flavors, step 3), 24 Count Platter (24 pieces, up to 3 flavors, step 8).
 - Real store addresses for all four locations (used in pickup directions).
 - Real customer review language and a 4.9-star rating claim sourced from the deviledeggco.com homepage.
 - The three delivery-partner logos (DoorDash, Uber Eats, Grubhub) are real, official brand assets — fine for identifying actual delivery partners, but worth keeping in mind before sharing this prototype outside a design-mockup context.

@@ -1,6 +1,5 @@
 (() => {
   const TAX_RATE = 0.0825;
-  const PROMO_CODES = { EGGSTRA10: 0.10 };
 
   const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
   const LAUNCH_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -31,12 +30,18 @@
   };
 
   // Menu data extracted from the live ordering widget at deviledeggco.com/mckinney-tx/
+  // pickerConfig (total pieces + max distinct flavors) is verified per-product
+  // against each product's own live page — the max-flavor cap and the
+  // resulting step size (total ÷ maxFlavors) both vary per pack size and do
+  // NOT follow a single formula (e.g. the 24 Count Platter caps at 3 flavors,
+  // not 4, with a step of 8). "Try Them All" has no picker on the live site
+  // (it's a fixed platter of every flavor), so it carries none here either.
   const DEVILED_EGGS = [
-    { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99, note: '140 Cal.', desc: 'Two of our signature gourmet deviled eggs — perfect for a quick snack or a tasty add-on to any meal.', image: 'assets/products/2-pack.jpg' },
-    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99, note: '420 Cal.', desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', image: 'assets/products/6-pack-3-flavors.jpg' },
-    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99, note: '420 Cal.', desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', image: 'assets/products/6-pack-6-flavors.jpg' },
-    { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99, note: '840 Cal.', desc: 'A dozen of our gourmet deviled eggs — perfect for sharing at parties, picnics, or family gatherings.', image: 'assets/products/12-pack.jpg' },
-    { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg' },
+    { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99, note: '140 Cal.', desc: 'Two of our signature gourmet deviled eggs — perfect for a quick snack or a tasty add-on to any meal.', image: 'assets/products/2-pack.jpg', pickerConfig: { total: 2, maxFlavors: 2 } },
+    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99, note: '420 Cal.', desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', image: 'assets/products/6-pack-3-flavors.jpg', pickerConfig: { total: 6, maxFlavors: 3 } },
+    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99, note: '420 Cal.', desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', image: 'assets/products/6-pack-6-flavors.jpg', pickerConfig: { total: 6, maxFlavors: 6 } },
+    { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99, note: '840 Cal.', desc: 'A dozen of our gourmet deviled eggs — perfect for sharing at parties, picnics, or family gatherings.', image: 'assets/products/12-pack.jpg', pickerConfig: { total: 12, maxFlavors: 4 } },
+    { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg', pickerConfig: { total: 24, maxFlavors: 3 } },
     { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
   ];
 
@@ -81,39 +86,47 @@
   const BAGEL_NOTE = '350 Cal.';
   const BAGEL_DESC = 'A fresh bagel loaded with our signature deviled egg salad — the perfect quick bite.';
 
+  // Matches deviledeggco.com's own flavor pickers: pieces are allocated
+  // across flavors in fixed steps (total ÷ max flavors) rather than toggled
+  // on/off, and Add to order stays disabled until every piece is allocated.
+  // The active product's own total/maxFlavors/step (see openDozenModal)
+  // replace what used to be one fixed 12/4/3 configuration.
+  let activeProduct = null;
+
+  // Exclusion lists sourced verbatim from deviledeggco.com's own 12 Pack
+  // flavor picker (each flavor's "NO: ___" ingredient toggles).
   const FLAVORS = [
-    { id: 'blte', label: 'BLTE' },
-    { id: 'backyard-bbq', label: 'Backyard BBQ' },
-    { id: 'ballpark-special', label: 'Ballpark Special' },
-    { id: 'buffalo-blue-cheese', label: 'Buffalo Blue Cheese' },
-    { id: 'buffalo-chicken-ranch', label: 'Buffalo Chicken Ranch' },
-    { id: 'cali-roll', label: 'Cali Roll' },
-    { id: 'cheeseburger', label: 'Cheeseburger' },
-    { id: 'chicken-bacon-ranch', label: 'Chicken Bacon Ranch' },
-    { id: 'chicken-caesar', label: 'Chicken Caesar' },
-    { id: 'chicken-pickle-egg', label: 'Chicken and Pickle Egg' },
-    { id: 'chicken-waffle', label: 'Chicken and Waffle' },
-    { id: 'crab-rangoon', label: 'Crab Rangoon' },
-    { id: 'everything-seasoning', label: 'Everything Seasoning' },
-    { id: 'jalapeno-popper', label: 'Jalapeño Popper' },
-    { id: 'smoked-salmon', label: 'Smoked Salmon' },
-    { id: 'south-of-the-border', label: 'South of the Border' },
-    { id: 'sriracha-bacon', label: 'Sriracha Bacon' },
-    { id: 'traditional', label: 'Traditional' },
-    { id: 'walking-taco', label: 'Walking Taco' },
+    { id: 'blte', label: 'BLTE', exclusions: ['Bacon', 'Lettuce', 'Tomato', 'Ranch sauce'] },
+    { id: 'backyard-bbq', label: 'Backyard BBQ', exclusions: ['Brisket', 'Pickled Jalapeño', 'Red Onion', 'BBQ Sauce'] },
+    { id: 'ballpark-special', label: 'Ballpark Special', exclusions: ['Red Onion', 'Dill Pickle', 'All-beef Frank', 'Lay’s Potato Chips', 'Ketchup', 'Mustard'] },
+    { id: 'buffalo-blue-cheese', label: 'Buffalo Blue Cheese', exclusions: ['Blue cheese', 'Buffalo sauce'] },
+    { id: 'buffalo-chicken-ranch', label: 'Buffalo Chicken Ranch', exclusions: ['Grilled chicken', 'Red onion', 'Buffalo sauce'] },
+    { id: 'cali-roll', label: 'Cali Roll', exclusions: ['Cucumber', 'Black sesame', 'Teriyaki'] },
+    { id: 'cheeseburger', label: 'Cheeseburger', exclusions: ['Beef', 'American cheese', 'Pickle', 'Onion', 'Lettuce', 'Ketchup'] },
+    { id: 'chicken-bacon-ranch', label: 'Chicken Bacon Ranch', exclusions: ['Grilled chicken', 'Bacon', 'Cheddar', 'Ranch sauce'] },
+    { id: 'chicken-caesar', label: 'Chicken Caesar', exclusions: ['Grilled chicken', 'Romaine lettuce', 'Creamy Caesar'] },
+    { id: 'chicken-pickle-egg', label: 'Chicken and Pickle Egg', exclusions: ['Grilled chicken', 'Dill pickle', 'Chick sauce'] },
+    { id: 'chicken-waffle', label: 'Chicken and Waffle', exclusions: ['Chicken', 'Waffle', 'Syrup'] },
+    { id: 'crab-rangoon', label: 'Crab Rangoon', exclusions: ['Sweet & sour crab', 'Wonton', 'Sweet & sour sauce'] },
+    { id: 'everything-seasoning', label: 'Everything Seasoning', exclusions: ['Everything bagel seasoning'] },
+    { id: 'jalapeno-popper', label: 'Jalapeño Popper', exclusions: ['Fresh jalapeño', 'Bacon', 'Chipotle sauce'] },
+    { id: 'smoked-salmon', label: 'Smoked Salmon', exclusions: ['Capers', 'Red onion', 'Smoked salmon', 'Everything bagel seasoning'] },
+    { id: 'south-of-the-border', label: 'South of the Border', exclusions: ['Fresh jalapeño', 'Cheddar'] },
+    { id: 'sriracha-bacon', label: 'Sriracha Bacon', exclusions: ['Bacon', 'Sriracha sauce'] },
+    { id: 'traditional', label: 'Traditional', exclusions: ['Paprika'] },
+    { id: 'walking-taco', label: 'Walking Taco', exclusions: ['Refried beans', 'Grilled chicken', 'Cheddar', 'Lettuce', 'Nacho Cheese Doritos', 'Sour cream'] },
   ];
 
   const state = {
     cart: [],
-    modalSelected: new Set(['traditional', 'buffalo-chicken-ranch', 'jalapeno-popper', 'smoked-salmon']),
+    modalFlavorQty: {},
+    modalExclusions: {},
     modalQty: 1,
     bagelToast: 'Not Toasted',
     bagelType: 'Plain',
     bagelFlavors: {},
     bagelOptions: new Set(),
     bagelQty: 1,
-    promo: null,
-    promoAmount: 0,
     mode: 'pickup',
     location: 'McKinney, TX',
     pickupDateKey: null,
@@ -123,9 +136,21 @@
     tipPct: 18,
   };
 
+  // Carts saved before product images were wired into the cart/checkout
+  // views persisted without an `image` field. Backfill it by name on load
+  // so an existing cart self-heals instead of staying stuck on the
+  // placeholder icon until the user manually clears it.
+  const PRODUCT_IMAGE_BY_NAME = {};
+  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING].forEach((p) => {
+    if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
+  });
+  PRODUCT_IMAGE_BY_NAME['Full Size Bagel'] = BAGEL_IMAGE;
+
   try {
     const saved = JSON.parse(localStorage.getItem('deg-cart') || 'null');
-    if (Array.isArray(saved)) state.cart = saved;
+    if (Array.isArray(saved)) {
+      state.cart = saved.map((item) => ({ ...item, image: item.image || PRODUCT_IMAGE_BY_NAME[item.name] }));
+    }
   } catch (e) { /* ignore corrupt storage */ }
 
   function persistCart() {
@@ -229,10 +254,14 @@
       const btn = document.createElement('button');
       btn.className = 'add-btn';
       btn.type = 'button';
-      btn.setAttribute('aria-label', 'Add ' + item.name + ' to order');
+      btn.setAttribute('aria-label', item.pickerConfig ? 'Customize ' + item.name : 'Add ' + item.name + ' to order');
       btn.innerHTML = ADD_ICON;
       const activate = () => {
-        addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1 });
+        if (item.pickerConfig) {
+          openDozenModal(item);
+        } else {
+          addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1, image: item.image });
+        }
       };
       btn.addEventListener('click', activate);
       media.appendChild(btn);
@@ -316,7 +345,7 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -328,35 +357,85 @@
     else if (!cartDrawer.hidden) closeCart();
     else if (!pickupSettingsModal.hidden) closePickupSettings();
     else if (!storeLocatorModal.hidden) closeStoreLocator();
+    else if (!addPaymentModal.hidden) closeAddPayment();
   });
 
   // ---------- Item customization modal ----------
   const modalBackdrop = document.getElementById('modal-backdrop');
   const itemModal = document.getElementById('item-modal');
 
+  function dozenAllocated() {
+    return Object.values(state.modalFlavorQty).reduce((sum, n) => sum + n, 0);
+  }
+
   function renderFlavorGrid() {
     const grid = document.getElementById('flavor-grid');
     grid.innerHTML = '';
+    const allocated = dozenAllocated();
     FLAVORS.forEach((f) => {
-      const selected = state.modalSelected.has(f.id);
-      const atLimit = state.modalSelected.size >= 4 && !selected;
-      const row = document.createElement('button');
-      row.type = 'button';
-      row.disabled = atLimit;
-      row.className = 'flavor-row' + (selected ? ' selected' : '');
-      row.innerHTML = `<span>${f.label}</span><span class="flavor-box">${selected ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>`;
-      row.addEventListener('click', () => {
-        if (selected) {
-          state.modalSelected.delete(f.id);
-        } else if (state.modalSelected.size < 4) {
-          state.modalSelected.add(f.id);
+      const qty = state.modalFlavorQty[f.id] || 0;
+      const atLimit = qty <= 0 && allocated >= activeProduct.total;
+      const showExclusions = qty > 0 && f.exclusions && f.exclusions.length > 0;
+      const excluded = state.modalExclusions[f.id] || new Set();
+
+      // Selecting a flavor and excluding an ingredient from it are one
+      // continuous card — the exclusion chips live inside the same
+      // .flavor-row button, not a separate block stacked below it.
+      const row = document.createElement('div');
+      row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
+      row.innerHTML = `
+        <div class="flavor-row-head">
+          <span>${f.label}</span>
+          <div class="mini-stepper">
+            <button class="mini-step-btn" type="button" aria-label="Remove a ${f.label} egg" ${qty <= 0 ? 'disabled' : ''}>−</button>
+            <span>${qty}</span>
+            <button class="mini-step-btn" type="button" aria-label="Add a ${f.label} egg" ${allocated >= activeProduct.total ? 'disabled' : ''}>+</button>
+          </div>
+        </div>
+        ${showExclusions ? `
+          <div class="flavor-exclusions">
+            <span class="flavor-exclusions-label">Remove ingredients</span>
+            <div class="chip-row">
+              ${f.exclusions.map((ing) => `<button class="chip exclude-chip${excluded.has(ing) ? ' active' : ''}" type="button">NO: ${ing}</button>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `;
+      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
+      decBtn.addEventListener('click', () => {
+        const current = state.modalFlavorQty[f.id] || 0;
+        if (current <= 0) return;
+        const next = current - activeProduct.step;
+        if (next <= 0) {
+          delete state.modalFlavorQty[f.id];
+          delete state.modalExclusions[f.id];
+        } else {
+          state.modalFlavorQty[f.id] = next;
         }
         renderFlavorGrid();
         renderModalFooter();
       });
+      incBtn.addEventListener('click', () => {
+        if (dozenAllocated() >= activeProduct.total) return;
+        state.modalFlavorQty[f.id] = (state.modalFlavorQty[f.id] || 0) + activeProduct.step;
+        renderFlavorGrid();
+        renderModalFooter();
+      });
+      if (showExclusions) {
+        row.querySelectorAll('.exclude-chip').forEach((chip, i) => {
+          chip.addEventListener('click', () => {
+            const ing = f.exclusions[i];
+            const set = state.modalExclusions[f.id] || new Set();
+            if (set.has(ing)) set.delete(ing); else set.add(ing);
+            state.modalExclusions[f.id] = set;
+            renderFlavorGrid();
+          });
+        });
+      }
+
       grid.appendChild(row);
     });
-    document.getElementById('flavor-count').textContent = `${state.modalSelected.size}/4 selected`;
+    document.getElementById('flavor-count').textContent = `Allocated: ${allocated}/${activeProduct.total}`;
   }
 
   function populateQtySelect(select, max = 10) {
@@ -371,18 +450,40 @@
 
   function renderModalFooter() {
     document.getElementById('qty-select').value = String(state.modalQty);
-    const total = 24.99 * state.modalQty;
-    document.getElementById('add-to-order').textContent = `Add ${state.modalQty} to order · ${money(total)}`;
+    const total = activeProduct.price * state.modalQty;
+    const allocated = dozenAllocated();
+    const btn = document.getElementById('add-to-order');
+    btn.disabled = allocated !== activeProduct.total;
+    btn.textContent = allocated === activeProduct.total
+      ? `Add ${state.modalQty} to order · ${money(total)}`
+      : `Allocate all ${activeProduct.total} eggs to continue`;
   }
 
-  function openDozenModal() {
+  function openDozenModal(product) {
     lastFocusedEl = document.activeElement;
-    state.modalSelected = new Set(['traditional', 'buffalo-chicken-ranch', 'jalapeno-popper', 'smoked-salmon']);
+    activeProduct = {
+      ...product,
+      total: product.pickerConfig.total,
+      maxFlavors: product.pickerConfig.maxFlavors,
+      step: product.pickerConfig.total / product.pickerConfig.maxFlavors,
+    };
+    state.modalFlavorQty = {};
+    state.modalExclusions = {};
     state.modalQty = 1;
     document.getElementById('item-note').value = '';
     populateQtySelect(document.getElementById('qty-select'));
+
+    document.getElementById('dozen-modal-title').textContent = activeProduct.name;
+    document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
+    document.getElementById('dozen-modal-image').src = activeProduct.image;
+    document.getElementById('dozen-modal-desc').textContent =
+      `${activeProduct.total} deviled eggs, hand piped fresh daily. Choose up to ${activeProduct.maxFlavors} flavors — use +/− to allocate all ${activeProduct.total} eggs.`;
+    itemModal.querySelector('.item-modal-header-title').textContent = activeProduct.name;
+
     renderFlavorGrid();
     renderModalFooter();
+    itemModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    itemModal.querySelector('.item-modal-header-title').classList.remove('visible');
     modalBackdrop.hidden = false;
     itemModal.hidden = false;
     updateInert();
@@ -396,7 +497,9 @@
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
-  document.getElementById('open-dozen-modal').addEventListener('click', openDozenModal);
+  document.getElementById('open-dozen-modal').addEventListener('click', () => {
+    openDozenModal(DEVILED_EGGS.find((p) => p.id === '12-pack'));
+  });
   document.getElementById('close-modal').addEventListener('click', closeDozenModal);
   modalBackdrop.addEventListener('click', closeDozenModal);
 
@@ -406,14 +509,19 @@
   });
 
   document.getElementById('add-to-order').addEventListener('click', () => {
-    const flavorLabels = FLAVORS.filter((f) => state.modalSelected.has(f.id)).map((f) => f.label);
+    if (dozenAllocated() !== activeProduct.total) return;
+    const flavorLabels = FLAVORS.filter((f) => (state.modalFlavorQty[f.id] || 0) > 0).map((f) => {
+      const excluded = state.modalExclusions[f.id];
+      return excluded && excluded.size ? `${f.label} (no ${[...excluded].join(', ').toLowerCase()})` : f.label;
+    });
     const note = document.getElementById('item-note').value.trim();
     addToCart({
-      key: 'dozen-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
-      name: 'Build Your Own Dozen',
+      key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
+      name: activeProduct.name,
       sub: flavorLabels.join(', ') + (note ? ' · Note: ' + note : ''),
-      price: 24.99,
+      price: activeProduct.price,
       qty: state.modalQty,
+      image: activeProduct.image,
     });
     closeDozenModal();
     openCart();
@@ -422,6 +530,22 @@
   // ---------- Bagel customization modal ----------
   const bagelModalBackdrop = document.getElementById('bagel-modal-backdrop');
   const bagelModal = document.getElementById('bagel-modal');
+
+  // The product name lives in the scrollable body (next to the photo), so
+  // it disappears once scrolled past. Echo it into the fixed header, only
+  // once the real title has scrolled out of view, so it isn't shown twice
+  // on open.
+  function wireHeaderTitleReveal(modalRoot, h1Id) {
+    const scrollEl = modalRoot.querySelector('.item-modal-scroll');
+    const h1 = document.getElementById(h1Id);
+    const headerTitle = modalRoot.querySelector('.item-modal-header-title');
+    scrollEl.addEventListener('scroll', () => {
+      const revealed = h1.getBoundingClientRect().bottom < scrollEl.getBoundingClientRect().top;
+      headerTitle.classList.toggle('visible', revealed);
+    });
+  }
+  wireHeaderTitleReveal(itemModal, 'dozen-modal-title');
+  wireHeaderTitleReveal(bagelModal, 'bagel-modal-title');
 
   function renderBagelFlavorSteppers() {
     const container = document.getElementById('bagel-flavor-steppers');
@@ -475,6 +599,8 @@
     document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.remove('active'));
     renderBagelFlavorSteppers();
     renderBagelModalFooter();
+    bagelModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    bagelModal.querySelector('.item-modal-header-title').classList.remove('visible');
     bagelModalBackdrop.hidden = false;
     bagelModal.hidden = false;
     updateInert();
@@ -538,6 +664,7 @@
       sub: parts.join(' · '),
       price: BAGEL_PRICE,
       qty: state.bagelQty,
+      image: BAGEL_IMAGE,
     });
     closeBagelModal();
     openCart();
@@ -583,11 +710,9 @@
 
   function computeTotals() {
     const subtotal = cartSubtotal();
-    const promoAmount = state.promo ? subtotal * state.promo : 0;
-    const taxedBase = Math.max(0, subtotal - promoAmount);
-    const tax = taxedBase * TAX_RATE;
-    const total = taxedBase + tax;
-    return { subtotal, promoAmount, tax, total };
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+    return { subtotal, tax, total };
   }
 
   function renderDrawer() {
@@ -604,7 +729,7 @@
     state.cart.forEach((item, index) => {
       const row = document.createElement('div');
       row.className = 'drawer-item';
-      const thumb = eggThumb();
+      const thumb = productThumb(item);
       thumb.style.width = '56px';
       thumb.style.height = '56px';
       row.appendChild(thumb);
@@ -645,40 +770,17 @@
       list.appendChild(row);
     });
 
-    const { subtotal, promoAmount, tax, total } = computeTotals();
+    const { subtotal, tax, total } = computeTotals();
     document.getElementById('drawer-subtotal').textContent = money(subtotal);
     document.getElementById('drawer-tax').textContent = money(tax);
     document.getElementById('drawer-total').textContent = money(total);
-    const promoLine = document.getElementById('drawer-promo-line');
-    if (promoAmount > 0) {
-      promoLine.hidden = false;
-      document.getElementById('drawer-promo').textContent = '−' + money(promoAmount);
-    } else {
-      promoLine.hidden = true;
-    }
 
     const pinIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
     const chip = document.getElementById('fulfillment-chip');
-    chip.innerHTML = `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · ${pickupDateLabel(state.pickupDateKey)}, ${state.pickupTimeLabel}</span>`;
+    chip.innerHTML = `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · ${pickupDateLabel(state.pickupDateKey)} · ${state.pickupTimeLabel}</span>`;
 
     document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }
-
-  document.getElementById('apply-promo').addEventListener('click', () => {
-    const code = document.getElementById('promo-input').value.trim().toUpperCase();
-    const msg = document.getElementById('promo-msg');
-    if (!code) return;
-    if (PROMO_CODES[code]) {
-      state.promo = PROMO_CODES[code];
-      msg.textContent = `Promo applied — ${Math.round(state.promo * 100)}% off your order.`;
-      msg.classList.remove('error');
-    } else {
-      state.promo = null;
-      msg.textContent = 'That code isn’t valid. Try EGGSTRA10.';
-      msg.classList.add('error');
-    }
-    renderDrawer();
-  });
 
   // ---------- View switching ----------
   const views = {
@@ -689,6 +791,7 @@
 
   function showView(name) {
     Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
+    document.body.classList.toggle('is-checkout', name === 'checkout');
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   }
 
@@ -714,24 +817,51 @@
 
   // ---------- Store locator modal (store list + map) ----------
   let pendingStoreLocation = null;
+  let mapLoadTimer = null;
+  const MAP_LOAD_TIMEOUT_MS = 6000;
 
   function renderStoreLocatorSummary() {
     document.getElementById('store-locator-name').textContent = state.location;
     document.getElementById('store-locator-address').textContent = STORE_ADDRESSES[state.location];
   }
 
+  function showMapStatus(mode, address) {
+    const status = document.getElementById('store-locator-map-status');
+    const statusText = document.getElementById('store-locator-map-status-text');
+    status.hidden = false;
+    status.classList.toggle('error', mode === 'error');
+    statusText.innerHTML = mode === 'error'
+      ? `Map unavailable<span class="store-locator-map-status-address">${address}</span>`
+      : 'Loading map…';
+  }
+
   function renderStoreLocatorMap() {
     const address = STORE_ADDRESSES[pendingStoreLocation];
-    document.getElementById('store-locator-map-frame').src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+    const iframe = document.getElementById('store-locator-map-frame');
+
+    clearTimeout(mapLoadTimer);
+    showMapStatus('loading');
+
+    iframe.onload = () => {
+      clearTimeout(mapLoadTimer);
+      document.getElementById('store-locator-map-status').hidden = true;
+    };
+    iframe.onerror = () => showMapStatus('error', address);
+    mapLoadTimer = setTimeout(() => showMapStatus('error', address), MAP_LOAD_TIMEOUT_MS);
+
+    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
   }
 
   function renderStoreLocatorList() {
     const list = document.getElementById('store-locator-list');
     list.innerHTML = '';
     Object.keys(STORE_ADDRESSES).forEach((name) => {
+      const isActive = name === pendingStoreLocation;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'store-locator-row' + (name === pendingStoreLocation ? ' active' : '');
+      btn.className = 'store-locator-row' + (isActive ? ' active' : '');
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', String(isActive));
       btn.innerHTML = `<span class="store-locator-row-name">${name}</span><span class="store-locator-row-address">${STORE_ADDRESSES[name]}</span>`;
       btn.addEventListener('click', () => {
         if (name === pendingStoreLocation) return;
@@ -773,6 +903,92 @@
     renderStoreLocatorSummary();
     renderDrawer();
     closeStoreLocator();
+  });
+
+  // ---------- Add payment method modal ----------
+  const addPaymentBackdrop = document.getElementById('add-payment-backdrop');
+  const addPaymentModal = document.getElementById('add-payment-modal');
+  const addPaymentForm = document.getElementById('add-payment-form');
+  const addPaymentSubmit = document.getElementById('add-payment-submit');
+  const cardNumberInput = document.getElementById('payment-card-number');
+  const cardExpInput = document.getElementById('payment-card-exp');
+  const cardCvvInput = document.getElementById('payment-card-cvv');
+  const cardZipInput = document.getElementById('payment-card-zip');
+  const cardNicknameInput = document.getElementById('payment-card-nickname');
+
+  function cardBrand(digits) {
+    if (digits.startsWith('4')) return 'Visa';
+    if (/^5[1-5]/.test(digits)) return 'Mastercard';
+    if (/^3[47]/.test(digits)) return 'Amex';
+    return 'Card';
+  }
+
+  function isAddPaymentFormValid() {
+    const digits = cardNumberInput.value.replace(/\D/g, '');
+    const expValid = /^\d{2}\s?\/\s?\d{2}$/.test(cardExpInput.value.trim());
+    const cvvValid = /^\d{3,4}$/.test(cardCvvInput.value.trim());
+    return digits.length >= 12 && digits.length <= 19 && expValid && cvvValid && cardZipInput.value.trim().length > 0;
+  }
+
+  function refreshAddPaymentSubmit() {
+    addPaymentSubmit.disabled = !isAddPaymentFormValid();
+  }
+
+  cardNumberInput.addEventListener('input', () => {
+    const digits = cardNumberInput.value.replace(/\D/g, '').slice(0, 19);
+    cardNumberInput.value = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    refreshAddPaymentSubmit();
+  });
+  cardExpInput.addEventListener('input', () => {
+    const digits = cardExpInput.value.replace(/\D/g, '').slice(0, 4);
+    cardExpInput.value = digits.length > 2 ? `${digits.slice(0, 2)} / ${digits.slice(2)}` : digits;
+    refreshAddPaymentSubmit();
+  });
+  cardCvvInput.addEventListener('input', () => {
+    cardCvvInput.value = cardCvvInput.value.replace(/\D/g, '').slice(0, 4);
+    refreshAddPaymentSubmit();
+  });
+  cardZipInput.addEventListener('input', refreshAddPaymentSubmit);
+
+  function openAddPayment() {
+    lastFocusedEl = document.activeElement;
+    addPaymentForm.reset();
+    refreshAddPaymentSubmit();
+    addPaymentBackdrop.hidden = false;
+    addPaymentModal.hidden = false;
+    updateInert();
+    cardNumberInput.focus();
+  }
+
+  function closeAddPayment() {
+    addPaymentBackdrop.hidden = true;
+    addPaymentModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('open-add-payment').addEventListener('click', openAddPayment);
+  document.getElementById('close-add-payment').addEventListener('click', closeAddPayment);
+  addPaymentBackdrop.addEventListener('click', closeAddPayment);
+
+  addPaymentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!isAddPaymentFormValid()) return;
+    const digits = cardNumberInput.value.replace(/\D/g, '');
+    const last4 = digits.slice(-4);
+    const nickname = cardNicknameInput.value.trim();
+    const label = `${cardBrand(digits)} •••• ${last4}${nickname ? ` (${nickname})` : ''}`;
+
+    const row = document.createElement('button');
+    row.className = 'radio-row active';
+    row.type = 'button';
+    row.dataset.value = label;
+    row.innerHTML = `<span class="radio-dot"></span>${label}`;
+    document.querySelectorAll('#payment-picker .radio-row').forEach((b) => b.classList.remove('active'));
+    document.getElementById('open-add-payment').before(row);
+
+    state.payment = label;
+    closeAddPayment();
   });
 
   // ---------- Pickup settings modal (date + time picker) ----------
@@ -866,6 +1082,14 @@
   // Confirm commits it to state, Cancel/X/backdrop just discard it.
   let pendingPickup = null;
 
+  function updatePickupDateFade() {
+    const list = document.getElementById('pickup-date-list');
+    const wrap = document.getElementById('pickup-date-row-wrap');
+    const max = list.scrollWidth - list.clientWidth;
+    wrap.classList.toggle('can-scroll-left', list.scrollLeft > 1);
+    wrap.classList.toggle('can-scroll-right', list.scrollLeft < max - 1);
+  }
+
   function renderPickupDateList() {
     const list = document.getElementById('pickup-date-list');
     list.innerHTML = '';
@@ -884,6 +1108,7 @@
       });
       list.appendChild(btn);
     });
+    updatePickupDateFade();
   }
 
   function renderPickupTimeList() {
@@ -914,6 +1139,7 @@
     pickupSettingsBackdrop.hidden = false;
     pickupSettingsModal.hidden = false;
     updateInert();
+    updatePickupDateFade();
     document.getElementById('close-pickup-settings').focus();
   }
 
@@ -929,8 +1155,10 @@
   document.getElementById('cancel-pickup-settings').addEventListener('click', closePickupSettings);
   pickupSettingsBackdrop.addEventListener('click', closePickupSettings);
   document.getElementById('pickup-date-scroll-next').addEventListener('click', () => {
-    document.getElementById('pickup-date-list').scrollBy({ left: 200, behavior: 'smooth' });
+    const list = document.getElementById('pickup-date-list');
+    list.scrollBy({ left: list.clientWidth, behavior: 'smooth' });
   });
+  document.getElementById('pickup-date-list').addEventListener('scroll', updatePickupDateFade);
   document.getElementById('confirm-pickup-settings').addEventListener('click', () => {
     state.pickupDateKey = pendingPickup.dateKey;
     state.pickupTimeId = pendingPickup.timeId;
@@ -961,31 +1189,46 @@
     const list = document.getElementById('checkout-items');
     list.innerHTML = '';
     state.cart.forEach((item) => {
-      const line = document.createElement('div');
-      line.className = 'summary-line';
-      line.innerHTML = `<span>${item.name} ×${item.qty}</span><span>${money(item.price * item.qty)}</span>`;
-      list.appendChild(line);
+      const row = document.createElement('div');
+      row.className = 'drawer-item';
+      const thumb = productThumb(item);
+      thumb.style.width = '56px';
+      thumb.style.height = '56px';
+      row.appendChild(thumb);
+
+      const body = document.createElement('div');
+      body.className = 'drawer-item-body';
+      body.innerHTML = `
+        <span class="drawer-item-name">${item.name} ×${item.qty}</span>
+        ${item.sub ? `<span class="drawer-item-sub">${item.sub}</span>` : ''}
+        <span class="drawer-item-price">${money(item.price * item.qty)}</span>
+      `;
+      row.appendChild(body);
+      list.appendChild(row);
     });
+    const totalQty = state.cart.reduce((sum, item) => sum + item.qty, 0);
+    document.getElementById('checkout-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
     renderCheckoutTotals();
   }
 
+  const orderSummaryToggle = document.getElementById('toggle-order-summary');
+  const orderSummaryCollapse = document.getElementById('order-summary-collapse');
+  orderSummaryToggle.addEventListener('click', () => {
+    const expanded = orderSummaryToggle.getAttribute('aria-expanded') === 'true';
+    orderSummaryToggle.setAttribute('aria-expanded', String(!expanded));
+    orderSummaryCollapse.classList.toggle('collapsed', expanded);
+  });
+
   function renderCheckoutTotals() {
-    const { subtotal, promoAmount, tax, total: preTipTotal } = computeTotals();
-    const tipAmt = (subtotal - promoAmount) * (state.tipPct / 100);
+    const { subtotal, tax, total: preTipTotal } = computeTotals();
+    const tipAmt = subtotal * (state.tipPct / 100);
     const total = preTipTotal + tipAmt;
 
     document.getElementById('sum-subtotal').textContent = money(subtotal);
     document.getElementById('sum-tax').textContent = money(tax);
     document.getElementById('sum-tip').textContent = money(tipAmt);
     document.getElementById('sum-total').textContent = money(total);
-    const promoLine = document.getElementById('promo-line');
-    if (promoAmount > 0) {
-      promoLine.hidden = false;
-      document.getElementById('sum-promo').textContent = '−' + money(promoAmount);
-    } else {
-      promoLine.hidden = true;
-    }
-    document.getElementById('place-order').textContent = `Place order · ${money(total)}`;
+    document.getElementById('place-order').textContent = 'Place order';
     return total;
   }
 
@@ -1003,7 +1246,9 @@
     const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
     const dateLabel = pickupDateLabel(state.pickupDateKey);
     const readyBy = state.pickupTimeLabel.split(' – ')[1] || state.pickupTimeLabel;
-    const whenPhrase = dateLabel === 'Today' ? `by <strong>${readyBy}</strong>` : `on <strong>${dateLabel}</strong>, <strong>${readyBy}</strong>`;
+    const whenPhrase = dateLabel === 'Today' ? `by <strong>${readyBy}</strong>`
+      : dateLabel === 'Tomorrow' ? `tomorrow at <strong>${readyBy}</strong>`
+      : `on <strong>${dateLabel}</strong> at <strong>${readyBy}</strong>`;
 
     subEl.innerHTML = `Order <strong>${orderNumber}</strong> · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`;
     fulfillmentCard.innerHTML = `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`;
@@ -1019,7 +1264,6 @@
     document.getElementById('confirm-total').textContent = money(total);
 
     state.cart = [];
-    state.promo = null;
     persistCart();
     renderCartBadge();
 
