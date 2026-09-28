@@ -166,7 +166,7 @@ select {
    color, and (if it needs one) fixed position in its page stylesheet. Use
    `.icon-btn` directly for any new one rather than writing display/align/
    justify/radius again. */
-.icon-btn, .close-btn, .cart-btn, .mini-step-btn, .add-btn, .pickup-date-nav {
+.icon-btn, .close-btn, .cart-btn, .mini-step-btn, .add-btn, .pickup-date-nav, .nav-toggle {
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; border: none; flex: none; padding: 0; line-height: 1;
 }

@@ -26,6 +26,15 @@
         ],
         "createdAt": "2026-09-20T09:43:14.077Z",
         "reason": "matches deviledeggco.com's real brand background (--deg-cream #FFF7EA), audited off the live site by the deviled-egg-design-system skill — not a default AI choice"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "styles.css"
+        ],
+        "createdAt": "2026-09-28T16:58:51.923Z",
+        "reason": "Agent: .order-mode-pill is a stadium-shaped (999px radius) pill whose two segments (Pickup/Delivery) are genuinely different widths; scaling via transform (scaleX) instead of animating width would visually distort the semicircular end-caps into ellipses. The element is small, absolutely-positioned, and animates once per click for 250ms — negligible reflow cost, not a sustained/continuous animation."
       }
     ]
   }

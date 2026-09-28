@@ -45,23 +45,100 @@
     { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
   ];
 
+  // Every Eggceptional Bowl is a WooCommerce "variable" product on the live
+  // site (unlike Egg Salads/Platters, which are simple products) — each has
+  // its own Add-Ons (paid, priced per item), Free Eggstras (unpriced extras),
+  // and "No" exclusions matching that bowl's own ingredients. Sourced verbatim
+  // per bowl from deviledeggco.com rather than assumed to share one list —
+  // the add-on prices and exclusion lists both vary bowl to bowl. "Options"
+  // (Lite Sauce / Sauce on Side) is the one section identical across all
+  // seven, so it's a shared constant rather than repeated per bowl.
+  const BOWL_OPTIONS = ['Lite Sauce', 'Sauce on Side'];
+
   const PROTEIN_BOWLS = [
-    { id: 'avo-chick-blt', name: 'Avo Chick-BLT Eggceptional Bowl', price: 14.99, note: '79g Protein', desc: 'Avocado, grilled chicken, crispy bacon, lettuce, tomato, and our signature deviled eggs.', image: 'assets/products/avo-chick-blt-bowl.jpg' },
-    { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g Protein', desc: 'Seasoned beef, cheese, pickles, and our famous deviled eggs in bowl form.', image: 'assets/products/cheeseburger-bowl.jpg' },
-    { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Crisp romaine, parmesan, croutons, and our signature deviled eggs.', image: 'assets/products/caesar-bowl.jpg' },
-    { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99, desc: 'Bold buffalo flavors paired with cool ranch and our signature deviled eggs.', image: 'assets/products/buffalo-bowl.jpg' },
-    { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Seasoned meat, crunchy chips, cheese, salsa, and deviled eggs in one bowl.', image: 'assets/products/walking-taco-bowl.jpg' },
-    { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g Protein', desc: 'Slow-smoked brisket paired with our deviled eggs for bold Texas flavor.', image: 'assets/products/bangin-brisket-bowl.jpg' },
-    { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g Protein', desc: 'Hawaiian-inspired poke-style bowl with crisp vegetables and deviled eggs.', image: 'assets/products/pok-egg-bowl.jpg' },
+    { id: 'avo-chick-blt', name: 'Avo Chick-BLT Eggceptional Bowl', price: 14.99, note: '79g Protein', desc: 'Avocado, grilled chicken, crispy bacon, lettuce, tomato, and our signature deviled eggs.', image: 'assets/products/avo-chick-blt-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 3.00, note: '+4oz meat' },
+        { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Egg', price: 3.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
+      exclusions: ['Chicken', 'Bacon', 'Avo-Smash', 'Cheddar', 'Lettuce', 'Tomato', 'Ranch'],
+    },
+    { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g Protein', desc: 'Seasoned beef, cheese, pickles, and our famous deviled eggs in bowl form.', image: 'assets/products/cheeseburger-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 3.00, note: '+4oz meat' },
+        { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
+      exclusions: ['Hamburger', 'Cheese', 'Red Onion', 'Lettuce', 'Pickles', 'Ketchup'],
+    },
+    { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Crisp romaine, parmesan, croutons, and our signature deviled eggs.', image: 'assets/products/caesar-bowl.jpg',
+      addOns: [
+        { label: 'Substitute Salmon', price: 3.00 },
+        { label: 'Double Meat', price: 3.00, note: '+4oz meat' },
+        { label: 'Avocado Smash', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Eggs', price: 3.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Creamy Caesar', 'Ranch', 'Cholua Sauce', 'Teriyaki', 'Parmesan', 'Buffalo Sauce', 'Sweet & Sour', 'BBQ Sauce', 'Ranch'],
+      exclusions: ['Egg Whites', 'Grilled Chicken', 'Capers', 'Diced Red Onion', 'Shredded Romaine Lettuce', 'Creamy Caesar Dressing', 'Parmesan Cheese'],
+    },
+    { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99, desc: 'Bold buffalo flavors paired with cool ranch and our signature deviled eggs.', image: 'assets/products/buffalo-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 3.00, note: '+4oz meat' },
+        { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
+      exclusions: ['Grilled Chicken', 'Red Onion', 'Lettuce', 'Buffalo Sauce', 'Homemade Ranch', 'Cheddar', 'Egg White'],
+    },
+    { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Seasoned meat, crunchy chips, cheese, salsa, and deviled eggs in one bowl.', image: 'assets/products/walking-taco-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 3.00, note: '+4oz meat' },
+        { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Egg', price: 3.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
+      exclusions: ['Refried Beans', 'Sharp Cheddar Cheese', 'Cholula', 'Lettuce', 'Sour Cream', 'Doritos', 'Chicken', 'Egg White'],
+    },
+    { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g Protein', desc: 'Slow-smoked brisket paired with our deviled eggs for bold Texas flavor.', image: 'assets/products/bangin-brisket-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 5.00, note: '+4oz meat' },
+        { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
+      exclusions: ['Brisket', 'Pickled Jalapeño', 'Red Onion', 'BBQ Sauce', 'Cheese', 'Lettuce'],
+    },
+    { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g Protein', desc: 'Hawaiian-inspired poke-style bowl with crisp vegetables and deviled eggs.', image: 'assets/products/pok-egg-bowl.jpg',
+      addOns: [
+        { label: 'Double Meat', price: 4.00, note: '+4oz meat' },
+        { label: 'Avocado Smash', price: 2.00, note: '½ whole fresh avocado' },
+        { label: 'Eggstra Eggs', price: 3.00, note: '+3oz egg whites' },
+      ],
+      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Teriyaki', 'Parmesan', 'Buffalo Sauce', 'Sweet & Sour', 'BBQ Sauce', 'Ranch'],
+      exclusions: ['Egg Whites', 'Imitation Crab', 'Sriracha Aioli', 'Avocado Smash', 'Cucumber', 'Teriyaki', 'Black Sesame Seeds'],
+    },
   ];
 
+  // Both sizes are "pick one flavor for the whole tub" on the live site —
+  // a real picker (same +/- allocation widget and per-flavor exclusions as
+  // the deviled egg packs), not a plain add as first assumed. total:1/
+  // maxFlavors:1 means the picker's own generic "allocate all N" copy needs
+  // a singular-safe path (see openDozenModal/renderModalFooter) since every
+  // pack size before this had total > 1.
   const EGG_SALADS = [
-    { id: 'half-pint', name: '1/2 Pint Deviled Egg Salad – 8oz', price: 8.99, note: '320 Cal.', desc: 'Our creamy, tangy deviled egg salad in a convenient half-pint portion.', image: 'assets/products/egg-salad-half-pint.jpg' },
-    { id: 'whole-pint', name: 'Whole Pint Deviled Egg Salad – 16oz', price: 12.99, note: '640 Cal.', desc: 'A full pint of our signature deviled egg salad — perfect for sharing.', image: 'assets/products/egg-salad-pint.jpg' },
+    { id: 'half-pint', name: '1/2 Pint Deviled Egg Salad – 8oz', price: 8.99, note: '320 Cal.', desc: 'Our creamy, tangy deviled egg salad in a convenient half-pint portion.', image: 'assets/products/egg-salad-half-pint.jpg', pickerConfig: { total: 1, maxFlavors: 1 } },
+    { id: 'whole-pint', name: 'Whole Pint Deviled Egg Salad – 16oz', price: 12.99, note: '640 Cal.', desc: 'A full pint of our signature deviled egg salad — perfect for sharing.', image: 'assets/products/egg-salad-pint.jpg', pickerConfig: { total: 1, maxFlavors: 1 } },
   ];
 
   const PLATTERS = [
-    { id: '24-count', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg' },
+    // Same product as DEVILED_EGGS' '24-count-platter' — carries the same
+    // pickerConfig so it customizes here too instead of the plain add this
+    // card silently fell back to before (a real bug: this card and its
+    // Deviled Eggs twin used to behave differently for the identical item).
+    { id: '24-count', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg', pickerConfig: { total: 24, maxFlavors: 3 } },
     { id: 'try-them-all', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
   ];
 
@@ -73,6 +150,19 @@
     { id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, note: 'Per bundle · serves 10', desc: 'Fresh bagels with deviled egg salad plus our coffee bar — perfect for morning meetings.' },
     { id: 'hungry-team', name: 'The “Hungry Team”', price: 99.99, note: 'Per bundle · serves 10', desc: 'Our biggest catering bundle — feeds a hungry team with all the favorites.' },
     { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10', desc: 'A lighter catering option that still packs all the deviled egg flavor.' },
+  ];
+
+  // Per the current Figma menu-page layout: Catering's own section no
+  // longer renders on this page (catering has moved off the scrolling
+  // menu — the top nav's own "Catering" link is where that lives now),
+  // but "The All In Power Lunch" survives under a new Sandwich/Wrap
+  // section instead, matching that Figma page 1:1. CATERING above is
+  // left in place rather than deleted — none of its other six items
+  // appear anywhere in the current design, but the data is real (sourced
+  // from earlier work) and reversible/cheap to keep for whenever
+  // catering gets its own page.
+  const SANDWICH_WRAP = [
+    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes', desc: 'The complete lunch experience — deviled eggs, sides, and drinks for your team.', image: 'assets/products/all-in-power-lunch.jpg' },
   ];
 
   const BAGEL_FLAVORS = [
@@ -127,6 +217,11 @@
     bagelFlavors: {},
     bagelOptions: new Set(),
     bagelQty: 1,
+    bowlAddOns: new Set(),
+    bowlEggstras: new Set(),
+    bowlExclusions: new Set(),
+    bowlOptions: new Set(),
+    bowlQty: 1,
     mode: 'pickup',
     location: 'McKinney, TX',
     pickupDateKey: null,
@@ -141,7 +236,7 @@
   // so an existing cart self-heals instead of staying stuck on the
   // placeholder icon until the user manually clears it.
   const PRODUCT_IMAGE_BY_NAME = {};
-  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING].forEach((p) => {
+  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, ...SANDWICH_WRAP].forEach((p) => {
     if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
   });
   PRODUCT_IMAGE_BY_NAME['Full Size Bagel'] = BAGEL_IMAGE;
@@ -190,7 +285,7 @@
     renderShopGrid('protein-bowls-grid', PROTEIN_BOWLS, 'bowl', 'Protein bowl');
     renderShopGrid('egg-salads-grid', EGG_SALADS, 'saladcup', 'Egg salad');
     renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
-    renderShopGrid('catering-grid', CATERING, 'catering', 'Catering');
+    renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
     renderBagelCard();
     renderDeliveryGrid();
   }
@@ -254,13 +349,15 @@
       const btn = document.createElement('button');
       btn.className = 'add-btn';
       btn.type = 'button';
-      btn.setAttribute('aria-label', item.pickerConfig ? 'Customize ' + item.name : 'Add ' + item.name + ' to order');
+      btn.setAttribute('aria-label', (item.pickerConfig || item.addOns) ? 'Customize ' + item.name : 'View ' + item.name);
       btn.innerHTML = ADD_ICON;
       const activate = () => {
         if (item.pickerConfig) {
           openDozenModal(item);
+        } else if (item.addOns) {
+          openBowlModal(item);
         } else {
-          addToCart({ key: keyPrefix + '-' + item.id, name: item.name, sub: cartCategory, price: item.price, qty: 1, image: item.image });
+          openQuickviewModal(item, { keyPrefix, cartCategory });
         }
       };
       btn.addEventListener('click', activate);
@@ -311,15 +408,222 @@
     grid.appendChild(card);
   }
 
+  // ---------- Nav menu toggle (tablet/mobile) ----------
+  // A lightweight disclosure, not a modal: no backdrop dim or inert
+  // background, since the page content is unrelated to picking a nav
+  // link. Closes on toggle, link click, outside click, or Escape.
+  const navToggle = document.getElementById('nav-toggle');
+  const navLinksEl = document.getElementById('nav-links');
+  const navInnerEl = document.querySelector('.nav-inner');
+  const navLogoEl = document.querySelector('.logo');
+  const navCartEl = document.getElementById('open-cart');
+
+  function setNavOpen(open) {
+    navLinksEl.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+    navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  // Compact (hamburger) nav is content-driven, not tied to a viewport
+  // breakpoint: an always-present, off-screen, single-line clone of the
+  // link list (.nav-links-probe) reports the width the full set actually
+  // needs, compared against the space actually available between the
+  // logo and cart button — the moment the real links would wrap to a
+  // second line, .nav-compact switches on, whatever width that happens
+  // to be at (a phone, a squeezed desktop window, page zoom).
+  const navProbe = document.createElement('div');
+  navProbe.className = 'nav-links-probe';
+  navProbe.setAttribute('aria-hidden', 'true');
+  navProbe.inert = true;
+  navProbe.innerHTML = navLinksEl.querySelector('.nav-links-inner').innerHTML;
+  // Appended to <body>, not navInnerEl: the probe must always measure the
+  // full/inline rendering, but .nav-compact .nav-link overrides padding
+  // (16px 4px for the dropdown rows, vs the base 10px) — as a descendant
+  // of .nav-inner, the probe's cloned links would inherit that override
+  // too the moment .nav-compact switches on, understating its own width
+  // by exactly that padding delta. That made compact mode look like it no
+  // longer needed to be compact right after switching to it — the actual
+  // flicker loop, not just sub-pixel jitter. Living outside .nav-inner
+  // keeps it immune to any current or future .nav-compact-scoped rule.
+  document.body.appendChild(navProbe);
+
+  // .nav-compact zeroes the logo/cart margins on purpose (needed to keep
+  // them precisely centered/edge-aligned in the compact grid) — but that
+  // means the moment the class switches on, a margin read live from
+  // getComputedStyle suddenly reports 32px (16+16) more "available" space
+  // than an instant before, for a width that hasn't actually changed. That
+  // false extra room could immediately qualify for switching straight back
+  // to full, which is worse than the plain sub-pixel jitter below and was
+  // the main driver of the flicker. The full-mode gap is a fixed design
+  // constant, not something to re-read per mode, so it's hardcoded here
+  // instead — "would this fit laid out inline" shouldn't depend on
+  // whichever mode happens to be live when we ask.
+  const NAV_LOGO_GAP_PX = 16;
+  const NAV_CART_GAP_PX = 16;
+
+  // A live window drag also settles right on top of the real crossover
+  // width for a while (measured: available and needed came out 954.21px
+  // vs 954px — under a quarter-pixel apart), and sub-pixel layout/rounding
+  // jitters above and below that by fractions of a pixel from one reflow
+  // to the next. Comparing with a single threshold flips .nav-compact on
+  // and off rapidly while dragging through that width. A hysteresis gap
+  // fixes it: once compact, require a clear margin of extra room before
+  // switching back, instead of the same knife-edge in both directions.
+  const NAV_HYSTERESIS_PX = 32;
+
+  function navLinksWouldWrap() {
+    const innerStyle = getComputedStyle(navInnerEl);
+    const paddingX = parseFloat(innerStyle.paddingLeft) + parseFloat(innerStyle.paddingRight);
+    const logoSpace = navLogoEl.getBoundingClientRect().width + NAV_LOGO_GAP_PX;
+    const cartSpace = navCartEl.getBoundingClientRect().width + NAV_CART_GAP_PX;
+    const available = navInnerEl.clientWidth - paddingX - logoSpace - cartSpace;
+    const needed = navProbe.scrollWidth;
+    const isCompact = navInnerEl.classList.contains('nav-compact');
+    return isCompact ? needed > available - NAV_HYSTERESIS_PX : needed > available;
+  }
+
+  function updateNavMode() {
+    const compact = navLinksWouldWrap();
+    navInnerEl.classList.toggle('nav-compact', compact);
+    if (!compact) setNavOpen(false);
+  }
+
+  updateNavMode();
+  // A plain 'resize' listener (plus document.fonts.ready) isn't enough on
+  // its own: with font-display:swap, the nav-link text can still be
+  // rendering in the fallback font — narrower than the real webfont —
+  // when this script's first synchronous call runs, and neither resize
+  // nor fonts.ready reliably fires again afterward to correct it.
+  // ResizeObserver sidesteps the guessing entirely, on both sides of the
+  // comparison: watching the probe catches the content width changing
+  // (font swap, zoom, anything), and watching nav-inner itself catches
+  // the available space changing — including from devtools/emulator
+  // viewport overrides, which don't always dispatch a real window
+  // 'resize' event. Both also fire once immediately on observe(), which
+  // doubles as a correcting re-check shortly after first paint.
+  const navResizeObserver = new ResizeObserver(updateNavMode);
+  navResizeObserver.observe(navProbe);
+  navResizeObserver.observe(navInnerEl);
+  // Belt-and-suspenders for a slow/uncached font load where even the
+  // above hasn't settled yet by the time the page is otherwise ready.
+  window.addEventListener('load', updateNavMode);
+  setTimeout(updateNavMode, 300);
+
+  navToggle.addEventListener('click', () => {
+    setNavOpen(navToggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  navLinksEl.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-link')) setNavOpen(false);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (navToggle.getAttribute('aria-expanded') !== 'true') return;
+    if (e.target.closest('#nav-links') || e.target.closest('#nav-toggle')) return;
+    setNavOpen(false);
+  });
+
   // ---------- Category navigation ----------
+  // Two markup copies share this class (the desktop/tablet list nested in
+  // .store-sidebar, and .drawer-nav-mobile's sticky horizontal twin — see
+  // the comment in index.html for why). Activating by matching
+  // data-target, not just the clicked element, keeps both copies in sync
+  // regardless of which one the click came from.
   document.querySelectorAll('.category-item[data-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.category-item').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      const target = document.getElementById(btn.dataset.target);
+      const targetId = btn.dataset.target;
+      document.querySelectorAll('.category-item').forEach((b) => {
+        b.classList.toggle('active', b.dataset.target === targetId);
+      });
+
+      if (state.mode === 'delivery') {
+        state.mode = 'pickup';
+        document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => {
+          b.classList.toggle('active', b.dataset.mode === 'pickup');
+        });
+        updateModeUI();
+        updateOrderModePill();
+      }
+
+      const target = document.getElementById(targetId);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Keep the newly active pill visible within the mobile horizontal
+      // scroller — block:'nearest' keeps this from also nudging the
+      // page's own vertical scroll.
+      const mobileTwin = document.querySelector(`.drawer-nav-mobile .category-item[data-target="${targetId}"]`);
+      if (mobileTwin) mobileTwin.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     });
   });
+
+  // Native overflow-x:auto already gives touch users free momentum
+  // scrolling; this adds the same "grab and drag" affordance for mouse
+  // pointers, which have no native equivalent. Gated to pointerType
+  // 'mouse' so it never fights a real touchscreen's own scrolling.
+  (() => {
+    const scroller = document.querySelector('.drawer-nav-mobile');
+    if (!scroller) return;
+    let mouseIsDown = false;
+    let dragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    // Tracks whether THIS interaction actually moved, rather than
+    // comparing scrollLeft against a value that could be stale from a
+    // previous drag if a later plain click never re-fires pointerdown —
+    // that comparison suppressed legitimate clicks that followed a drag
+    // elsewhere on the row.
+    let moved = false;
+
+    scroller.addEventListener('pointerdown', (e) => {
+      startX = e.clientX;
+      startScrollLeft = scroller.scrollLeft;
+      moved = false;
+      if (e.pointerType !== 'mouse') return;
+      mouseIsDown = true;
+    });
+    scroller.addEventListener('pointermove', (e) => {
+      if (!mouseIsDown) return;
+      const dx = e.clientX - startX;
+      // Engage capture only once the pointer actually moves past the
+      // threshold — calling setPointerCapture on every mousedown (even a
+      // stationary click) retargets that click's event to the scroller
+      // instead of whatever button is under the cursor, silently
+      // swallowing every plain tap/click on the row.
+      if (!dragging) {
+        if (Math.abs(dx) <= 5) return;
+        dragging = true;
+        moved = true;
+        scroller.classList.add('dragging');
+        scroller.setPointerCapture(e.pointerId);
+      }
+      scroller.scrollLeft = startScrollLeft - dx;
+    });
+    function endDrag(e) {
+      mouseIsDown = false;
+      if (!dragging) return;
+      dragging = false;
+      scroller.classList.remove('dragging');
+      if (e.pointerId != null) scroller.releasePointerCapture(e.pointerId);
+    }
+    scroller.addEventListener('pointerup', endDrag);
+    scroller.addEventListener('pointercancel', endDrag);
+    scroller.addEventListener('lostpointercapture', endDrag);
+    // Backstop: if a pointerup ever fires outside the scroller without
+    // the drag state clearing first (capture lost some other way), a
+    // stuck `dragging`/captured pointer would swallow every click on the
+    // row afterward, not just the one that ended the drag.
+    window.addEventListener('pointerup', endDrag);
+    // A drag ending on a .category-item would otherwise also fire its
+    // click — suppress just that one click when this interaction actually
+    // moved, without touching real (non-drag) taps.
+    scroller.addEventListener('click', (e) => {
+      if (moved) {
+        e.stopPropagation();
+        e.preventDefault();
+        moved = false;
+      }
+    }, true);
+  })();
 
   // ---------- Pickup / delivery toggle ----------
   // Pickup is fulfilled in-house; Delivery hands off to third-party apps
@@ -331,29 +635,52 @@
     document.getElementById('delivery-apps').hidden = !isDelivery;
   }
 
-  document.getElementById('order-mode').addEventListener('click', (e) => {
+  // Pickup and Delivery aren't the same width, so the pill can't just
+  // slide at a fixed 50% — it's measured off the real active button and
+  // slid+resized to match, which is also why this needs re-running on
+  // load/resize (webfont swap or a width-changing breakpoint moves both
+  // buttons without any click ever firing).
+  const orderModeToggle = document.getElementById('order-mode');
+  const orderModePill = orderModeToggle.querySelector('.order-mode-pill');
+  function updateOrderModePill() {
+    const active = orderModeToggle.querySelector('.order-mode-option.active');
+    if (!active) return;
+    orderModePill.style.width = active.offsetWidth + 'px';
+    orderModePill.style.transform = `translateX(${active.offsetLeft}px)`;
+  }
+
+  orderModeToggle.addEventListener('click', (e) => {
     const btn = e.target.closest('.order-mode-option');
     if (!btn) return;
     document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     state.mode = btn.dataset.mode;
     updateModeUI();
+    updateOrderModePill();
   });
+
+  updateOrderModePill();
+  window.addEventListener('resize', updateOrderModePill);
+  window.addEventListener('load', updateOrderModePill);
+  setTimeout(updateOrderModePill, 300);
 
   // ---------- Overlay focus management ----------
   const pageRoot = document.getElementById('page-root');
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (!itemModal.hidden) closeDozenModal();
+    if (navToggle.getAttribute('aria-expanded') === 'true') setNavOpen(false);
+    else if (!itemModal.hidden) closeDozenModal();
     else if (!bagelModal.hidden) closeBagelModal();
+    else if (!bowlModal.hidden) closeBowlModal();
+    else if (!quickviewModal.hidden) closeQuickviewModal();
     else if (!cartDrawer.hidden) closeCart();
     else if (!pickupSettingsModal.hidden) closePickupSettings();
     else if (!storeLocatorModal.hidden) closeStoreLocator();
@@ -453,10 +780,16 @@
     const total = activeProduct.price * state.modalQty;
     const allocated = dozenAllocated();
     const btn = document.getElementById('add-to-order');
-    btn.disabled = allocated !== activeProduct.total;
-    btn.textContent = allocated === activeProduct.total
+    const complete = allocated === activeProduct.total;
+    btn.disabled = !complete;
+    // total:1 (the egg salads — one flavor for the whole tub) reads oddly
+    // through the "Allocate all N eggs" copy every multi-piece pack uses;
+    // singular products get their own natural phrasing instead.
+    btn.textContent = complete
       ? `Add ${state.modalQty} to order · ${money(total)}`
-      : `Allocate all ${activeProduct.total} eggs to continue`;
+      : activeProduct.total === 1
+        ? 'Choose a flavor to continue'
+        : `Allocate all ${activeProduct.total} eggs to continue`;
   }
 
   function openDozenModal(product) {
@@ -476,8 +809,12 @@
     document.getElementById('dozen-modal-title').textContent = activeProduct.name;
     document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
     document.getElementById('dozen-modal-image').src = activeProduct.image;
-    document.getElementById('dozen-modal-desc').textContent =
-      `${activeProduct.total} deviled eggs, hand piped fresh daily. Choose up to ${activeProduct.maxFlavors} flavors — use +/− to allocate all ${activeProduct.total} eggs.`;
+    // The item's own authored description, not a generated sentence — this
+    // modal now also serves the egg salads (a tub, not "deviled eggs"), so
+    // a hardcoded "N deviled eggs, hand piped fresh daily" no longer fits
+    // every product that opens it.
+    document.getElementById('dozen-modal-desc').textContent = activeProduct.desc || '';
+    document.getElementById('flavor-section-title').textContent = activeProduct.maxFlavors === 1 ? 'Choose your flavor' : 'Choose your flavors';
     itemModal.querySelector('.item-modal-header-title').textContent = activeProduct.name;
 
     renderFlavorGrid();
@@ -670,6 +1007,224 @@
     openCart();
   });
 
+  // ---------- Bowl customization modal ----------
+  // Add-Ons are paid (priced per item) and multi-select, like Free Eggstras
+  // and the exclusion list — none of the four sections are mutually
+  // exclusive or required, so unlike the dozen/bagel modals there is no
+  // allocation gate: Add to order is always enabled.
+  const bowlModalBackdrop = document.getElementById('bowl-modal-backdrop');
+  const bowlModal = document.getElementById('bowl-modal');
+  let activeBowl = null;
+  wireHeaderTitleReveal(bowlModal, 'bowl-modal-title');
+
+  function renderBowlAddOns() {
+    const container = document.getElementById('bowl-addons-picker');
+    container.innerHTML = activeBowl.addOns.map((addOn, i) => `
+      <button class="chip addon-chip${state.bowlAddOns.has(i) ? ' active' : ''}" type="button" data-index="${i}">
+        <span class="addon-chip-label">${addOn.label}</span>
+        <span class="addon-chip-price">+${money(addOn.price)}${addOn.note ? ' · ' + addOn.note : ''}</span>
+      </button>
+    `).join('');
+    container.querySelectorAll('.addon-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const i = Number(chip.dataset.index);
+        if (state.bowlAddOns.has(i)) state.bowlAddOns.delete(i);
+        else state.bowlAddOns.add(i);
+        renderBowlAddOns();
+        renderBowlModalFooter();
+      });
+    });
+  }
+
+  function renderBowlEggstras() {
+    const container = document.getElementById('bowl-eggstras-picker');
+    container.innerHTML = activeBowl.freeEggstras.map((label) => `
+      <button class="chip${state.bowlEggstras.has(label) ? ' active' : ''}" type="button" data-value="${label}">${label}</button>
+    `).join('');
+    container.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const value = chip.dataset.value;
+        if (state.bowlEggstras.has(value)) state.bowlEggstras.delete(value);
+        else state.bowlEggstras.add(value);
+        chip.classList.toggle('active');
+      });
+    });
+  }
+
+  function renderBowlExclusions() {
+    const container = document.getElementById('bowl-no-picker');
+    container.innerHTML = activeBowl.exclusions.map((label) => `
+      <button class="chip exclude-chip${state.bowlExclusions.has(label) ? ' active' : ''}" type="button" data-value="${label}">NO: ${label}</button>
+    `).join('');
+    container.querySelectorAll('.exclude-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const value = chip.dataset.value;
+        if (state.bowlExclusions.has(value)) state.bowlExclusions.delete(value);
+        else state.bowlExclusions.add(value);
+        chip.classList.toggle('active');
+      });
+    });
+  }
+
+  function bowlAddOnsTotal() {
+    let sum = 0;
+    state.bowlAddOns.forEach((i) => { sum += activeBowl.addOns[i].price; });
+    return sum;
+  }
+
+  function renderBowlModalFooter() {
+    document.getElementById('bowl-qty-select').value = String(state.bowlQty);
+    const unitPrice = activeBowl.price + bowlAddOnsTotal();
+    const total = unitPrice * state.bowlQty;
+    document.getElementById('add-bowl-to-order').textContent = `Add ${state.bowlQty} to order · ${money(total)}`;
+  }
+
+  function openBowlModal(bowl) {
+    lastFocusedEl = document.activeElement;
+    activeBowl = bowl;
+    state.bowlAddOns = new Set();
+    state.bowlEggstras = new Set();
+    state.bowlExclusions = new Set();
+    state.bowlOptions = new Set();
+    state.bowlQty = 1;
+    populateQtySelect(document.getElementById('bowl-qty-select'));
+
+    document.getElementById('bowl-modal-title').textContent = bowl.name;
+    document.getElementById('bowl-modal-price').textContent = money(bowl.price);
+    document.getElementById('bowl-modal-image').src = bowl.image;
+    document.getElementById('bowl-modal-desc').textContent = bowl.desc;
+    document.getElementById('bowl-modal-header-title').textContent = bowl.name;
+    document.querySelectorAll('#bowl-options-picker .chip').forEach((b) => b.classList.remove('active'));
+
+    renderBowlAddOns();
+    renderBowlEggstras();
+    renderBowlExclusions();
+    renderBowlModalFooter();
+    bowlModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    bowlModal.querySelector('.item-modal-header-title').classList.remove('visible');
+    bowlModalBackdrop.hidden = false;
+    bowlModal.hidden = false;
+    updateInert();
+    document.getElementById('close-bowl-modal').focus();
+  }
+
+  function closeBowlModal() {
+    bowlModalBackdrop.hidden = true;
+    bowlModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('close-bowl-modal').addEventListener('click', closeBowlModal);
+  bowlModalBackdrop.addEventListener('click', closeBowlModal);
+
+  document.getElementById('bowl-options-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    const value = btn.dataset.value;
+    if (state.bowlOptions.has(value)) {
+      state.bowlOptions.delete(value);
+      btn.classList.remove('active');
+    } else {
+      state.bowlOptions.add(value);
+      btn.classList.add('active');
+    }
+  });
+
+  document.getElementById('bowl-qty-select').addEventListener('change', (e) => {
+    state.bowlQty = Number(e.target.value);
+    renderBowlModalFooter();
+  });
+
+  document.getElementById('add-bowl-to-order').addEventListener('click', () => {
+    const addOnLabels = Array.from(state.bowlAddOns).map((i) => activeBowl.addOns[i].label);
+    const parts = [];
+    if (addOnLabels.length) parts.push(addOnLabels.join(', '));
+    if (state.bowlEggstras.size) parts.push(Array.from(state.bowlEggstras).join(', '));
+    if (state.bowlExclusions.size) parts.push('No ' + Array.from(state.bowlExclusions).join(', ').toLowerCase());
+    if (state.bowlOptions.size) parts.push(Array.from(state.bowlOptions).join(', '));
+    const unitPrice = activeBowl.price + bowlAddOnsTotal();
+    addToCart({
+      key: 'bowl-' + activeBowl.id + '-' + JSON.stringify({
+        a: Array.from(state.bowlAddOns), e: Array.from(state.bowlEggstras),
+        x: Array.from(state.bowlExclusions), o: Array.from(state.bowlOptions),
+      }) + '-' + Date.now(),
+      name: activeBowl.name,
+      sub: parts.length ? parts.join(' · ') : activeBowl.note || '',
+      price: unitPrice,
+      qty: state.bowlQty,
+      image: activeBowl.image,
+    });
+    closeBowlModal();
+    openCart();
+  });
+
+  // ---------- Quick view modal (no customization — qty + a bigger photo) ----------
+  // For any product with neither a flavor picker nor bowl-style add-ons:
+  // still worth its own modal rather than an instant one-click add, so the
+  // customer sees the full photo and description and picks a quantity
+  // before it lands in the cart.
+  const quickviewModalBackdrop = document.getElementById('quickview-modal-backdrop');
+  const quickviewModal = document.getElementById('quickview-modal');
+  let activeQuickview = null;
+  wireHeaderTitleReveal(quickviewModal, 'quickview-modal-title');
+
+  function renderQuickviewFooter() {
+    const qty = Number(document.getElementById('quickview-qty-select').value);
+    const total = activeQuickview.price * qty;
+    document.getElementById('add-quickview-to-order').textContent = `Add ${qty} to order · ${money(total)}`;
+  }
+
+  function openQuickviewModal(item, cartMeta) {
+    lastFocusedEl = document.activeElement;
+    activeQuickview = { ...item, cartMeta };
+    const qtySelect = document.getElementById('quickview-qty-select');
+    populateQtySelect(qtySelect);
+    qtySelect.value = '1';
+
+    document.getElementById('quickview-modal-title').textContent = item.name;
+    document.getElementById('quickview-modal-price').textContent = money(item.price);
+    document.getElementById('quickview-modal-desc').textContent = item.desc || '';
+    document.getElementById('quickview-modal-header-title').textContent = item.name;
+    const media = document.getElementById('quickview-modal-media');
+    media.innerHTML = '';
+    media.appendChild(productThumb(item));
+
+    renderQuickviewFooter();
+    quickviewModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    quickviewModal.querySelector('.item-modal-header-title').classList.remove('visible');
+    quickviewModalBackdrop.hidden = false;
+    quickviewModal.hidden = false;
+    updateInert();
+    document.getElementById('close-quickview-modal').focus();
+  }
+
+  function closeQuickviewModal() {
+    quickviewModalBackdrop.hidden = true;
+    quickviewModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('close-quickview-modal').addEventListener('click', closeQuickviewModal);
+  quickviewModalBackdrop.addEventListener('click', closeQuickviewModal);
+  document.getElementById('quickview-qty-select').addEventListener('change', renderQuickviewFooter);
+
+  document.getElementById('add-quickview-to-order').addEventListener('click', () => {
+    const qty = Number(document.getElementById('quickview-qty-select').value);
+    const { keyPrefix, cartCategory } = activeQuickview.cartMeta;
+    addToCart({
+      key: keyPrefix + '-' + activeQuickview.id,
+      name: activeQuickview.name,
+      sub: cartCategory,
+      price: activeQuickview.price,
+      qty,
+      image: activeQuickview.image,
+    });
+    closeQuickviewModal();
+    openCart();
+  });
+
   // ---------- Cart drawer ----------
   const cartBackdrop = document.getElementById('cart-backdrop');
   const cartDrawer = document.getElementById('cart-drawer');
@@ -770,14 +1325,15 @@
       list.appendChild(row);
     });
 
-    const { subtotal, tax, total } = computeTotals();
-    document.getElementById('drawer-subtotal').textContent = money(subtotal);
-    document.getElementById('drawer-tax').textContent = money(tax);
+    const { total } = computeTotals();
     document.getElementById('drawer-total').textContent = money(total);
 
-    const pinIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
+    const totalQty = cartCount();
+    document.getElementById('drawer-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
+
+    const pickupIcon = '<img class="pickup-chip-icon" src="assets/pickup-confirmed.png" width="20" height="20" alt="">';
     const chip = document.getElementById('fulfillment-chip');
-    chip.innerHTML = `${pinIcon}<span>Pickup at <strong>${state.location}</strong> · ${pickupDateLabel(state.pickupDateKey)} · ${state.pickupTimeLabel}</span>`;
+    chip.innerHTML = `${pickupIcon}<span>Pickup at <strong>${state.location}</strong></span>`;
 
     document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }

@@ -3,15 +3,32 @@
    page-specific layout that builds on that system. */
 
 /* ---------- Header ---------- */
-.site-header { background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); padding: 8px 0; }
+/* Sticky at every width — stays above the mobile/tablet category pill bar
+   (z-index 30, which offsets its own top by this header's own stable
+   69px height below) but under overlays/modals (40+), so cart and item
+   modals still cover it as expected. Height is explicit (not padding-
+   derived) so it holds at exactly 69px regardless of content — .nav-
+   inner fills it and centers its own children vertically. */
+.site-header { position: sticky; top: 0; z-index: 35; height: 69px; background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); }
 /* Checkout swaps the full marketing nav for a minimal back-link + logo
    bar (.checkout-header, a standalone sibling shown only in this state —
    see the Checkout section below) — matching the focused, distraction-free
    header pattern of a real checkout flow. */
 body.is-checkout .site-header { display: none; }
-.nav-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; padding: 0 12px; }
+/* Full-bleed on purpose — unlike .view/.checkout-header-inner below it,
+   which stay in a contained column, the nav bar itself spans the entire
+   viewport. .nav-links is already flex-grow:1 + justify-content:center,
+   so it fills and re-centers in whatever width is left between the logo
+   and cart button rather than needing any other structural change.
+   position:relative is permanent (not compact-only) since app.js's
+   hidden .nav-links-probe anchors off of it in every mode. */
+.nav-inner { position: relative; display: flex; align-items: center; height: 100%; padding: 0 32px; }
 .logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
+/* Exists only so the compact dropdown has a single child to measure for
+   the grid-rows open/close animation below — at desktop width .nav-links
+   itself is still the flex row, so this stays transparent to layout. */
+.nav-links-inner { display: contents; }
 .nav-link { padding: 10px; font-size: 14px; line-height: 16px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; text-decoration: none; }
 .cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
 .cart-badge {
@@ -20,13 +37,115 @@ body.is-checkout .site-header { display: none; }
   display: flex; align-items: center; justify-content: center;
 }
 
+/* Off-screen, unfocusable (aria-hidden + inert, set in app.js) clone of
+   the link list, forced onto one line — its scrollWidth is how app.js
+   measures whether the real, visible links would wrap to a second line
+   at the current width, independent of which mode (full or compact) is
+   presently rendered. See "Nav menu toggle" in app.js. */
+.nav-links-probe { position: absolute; top: -9999px; left: -9999px; display: flex; flex-wrap: nowrap; visibility: hidden; }
+
+/* Content-driven, not a viewport breakpoint: app.js measures the real
+   link set against .nav-links-probe and applies .nav-compact the moment
+   it would wrap to a second line, whatever width that happens to be at —
+   a phone, a squeezed desktop window, 200% zoom, all the same rule. */
+.nav-toggle { display: none; width: 40px; height: 40px; margin-left: 8px; color: var(--deg-ink-deep); }
+.nav-toggle:hover { background: var(--deg-cream-cool); }
+.nav-toggle .icon-close { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+/* Same "1fr auto 1fr" centering grid as .item-modal-header and
+   .checkout-header-inner — the one proven way in this codebase to
+   center an item between two others of unequal width, rather than
+   flex justify-content:space-between quietly relying on the toggle
+   and cart buttons happening to be the same size. */
+.nav-inner.nav-compact { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+/* grid-row:1 is load-bearing, not decoration: with only grid-column set,
+   sparse auto-placement (default) reads DOM order — logo, then the
+   absolutely-positioned .nav-links, then toggle, then cart — and Chrome
+   splits it into two implicit rows (logo alone in one, toggle+cart in
+   the other) rather than backtrack to pack them into row 1, misaligning
+   the logo vertically from the two buttons either side of it. */
+.nav-compact .nav-toggle { display: flex; grid-column: 1; grid-row: 1; justify-self: start; margin-left: 0; }
+.nav-compact .logo { grid-column: 2; grid-row: 1; justify-self: center; margin-right: 0; }
+.nav-compact .cart-btn { grid-column: 3; grid-row: 1; justify-self: end; margin-left: 0; }
+/* Collapses into an anchored dropdown instead of wrapping onto extra
+   header rows — .nav-compact only turns on once the full link set has
+   nowhere near enough room to wrap gracefully, so it's hidden until
+   .nav-toggle opens it rather than half-shown.
+   Animates grid-template-rows (0fr → 1fr), not height/max-height —
+   a layout property whose animation forces layout on every frame.
+   grid-template-rows is composited like transform/opacity, so the
+   open/close motion stays off the layout thread. max-height + auto
+   overflow below is a static (unanimated) safety cap for a short
+   viewport, not part of the transition. */
+.nav-compact .nav-links {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 40;
+  /* grid-template-columns:1fr is load-bearing, not tidiness: left unset,
+     the single column defaults to content-hugging width, and the base
+     (desktop) .nav-links rule's justify-content:center — meant to center
+     the inline link row between the logo and cart — was still cascading
+     in here uncontested, centering that narrow hugged column in the
+     dropdown. Reading as "the menu is centered" even though each link's
+     own text was already text-align:start the whole time. */
+  display: grid; grid-template-columns: 1fr; grid-template-rows: 0fr; justify-content: normal;
+  background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card);
+  box-shadow: var(--deg-shadow-ambient);
+  max-height: 70vh; overflow-y: auto; opacity: 0;
+  transition: grid-template-rows .22s ease, opacity .18s ease;
+}
+.nav-compact .nav-links.open { grid-template-rows: 1fr; opacity: 1; }
+.nav-compact .nav-links-inner {
+  display: flex; flex-direction: column; align-items: stretch;
+  min-height: 0; overflow: hidden; padding: 4px 32px;
+}
+/* Bigger and bolder, closer to crumblcookies.com's mobile menu (their
+   rows run ~34px/40px, extrabold, plain case) — reusing this project's
+   own display type (Nunito 800, the project's one heading weight) rather
+   than their font, and sized to this project's existing 20px/28px
+   headline step so it stays on the established type scale instead of a
+   one-off size. Uppercase+tracking (the desktop nav's own treatment)
+   dropped here: at this size/weight the case itself carries the
+   emphasis, the way Crumbl's does. */
+.nav-compact .nav-link {
+  width: 100%; text-align: left; padding: 14px 0; border-bottom: 1px solid var(--deg-border-chip);
+  font-family: var(--deg-font-display); font-size: 20px; line-height: 28px; font-weight: 800; text-transform: none;
+}
+.nav-compact .nav-link:last-child { border-bottom: none; }
+
 /* ---------- Menu view ---------- */
-.view { max-width: 1280px; margin: 0 auto; padding: 24px 40px 60px; }
+/* Tracks .view's own side padding so the mobile nav's edge-to-edge bleed
+   (below) can cancel exactly whatever that padding currently is, rather
+   than a hardcoded value that would go stale wherever the padding itself
+   changes at a narrower breakpoint. */
+.view { --deg-view-pad-x: 40px; max-width: 1280px; margin: 0 auto; padding: 24px var(--deg-view-pad-x) 60px; }
 
 .menu-layout { display: flex; gap: 40px; align-items: flex-start; }
 
 /* ---- Store sidebar: location card + menu-category drawer ---- */
-.store-sidebar { width: 276px; flex: none; position: sticky; top: 24px; }
+/* top: 93px = .site-header's own 69px height + the original 24px of
+   breathing room — now that the header is sticky too, stopping at a
+   bare 24px would tuck the sidebar's top behind it. */
+.store-sidebar { width: 276px; flex: none; position: sticky; top: 93px; }
+/* Previously unset — .menu-content's width came only from its grid
+   children's own intrinsic size, which the old `repeat(2, minmax(0,1fr))`
+   happened to over-report (via long description text), so flex-shrink
+   quietly clamped it down to fill the row. `repeat(auto-fill, ...)`
+   can't do that: auto-repeat has no definite container width to divide
+   into tracks during intrinsic sizing, so it resolves to a single track
+   and reports a much smaller size — with nothing forcing growth, .menu-
+   content just sat at that size instead of filling the row. flex-grow
+   makes the fill explicit instead of relying on oversized content to
+   trigger a shrink to the same result. Below 900px, .menu-layout
+   switches to flex-direction:column, which swaps which axis is "main" —
+   width becomes the CROSS axis there, so flex-grow stops applying to it
+   and the very same shrink-to-fit gap reappears (visible on the sparse
+   delivery-partner grid, whose small intrinsic width no longer gets
+   forced to fill the row, while the product grids' larger intrinsic
+   width happened to still reach full width by coincidence). align-self:
+   stretch covers the width in column mode without disturbing flex-grow's
+   handling of it in row mode, where width is main-axis instead. */
+.menu-content { flex: 1 1 0%; align-self: stretch; min-width: 0; }
 .store-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
 .store-name { font-size: 32px; line-height: 40px; font-weight: 700; }
 .store-tagline { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
@@ -42,29 +161,44 @@ body.is-checkout .site-header { display: none; }
 .drawer-nav { display: flex; flex-direction: column; }
 .category-item {
   text-align: left; background: transparent; border: none; border-left: 4px solid transparent;
-  border-radius: var(--deg-radius-tight); padding: 14px 12px 14px 16px; margin-left: 8px;
+  border-radius: 0; padding: 14px 12px 14px 16px; margin-left: 8px;
   font-size: 16px; font-weight: 500; line-height: 24px; color: var(--deg-ink-muted);
 }
 .category-item.active { background: var(--deg-gold-tint); border-left-color: var(--deg-border-primary); color: var(--deg-ink-heading); }
+/* Mobile-only twin of .drawer-nav — see the markup comment in index.html.
+   Hidden above the mobile breakpoint (see the ≤640px block) so it never
+   competes with the desktop/tablet copy nested in .store-sidebar. */
+.drawer-nav-mobile { display: none; }
 
-/* ---- Hero, search, pickup/delivery toggle ---- */
-.store-hero { position: relative; border-radius: var(--deg-radius-media); aspect-ratio: 876 / 210; background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); overflow: hidden; }
+/* ---- Hero, pickup/delivery toggle ---- */
+/* Flush with the sidebar+content row below it (not a wider full-bleed) —
+   same left/right edges as .menu-layout, both simply inset by .view's own
+   padding, so the banner reads as the top of one aligned column instead
+   of a wider strip sitting above it. */
+.store-hero { position: relative; margin: 0 0 24px; border-radius: var(--deg-radius-media); aspect-ratio: 1200 / 250; background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); overflow: hidden; }
 .hero-media { display: block; width: 100%; height: 100%; object-fit: cover; }
 .hero-more-btn { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-.menu-search { display: flex; align-items: center; gap: 6px; padding: 12px; border: 1px solid var(--deg-border-primary); border-radius: var(--deg-radius-tight); background: var(--deg-white); max-width: 357px; margin-top: 20px; }
-.menu-search input { flex-grow: 1; border: none; padding: 0; font-size: 16px; }
-.menu-search input::placeholder { color: var(--deg-ink-placeholder); }
-.menu-search input:focus-visible { box-shadow: none; outline: none; }
-
 .order-mode-row {
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-  margin-top: 20px; min-height: 62px; padding: 12px 16px;
+  min-height: 62px; padding: 12px 16px;
   background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media);
 }
-.order-mode-toggle { background: var(--deg-track-gray); padding: 2px; gap: 0; }
-.order-mode-option { background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); }
-.order-mode-option.active { background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14); font-weight: 500; }
+.order-mode-toggle { position: relative; background: var(--deg-track-gray); padding: 2px; gap: 0; }
+/* A shared, absolutely-positioned pill instead of each button drawing its
+   own background — app.js measures the active button's real offsetLeft/
+   offsetWidth (Pickup and Delivery aren't equal width) and transitions
+   this element's transform+width to match, so the pill visibly slides
+   and reflows to the new label instead of the old instant per-button
+   background swap. position:relative + z-index:1 on the buttons keeps
+   their label text painting above it. */
+.order-mode-pill {
+  position: absolute; top: 2px; left: 0; bottom: 2px; width: 0;
+  border-radius: var(--deg-radius-pill); background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14);
+  transition: transform .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
+  pointer-events: none; z-index: 0;
+}
+.order-mode-option { position: relative; z-index: 1; background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); }
 
 .delivery-info { display: flex; align-items: center; gap: 12px; }
 .delivery-info-icon { width: 36px; height: 36px; object-fit: contain; flex: none; }
@@ -98,22 +232,52 @@ body.is-checkout .site-header { display: none; }
 .feature-content { display: flex; align-items: flex-end; gap: 16px; flex-grow: 1; min-width: 0; padding: 16px 16px 12px; }
 .feature-body { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-width: 0; }
 .feature-eyebrow { font-weight: 700; font-size: 13px; line-height: 1.3; color: var(--deg-link); }
-.feature-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 32px; line-height: 40px; color: var(--deg-ink-heading); white-space: nowrap; }
+/* Was 32px/40px — identical to .store-name, the page's own h1. Sharing
+   that size read as two competing page titles rather than a title and a
+   promoted product beneath it. Stepping down to the same size as
+   .menu-section h2 (24px/32px) reuses an already-established token
+   instead of inventing a new one, and slots this card into the same
+   "section heading" tier as "Deviled Eggs" and the other category
+   headings — appropriate, since it's a featured product announcement,
+   not the page's own identity. */
+.feature-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-heading); white-space: nowrap; }
 .feature-desc { color: var(--deg-ink-muted); font-size: 15px; line-height: 1.5; max-width: 520px; }
 .price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 26px; color: var(--deg-ink-deep); }
 .feature-cta { flex: none; }
 
+/* scroll-margin-top matches .store-sidebar's own sticky top (93px =
+   .site-header's 69px + its 24px breathing room) — clicking a category
+   pill calls scrollIntoView on this element directly, and without this
+   the sticky header now covers exactly that much of whatever lands at
+   the very top of the viewport, hiding the heading it just navigated to. */
+#menu-top, .menu-section { scroll-margin-top: 93px; }
 .menu-section { margin-top: 56px; }
 .menu-section h2 { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); margin-bottom: 14px; }
 
 /* ---- Unified shop card — used by every menu category ---- */
-.shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+/* A flat `repeat(2, ...)` forces two columns at any container width, so
+   between the ≤900px stacked-sidebar breakpoint and the ~1280px design
+   width, each card gets squeezed below its comfortable size — the fixed
+   161px media stays full-size while the body's share keeps shrinking.
+   auto-fill lets a track drop to one full-width column once two can no
+   longer fit at a sane minimum, instead of forcing both into a squeeze;
+   unlike auto-fit, an unfilled second track still reserves its space
+   rather than stretching a lone card (e.g. Bagels, Sandwich/Wrap) to the
+   full row. 380px keeps two columns exactly at Figma's own 434px card
+   width and collapses to one before the squeeze sets in. */
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
 .shop-card { display: flex; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; min-height: 162px; cursor: pointer; text-decoration: none; color: inherit; }
 .shop-card-body { flex-grow: 1; min-width: 0; padding: 16px 16px 12px; display: flex; flex-direction: column; }
-.shop-card-name { font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-card-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading); overflow: hidden; }
 .shop-card-meta { display: flex; align-items: center; gap: 6px; padding-top: 4px; font-size: 14px; }
-.shop-card-price { font-weight: 600; color: var(--deg-ink-heading); }
-.shop-card-note { font-weight: 500; color: var(--deg-ink-muted); }
+.shop-card-price { flex: none; font-weight: 600; color: var(--deg-ink-heading); }
+/* Every other product's note is short ("70g Protein", "1680 Cal.") and
+   sits on one line without help. Catering-style notes ("Per person · min
+   10 boxes") are long enough that, without a nowrap+ellipsis floor, a
+   flex item's default min-width:auto falls back to its longest word as
+   the shrink limit — collapsing the whole meta row into a jagged 3-4
+   line wrap instead of the single-line meta every other card gets. */
+.shop-card-note { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--deg-ink-muted); }
 .shop-card-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; padding-top: 4px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
 .shop-card-media { position: relative; flex: none; width: 161px; align-self: stretch; }
 .shop-card-media .thumb { width: 100%; height: 100%; border-radius: 0; }
@@ -138,7 +302,7 @@ body.is-checkout .site-header { display: none; }
    scrolling content by ordinary flex layout — no position:sticky needed.
    The product name only fades in here once the real h1 has scrolled out
    of view, so it isn't shown twice at once on open. */
-.item-modal-header { flex: none; height: 64px; display: grid; grid-template-columns: 1fr minmax(0, auto) 1fr; align-items: center; padding: 0 24px; }
+.item-modal-header { flex: none; height: 64px; display: grid; grid-template-columns: 1fr minmax(0, 1fr) 1fr; align-items: center; padding: 0 24px; }
 .item-modal-header .close-btn { justify-self: start; }
 .item-modal-header-title {
   /* A percentage max-width here resolves against the grid's own auto-sized
@@ -146,8 +310,14 @@ body.is-checkout .site-header { display: none; }
      ~116px and truncated "12 Pack Deviled Egg" down to "12 Pack D…". A
      fixed ceiling sizes against the actual viewport instead, comfortably
      fitting real product names; min-width:0 lets the grid track still
-     shrink it (rather than overflow) on narrow screens where it's needed. */
-  justify-self: center; min-width: 0; max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+     shrink it (rather than overflow) on narrow screens where it's needed.
+     justify-self must stay stretch (not center): centered, the box sizes
+     to its own text instead of the track, so a long name (the bowls'
+     "___ Eggceptional Bowl" titles) rendered at full width and collided
+     with the close button on a phone instead of ellipsizing — stretch
+     fills the actual track width first, then text-align centers the text
+     within it, so overflow/ellipsis has a real box to clip against. */
+  justify-self: stretch; text-align: center; min-width: 0; max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--deg-ink-deep);
   opacity: 0; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease;
 }
@@ -184,6 +354,25 @@ body.is-checkout .site-header { display: none; }
 .flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
 .exclude-chip { padding: 8px 16px; font-size: 13px; }
 .exclude-chip.active { background: var(--deg-ink-deep); color: #FBF3E3; }
+
+/* Bowl Add-Ons are the one .chip use with a second line (the priced
+   cost + note) — everywhere else .chip is single-line label text. */
+.addon-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.addon-chip-label { font-size: 14px; }
+.addon-chip-price { font-size: 12px; font-weight: 500; opacity: .7; }
+
+/* Bowl modal: four consecutive chip-row groups (Add-Ons, Free Eggstras,
+   No, Options) read as one undifferentiated block at the shared
+   .item-modal-content gap (16px) — the same interval used for the tight
+   name/price/description cluster above them. Scoped (not a shared
+   .item-modal-content change) since the dozen and bagel modals only have
+   one or two such groups and were already reviewed at that spacing.
+   Widening the between-group gap while keeping the intro cluster's own
+   internal spacing tight is what actually separates "groups of choices"
+   instead of just adding uniform air everywhere. */
+#bowl-modal .item-modal-content { gap: 32px; }
+.bowl-modal-intro { display: flex; flex-direction: column; gap: 8px; }
+.bowl-modal-section .modal-section-head { padding-bottom: 14px; }
 
 .qty-field { max-width: 220px; }
 /* Otherwise inherits the shared select styling (pill radius, chevron,
@@ -225,9 +414,11 @@ body.is-checkout .site-header { display: none; }
   .cart-drawer { transform: none; opacity: 0; }
   .cart-drawer.is-open { transform: none; opacity: 1; }
   .order-summary-collapse, .order-summary-chevron, .item-modal-header-title { transition-duration: .01ms; }
+  .order-mode-pill { transition-duration: .01ms; }
 }
 .drawer-header { display: flex; align-items: center; justify-content: space-between; }
 .pickup-chip { display: flex; align-items: center; gap: 10px; background: var(--deg-cream); border-radius: var(--deg-radius-pill); padding: 12px 18px; font-size: 13.5px; }
+.pickup-chip-icon { display: block; flex: none; width: 20px; height: 20px; object-fit: contain; }
 .drawer-items { display: flex; flex-direction: column; gap: 14px; }
 .drawer-item { display: flex; gap: 14px; align-items: flex-start; border-bottom: 1px solid var(--deg-border-chip); padding-bottom: 14px; }
 .drawer-item:last-child { border-bottom: none; }
@@ -372,11 +563,19 @@ body.is-checkout .checkout-header { display: block; }
 }
 .store-locator-inner > .close-btn { align-self: flex-start; }
 .store-locator-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
-.store-locator-body { display: flex; gap: 20px; flex: 1 1 auto; min-height: 0; }
+/* .store-locator-map's own min-height (below) is a hard floor flexbox
+   won't shrink past — on a short viewport the list+map row can need more
+   room than .store-locator-inner's max-height leaves for it, with nothing
+   to shrink. overflow-y:auto here is the .item-modal-scroll pattern
+   applied to this modal: the row becomes its own scroll region instead of
+   silently clipping the last store row or shoving the footer buttons out
+   of their own space. */
+.store-locator-body { display: flex; gap: 20px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .store-locator-list { flex: none; width: 260px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
 .store-locator-row {
   display: flex; flex-direction: column; gap: 2px; text-align: left; width: 100%;
-  padding: 12px 14px; border-radius: var(--deg-radius-tight); border-left: 4px solid transparent;
+  padding: 12px 14px; border-radius: var(--deg-radius-tight);
+  border: none; border-left: 4px solid transparent; appearance: none;
   background: transparent; font-weight: 500; font-size: 15px; color: var(--deg-ink-body);
 }
 .store-locator-row-address { font-size: 13px; font-weight: 400; color: var(--deg-ink-muted); }
@@ -445,12 +644,26 @@ body.is-checkout .checkout-header { display: block; }
 @media (max-width: 900px) {
   .menu-layout { flex-direction: column; }
   .store-sidebar { width: 100%; position: static; }
-  .drawer-nav { flex-direction: row; flex-wrap: wrap; }
-  .category-item { margin-left: 0; }
+  /* Here the category nav itself (not just the header) is sticky and
+     overlays the top of the content column, so a scrolled-to section
+     needs to clear both: header (69px) + pill bar (56px) + the same
+     24px breathing room used elsewhere = 149px. */
+  #menu-top, .menu-section { scroll-margin-top: 149px; }
   .shop-grid { grid-template-columns: minmax(0, 1fr); }
-  .feature-card { flex-direction: column; align-items: stretch; }
+  /* Stacked, the card's 28px gap (built for the row layout's image-to-
+     text breathing room) stacks on top of .feature-content's own 16px
+     top padding instead of sharing the job with it, pushing the text
+     ~44px below the photo — noticeably farther than every other gap on
+     this card. Zeroing it here leaves that top padding as the only
+     space between photo and text. The button lands symmetrically too:
+     .feature-content's 12px bottom padding was fine in the row layout,
+     where align-items:center means it's just internal breathing room
+     inside a vertically-centered block, never touching the card's true
+     bottom edge — stacked, the button IS the last thing before that
+     edge, so 12px (less than the 16px top inset) reads as cramped. */
+  .feature-card { flex-direction: column; align-items: stretch; gap: 0; }
   .feature-photo { width: 100%; height: 180px; aspect-ratio: auto; }
-  .feature-content { flex-direction: column; align-items: flex-start; }
+  .feature-content { flex-direction: column; align-items: flex-start; padding-bottom: 16px; }
   .checkout-layout { flex-direction: column; }
   .summary-col { width: 100%; position: static; }
   .item-modal-row { flex-direction: column; }
@@ -462,15 +675,78 @@ body.is-checkout .checkout-header { display: block; }
   .store-locator-body { flex-direction: column; overflow-y: auto; }
   .store-locator-list { width: 100%; overflow-y: visible; }
   .store-locator-map { min-height: 220px; }
+
+  /* The category nav has exactly two forms — this one, and the desktop
+     sidebar's vertical list above 900px — never a third in-between
+     shape. The moment the sidebar stacks (above), the nav switches
+     straight to a single-row horizontally-scrolling bar that bleeds
+     edge to edge and stays pinned to the top once scrolled past,
+     matching the category-tab pattern of most mobile ordering apps,
+     rather than the desktop list simply wrapping onto multiple rows in
+     place. Same behavior from here down to the smallest phone width —
+     only .view's own side padding (--deg-view-pad-x) changes further in,
+     which this bar's bleed math reads from rather than a hardcoded
+     value, so it stays exactly edge-to-edge at every width in between. */
+  .drawer-nav { display: none; }
+  .drawer-nav-mobile {
+    display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center;
+    gap: 8px;
+    /* Cancels .view's own side padding, then re-adds it as inset scroll
+       padding — the row bleeds to the true screen edges, but the
+       first/last pill still isn't flush against them, and native scroll-
+       snap-adjacent browsers won't clip a focus ring at the edges either.
+       width:calc(100% + 2*pad) is the other half of that trick, and it's
+       load-bearing here specifically: .menu-layout's align-items:flex-start
+       (needed for the desktop columns) doesn't stretch a flex child to
+       the container's width the way the default 'stretch' would, so
+       without it this row simply grows to fit all 8 pills (measured:
+       1092px) instead of being clipped/scrolled at the viewport edge. */
+    width: calc(100% + var(--deg-view-pad-x) * 2); margin: 0 calc(var(--deg-view-pad-x) * -1); padding: 0 var(--deg-view-pad-x);
+    overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; touch-action: pan-x;
+    /* 69px matches .site-header's own stable height (steady across
+       every width and nav-compact state) — stacks directly below the
+       now-sticky header instead of both competing for top:0. */
+    position: sticky; top: 69px; z-index: 30;
+    background: var(--deg-cream);
+    cursor: grab;
+    /* Separates the sticky bar from the content scrolling beneath it —
+       a plain background-match otherwise reads as one continuous surface
+       once it's pinned to the top. */
+    border-bottom: 1px solid var(--deg-border-chip);
+    box-shadow: var(--deg-shadow-card);
+  }
+  .drawer-nav-mobile::-webkit-scrollbar { display: none; }
+  .drawer-nav-mobile.dragging { cursor: grabbing; scroll-snap-type: none; }
+  /* Horizontal pill row reads better with the active indicator as an
+     underline than as the vertical sidebar's left accent bar, which has
+     no "bottom" to sit flush against in a row of same-height items. */
+  .drawer-nav-mobile .category-item {
+    flex: none; white-space: nowrap; margin-left: 0;
+    border-left: none; border-bottom: 3px solid transparent;
+  }
+  .drawer-nav-mobile .category-item.active { border-left-color: transparent; border-bottom-color: var(--deg-border-primary); }
 }
 
 @media (max-width: 640px) {
-  .nav-inner { padding: 0 16px; row-gap: 10px; flex-wrap: wrap; }
-  .logo { height: 20px; margin-right: 8px; }
-  .nav-links { flex-basis: 100%; order: 3; justify-content: flex-start; flex-grow: 0; }
-  .nav-link { font-size: 12px; padding: 8px 6px; }
+  .nav-inner { padding: 0 16px; }
+  .logo { height: 32px; margin-right: 8px; }
 
+  .view { --deg-view-pad-x: 16px; }
   .view, .checkout-header-inner, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
+
+  /* Full-bleed edge-to-edge on mobile: cancel .view's own top padding
+     (24px) and this breakpoint's 16px side padding above with a negative
+     margin, rather than touching .view itself, which .view-checkout also
+     shares and has no hero to bleed. Height becomes a deliberate fraction
+     of the viewport instead of the desktop aspect-ratio, and the gap
+     before the store name tightens now that the banner reads as a
+     full-width edge-to-edge band rather than an inset card. */
+  .store-hero {
+    margin: -24px -16px 12px; border-radius: 0;
+    aspect-ratio: auto; height: 24vh;
+  }
+
   .back-link-label { display: none; }
   .checkout-header-logo { height: 24px; }
   .order-summary-toggle-title { font-size: 18px; line-height: 24px; }
