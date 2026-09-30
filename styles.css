@@ -415,6 +415,8 @@ body.is-checkout .site-header { display: none; }
   .cart-drawer.is-open { transform: none; opacity: 1; }
   .order-summary-collapse, .order-summary-chevron, .item-modal-header-title { transition-duration: .01ms; }
   .order-mode-pill { transition-duration: .01ms; }
+  .drawer-nav-mobile { transition-duration: .01ms; }
+  .cart-bar { transition-duration: .01ms; }
 }
 .drawer-header { display: flex; align-items: center; justify-content: space-between; }
 .pickup-chip { display: flex; align-items: center; gap: 10px; background: var(--deg-cream); border-radius: var(--deg-radius-pill); padding: 12px 18px; font-size: 13.5px; }
@@ -454,6 +456,56 @@ body.is-checkout .site-header { display: none; }
    as a total only through weight and color, not a jump in scale. Checkout's
    Total is a bigger, standalone card heading and keeps the 20px rule. */
 .drawer-totals .summary-line.total { font-size: 14px; line-height: 20px; }
+
+/* ---------- Floating cart bar (mobile) ----------
+   Reuses .pill-btn.dark.full as-is (see design-system.css's own "never
+   introduce a new one-off button class" rule) — same dark fill, radius,
+   and centered layout as "Go to checkout" above, since this is the other
+   end of the same action; both moved off gold to the secondary dark/black
+   button style along with the rest of the cart→checkout flow, keeping
+   gold reserved for the menu/browsing flow's own CTAs. This class only
+   adds the floating placement and the show/hide transition on top of it. Unlike
+   .drawer-nav-mobile, which hides/reveals on scroll position, this bar
+   reacts only to the cart itself (see updateCartBar() in app.js) and stays
+   up the entire time the customer keeps browsing with items in the cart.
+   [hidden] and .is-visible are toggled together, not interchangeably:
+   [hidden] drops it from layout/tab order between uses, .is-visible drives
+   the fade/rise so the transition has a starting state to animate from
+   once unhidden. Desktop/tablet already have the header's own
+   always-visible cart badge for this, so it stays display:none above
+   640px — this is a true-mobile-only affordance, not a ≤900px one. */
+.cart-bar { display: none; }
+
+@media (max-width: 640px) {
+  /* #cart-bar (not .cart-bar): .pill-btn.full is a two-class selector, so
+     its own width:100% and display:inline-flex outrank a single-class
+     .cart-bar regardless of source order — the id is the cheapest way to
+     win that specificity fight without an !important. */
+  #cart-bar {
+    /* Restores .pill-btn's own inline-flex (the bare .cart-bar rule above
+       zeroes it out at every other width) so the icon/label/count row
+       actually lays out instead of collapsing to nothing. */
+    display: inline-flex;
+    position: fixed; left: 16px; right: 16px;
+    /* Matches Uber Eats' own floating "View order" pill, measured directly
+       off their live mobile site: 32px between the pill's bottom edge and
+       the viewport bottom (their left/right insets and pill radius already
+       matched ours at 16px / full pill, so this was the one real gap). */
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    /* .full's own width:100% would resolve against the viewport, not the
+       16px insets, and overshoot the right edge — cancel it so left/right
+       govern width instead. */
+    width: auto;
+    /* Above ordinary content and the sticky header/category bar (30/35),
+       below every overlay and modal (40+) — the cart drawer itself (51)
+       already covers this exact screen region once open, so no separate
+       hide-while-cart-open rule is needed. */
+    z-index: 32;
+    opacity: 0; transform: translateY(16px); pointer-events: none;
+    transition: opacity .22s cubic-bezier(0,0,.2,1), transform .22s cubic-bezier(0,0,.2,1);
+  }
+  #cart-bar.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+}
 
 /* ---------- Checkout ----------
    The checkout header replaces the full site nav (see body.is-checkout
@@ -665,6 +717,15 @@ body.is-checkout .checkout-header { display: block; }
   .feature-photo { width: 100%; height: 180px; aspect-ratio: auto; }
   .feature-content { flex-direction: column; align-items: flex-start; padding-bottom: 16px; }
   .checkout-layout { flex-direction: column; }
+  /* .checkout-layout's own align-items:flex-start is correct on desktop's
+     row layout (so the shorter column isn't stretched to match the
+     taller one) but once stacked to a column here, the SAME property
+     means "shrink each card to its own content width" instead of "fill
+     the row" — .summary-col already patches this with its own explicit
+     100%; .checkout-main needs the identical patch, or its three cards
+     (Pickup details, Contact info, Payment method) render narrower than
+     the summary cards below them instead of matching edge-to-edge. */
+  .checkout-main { width: 100%; }
   .summary-col { width: 100%; position: static; }
   .item-modal-row { flex-direction: column; }
   .item-modal-media { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; position: static; }
@@ -702,6 +763,10 @@ body.is-checkout .checkout-header { display: block; }
        without it this row simply grows to fit all 8 pills (measured:
        1092px) instead of being clipped/scrolled at the viewport edge. */
     width: calc(100% + var(--deg-view-pad-x) * 2); margin: 0 calc(var(--deg-view-pad-x) * -1); padding: 0 var(--deg-view-pad-x);
+    /* Now nested right after .order-mode-row (not a bare .menu-layout
+       sibling), so its own top spacing needs an explicit margin instead
+       of relying on .menu-layout's inter-sibling gap. */
+    margin-top: 16px;
     overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
     scrollbar-width: none; touch-action: pan-x;
     /* 69px matches .site-header's own stable height (steady across
@@ -735,6 +800,46 @@ body.is-checkout .checkout-header { display: block; }
   .view { --deg-view-pad-x: 16px; }
   .view, .checkout-header-inner, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
 
+  /* Store info, the divider, and the "Menu / hours" head are desktop-
+     sidebar furniture — on a phone they just push the category tabs
+     (which do the actual navigating) further from the top of the page. */
+  .store-info-btn, .sidebar-divider, .sidebar-menu-head { display: none; }
+
+  /* 40px is the desktop sidebar-to-content gutter; stacked, with the
+     sidebar down to just the store card (the rest hidden above), that
+     same value reads as too loose between it and the Pickup/Delivery
+     card now directly below it. */
+  .menu-layout { gap: 24px; }
+
+  /* Smaller text (matching the established 14px/20px "Body Small" step,
+     not an arbitrary size) shrinks the bar's own height along with it —
+     line-height is what the row's height is actually built from, not
+     the padding, which stays put so the tap target doesn't shrink too.
+     Both states also move to noticeably darker, higher-contrast text:
+     inactive was already AA-passing muted taupe (6:1 on cream) but reads
+     lighter than every other label on this page; active was already
+     10:1 but a punchier deep tone reads more clearly "selected" against
+     the gold fill, and matches the deep tone every other emphasized
+     label (headings, prices) already uses. */
+  .drawer-nav-mobile .category-item { font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+  .drawer-nav-mobile .category-item.active { color: var(--deg-ink-deep); }
+
+  /* Hidden until the user has scrolled about halfway down the featured
+     item card (app.js toggles .is-revealed off that midpoint, using the
+     same 69px header height as the reference line), then fades in as a
+     floating bar instead of a space-reserving sticky one — before the
+     reveal there's nothing to leave a gap for. left/right:0 replace the
+     bleed width/margin calc above: a fixed element already spans the
+     full viewport on its own, so that math (built for an in-flow
+     element cancelling an ancestor's padding) no longer applies. */
+  .drawer-nav-mobile {
+    position: fixed; top: 69px; left: 0; right: 0;
+    width: auto; margin: 0;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .drawer-nav-mobile.is-revealed { opacity: 1; pointer-events: auto; }
+
   /* Full-bleed edge-to-edge on mobile: cancel .view's own top padding
      (24px) and this breakpoint's 16px side padding above with a negative
      margin, rather than touching .view itself, which .view-checkout also
@@ -756,4 +861,38 @@ body.is-checkout .checkout-header { display: block; }
 
   .address-card { flex-wrap: wrap; }
   .address-card span:nth-child(2) { flex-basis: 100%; }
+
+  /* ---------- Product modals, matched to Uber Eats' own mobile item
+     page (measured directly off their live site: 16px content gutter,
+     an edge-to-edge hero photo, a tight name/price/description cluster,
+     then generous room before the next section). Desktop keeps its own
+     24px gutter and inset rounded photo — this is a true-mobile-only
+     rework, not a ≤900px one. */
+  /* Uber's mobile item page is a full-screen takeover, not a floating
+     card with a page peeking out around it — .item-modal's own 20px
+     outer padding and .item-modal-inner's rounded corners/shadow are
+     what make it read as a dialog, not a screen. Width is already 100%
+     here (min(1000px,100%) already resolves to the viewport below
+     1000px) — the padding and the card chrome were the only things
+     actually holding it back from filling the screen. */
+  .item-modal { padding: 0; }
+  .item-modal-inner { border-radius: 0; box-shadow: none; }
+  .item-modal-header { padding: 0 16px; }
+  .item-modal-row { padding: 0 16px 24px; }
+  /* Cancels .item-modal-row's own 16px side padding (bleeding the photo
+     to the true screen edges, same trick .store-hero above uses) and
+     drops the desktop inset card's rounded corners — flush edges are
+     what makes it read as a hero photo instead of a framed thumbnail. */
+  .item-modal-media {
+    width: calc(100% + 32px); margin: 0 -16px 16px; border-radius: 0;
+  }
+  /* .item-modal-content's own 16px gap is right for "next section"
+     transitions (Uber measures 14-20px there too) but reads loose between
+     the name/price and the description immediately under them — Uber
+     keeps that intro cluster tight (~8px), matching the bowl modal's own
+     .bowl-modal-intro, which already does this. The other three modals
+     never got that wrapper, so this negative margin gets the same result
+     without restructuring their markup. */
+  .item-modal-title-block + .modal-desc { margin-top: -8px; }
+  .item-modal-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
 }

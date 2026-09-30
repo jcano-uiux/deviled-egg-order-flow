@@ -277,7 +277,33 @@
   // ---------- Header / cart badge ----------
   function renderCartBadge() {
     document.getElementById('cart-badge').textContent = String(cartCount());
+    updateCartBar();
   }
+
+  // ---------- Floating cart bar (mobile) ----------
+  // Reacts only to the cart itself and to leaving/entering the menu view
+  // (see showView() below), never to scroll position — unlike the category
+  // pill bar, the brief calls for this one to stay up the entire time the
+  // customer keeps browsing with items in the cart.
+  const cartBar = document.getElementById('cart-bar');
+  let cartBarHideTimer = null;
+  function updateCartBar() {
+    const count = cartCount();
+    const show = count > 0 && !views.menu.hidden;
+    if (show) {
+      if (cartBarHideTimer) { window.clearTimeout(cartBarHideTimer); cartBarHideTimer = null; }
+      document.getElementById('cart-bar-count').textContent = `(${count})`;
+      cartBar.hidden = false;
+      // Force layout so the fade/rise-in has a starting state to animate
+      // from — same trick as openCart()'s own getBoundingClientRect() call.
+      cartBar.getBoundingClientRect();
+      cartBar.classList.add('is-visible');
+    } else {
+      cartBar.classList.remove('is-visible');
+      cartBarHideTimer = window.setTimeout(() => { cartBar.hidden = true; cartBarHideTimer = null; }, 240);
+    }
+  }
+  cartBar.addEventListener('click', openCart);
 
   // ---------- Menu grids ----------
   function renderGrids() {
@@ -625,6 +651,42 @@
     }, true);
   })();
 
+  // Mobile-only: the category pill bar stays hidden (see the ≤640px
+  // CSS — position:fixed, opacity:0) until the user has scrolled about
+  // halfway down the featured-item card, then fades in as a floating
+  // bar — except in Delivery mode, where there's no scrollable category
+  // content underneath it to navigate to, so it never reveals no matter
+  // the scroll position. Not wrapped in its own IIFE (unlike the drag-
+  // to-scroll block above it) so updateModeUI, below, can re-run
+  // updateBarReveal on every mode switch — needed because switching
+  // modes alone doesn't fire a scroll event, so a bar already revealed
+  // before switching to Delivery would otherwise just sit there. A
+  // no-op on wider screens: the bar is display:none there regardless,
+  // so toggling a class on it does nothing visible.
+  const drawerNavMobile = document.querySelector('.drawer-nav-mobile');
+  const featureCard = document.querySelector('.feature-card');
+  const REVEAL_LINE_PX = 69;
+  let revealTicking = false;
+  function updateBarReveal() {
+    revealTicking = false;
+    if (!drawerNavMobile || !featureCard) return;
+    if (state.mode === 'delivery') {
+      drawerNavMobile.classList.remove('is-revealed');
+      return;
+    }
+    const rect = featureCard.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+    drawerNavMobile.classList.toggle('is-revealed', midpoint <= REVEAL_LINE_PX);
+  }
+  function onScrollForReveal() {
+    if (revealTicking) return;
+    revealTicking = true;
+    requestAnimationFrame(updateBarReveal);
+  }
+  window.addEventListener('scroll', onScrollForReveal, { passive: true });
+  window.addEventListener('resize', onScrollForReveal);
+  updateBarReveal();
+
   // ---------- Pickup / delivery toggle ----------
   // Pickup is fulfilled in-house; Delivery hands off to third-party apps
   // (see #delivery-apps), so nothing past this toggle — cart, checkout,
@@ -633,6 +695,7 @@
     const isDelivery = state.mode === 'delivery';
     document.getElementById('pickup-menu-content').hidden = isDelivery;
     document.getElementById('delivery-apps').hidden = !isDelivery;
+    updateBarReveal();
   }
 
   // Pickup and Delivery aren't the same width, so the pill can't just
@@ -1349,6 +1412,7 @@
     Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
     document.body.classList.toggle('is-checkout', name === 'checkout');
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    updateCartBar();
   }
 
   document.getElementById('go-to-checkout').addEventListener('click', () => {
