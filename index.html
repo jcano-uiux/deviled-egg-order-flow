@@ -16,7 +16,14 @@
 <header class="site-header">
   <div class="nav-inner">
     <img class="logo" src="assets/logo.svg" alt="Deviled Egg Co.">
+    <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
     <nav class="nav-links" id="nav-links" aria-label="Primary">
+      <div class="nav-panel-head">
+        <h2 class="nav-panel-title">Menu</h2>
+        <button class="close-btn" id="close-nav" type="button" aria-label="Close menu">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
       <div class="nav-links-inner">
         <a class="nav-link" href="#">Pickup &amp; Delivery</a>
         <a class="nav-link" href="#">Nationwide Shipping</a>
@@ -52,8 +59,8 @@
 
     <aside class="store-sidebar" aria-label="Store details and menu categories">
       <div class="store-card">
+        <img class="store-carry-out-badge" src="assets/carry-out-badge.png" alt="Carry-out only" width="99" height="25">
         <h1 class="store-name">McKinney, TX</h1>
-        <p class="store-tagline">Fresh deviled eggs, made daily</p>
         <p class="store-address">111 W Virginia St, McKinney, TX 75069</p>
         <button class="pill-btn dark store-info-btn" type="button">Store info</button>
       </div>
@@ -80,6 +87,7 @@
           <span class="order-mode-pill" aria-hidden="true"></span>
           <button class="order-mode-option active" data-mode="pickup" type="button">Pickup</button>
           <button class="order-mode-option" data-mode="delivery" type="button">Delivery</button>
+          <button class="order-mode-option" data-mode="menu" type="button">Full Menu</button>
         </div>
         <div class="delivery-info">
           <img class="delivery-info-icon" src="assets/delivery-scooter.png" width="36" height="36" alt="">
@@ -114,18 +122,23 @@
       </nav>
 
       <div id="pickup-menu-content">
-        <button class="feature-card" id="open-dozen-modal" type="button" aria-label="Customize Build Your Own Dozen — $24.99">
-          <img class="feature-photo" src="assets/products/12-pack.jpg" alt="">
-          <span class="feature-content">
-            <span class="feature-body">
-              <span class="feature-eyebrow">Build Your Own Dozen</span>
-              <span class="feature-title">12 Pack Deviled Egg</span>
-              <span class="feature-desc">12 deviled eggs, your way. Choose up to 4 flavors from our full lineup.</span>
-              <span class="price">$24.99</span>
-            </span>
-            <span class="pill-btn primary feature-cta" aria-hidden="true">Customize →</span>
-          </span>
-        </button>
+        <!-- Featured items: a horizontally scrolling row of square-photo cards (the familiar
+             delivery-app pattern). Cards are rendered from FEATURED in app.js; each opens the
+             same item modal its menu-grid twin does, never an instant add. -->
+        <section class="featured" id="featured-items" aria-labelledby="featured-title">
+          <div class="featured-head">
+            <h2 id="featured-title">Featured items</h2>
+            <div class="featured-nav">
+              <button class="featured-arrow" type="button" data-dir="-1" aria-label="Scroll featured items back" aria-controls="featured-track">
+                <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="featured-arrow" type="button" data-dir="1" aria-label="Scroll featured items forward" aria-controls="featured-track">
+                <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+          <ul class="featured-track" id="featured-track"></ul>
+        </section>
 
         <section class="menu-section" id="section-deviled-eggs">
           <h2>Deviled Eggs</h2>
@@ -161,6 +174,11 @@
       <section class="menu-section" id="delivery-apps" hidden>
         <h2>We deliver through</h2>
         <div class="shop-grid" id="delivery-grid"></div>
+      </section>
+
+      <section class="menu-section" id="full-menu" hidden>
+        <h2>Full menu</h2>
+        <div class="shop-grid" id="full-menu-grid"></div>
       </section>
 
     </div>
@@ -208,11 +226,11 @@
         <div class="input-row">
           <label class="field-group">
             <span class="field-label">Full name</span>
-            <input type="text" placeholder="Jordan Rivera">
+            <input type="text" name="name" autocomplete="name" placeholder="Jordan Rivera">
           </label>
           <label class="field-group">
             <span class="field-label">Phone number</span>
-            <input type="tel" placeholder="(214) 555-0100">
+            <input type="tel" name="tel" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0100">
           </label>
         </div>
       </section>
@@ -254,6 +272,11 @@
             <button class="chip" data-value="15" type="button">15%</button>
             <button class="chip active" data-value="18" type="button">18%</button>
             <button class="chip" data-value="20" type="button">20%</button>
+            <button class="chip" data-value="custom" type="button">Custom</button>
+          </div>
+          <div class="tip-custom" id="tip-custom" hidden>
+            <span class="tip-custom-prefix" aria-hidden="true">$</span>
+            <input type="text" id="tip-custom-input" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="Custom tip amount in dollars">
           </div>
         </div>
         <div class="summary-line"><span>Tip</span><span id="sum-tip">$0.00</span></div>
@@ -348,7 +371,7 @@
       </div>
     </div>
     <div class="item-modal-footer">
-      <button class="pill-btn primary full" id="add-to-order" type="button">Add 1 to order · $24.99</button>
+      <button class="pill-btn dark full" id="add-to-order" type="button">Add 1 to order · $24.99</button>
     </div>
   </div>
 </div>
@@ -366,14 +389,14 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
-          <svg width="120" height="120" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="8.5" stroke="#D9D1BF" stroke-width="1"/><path d="M6 8c1-3 3-5 6-5s5 2 6 5" stroke="#D9D1BF" stroke-width="1" stroke-linecap="round"/></svg>
+          <img class="shop-card-photo" id="bagel-modal-image" src="assets/products/full-size-bagel.jpg" alt="">
         </div>
         <div class="item-modal-content">
           <div class="item-modal-title-block">
             <h1 id="bagel-modal-title">Full Size Bagel</h1>
-            <span class="modal-price">$7.49</span>
+            <span class="modal-price" id="bagel-modal-price">$7.49</span>
           </div>
-          <p class="modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
+          <p class="modal-desc" id="bagel-modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
           <div class="divider thick"></div>
 
           <div class="field-group">
@@ -418,7 +441,7 @@
       </div>
     </div>
     <div class="item-modal-footer">
-      <button class="pill-btn primary full" id="add-bagel-to-order" type="button">Add 1 to order · $7.49</button>
+      <button class="pill-btn dark full" id="add-bagel-to-order" type="button">Add 1 to order · $7.49</button>
     </div>
   </div>
 </div>
@@ -453,7 +476,7 @@
               <span class="modal-section-title">Add-Ons</span>
               <span class="modal-section-sub">Choose your add-ons for an additional cost.</span>
             </div>
-            <div class="chip-row" id="bowl-addons-picker"></div>
+            <div class="addon-list" id="bowl-addons-picker" role="group" aria-label="Add-Ons"></div>
           </div>
 
           <div class="divider"></div>
@@ -491,7 +514,60 @@
       </div>
     </div>
     <div class="item-modal-footer">
-      <button class="pill-btn primary full" id="add-bowl-to-order" type="button">Add 1 to order · $14.99</button>
+      <button class="pill-btn dark full" id="add-bowl-to-order" type="button">Add 1 to order · $14.99</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="wrap-modal-backdrop" hidden></div>
+<div class="item-modal" id="wrap-modal" role="dialog" aria-modal="true" aria-labelledby="wrap-modal-title" hidden>
+  <div class="item-modal-inner">
+    <div class="item-modal-header">
+      <button class="close-btn" id="close-wrap-modal" type="button" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <span class="item-modal-header-title" id="wrap-modal-header-title"></span>
+      <span class="item-modal-header-spacer" aria-hidden="true"></span>
+    </div>
+    <div class="item-modal-scroll">
+      <div class="item-modal-row">
+        <div class="item-modal-media">
+          <img class="shop-card-photo" id="wrap-modal-image" src="assets/products/eggceptional-wraps.jpg" alt="">
+        </div>
+        <div class="item-modal-content">
+          <div class="item-modal-title-block">
+            <h1 id="wrap-modal-title"></h1>
+            <span class="modal-price" id="wrap-modal-price"></span>
+          </div>
+          <p class="modal-desc" id="wrap-modal-desc"></p>
+          <div class="divider thick"></div>
+
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Sandwich Flavor</span>
+              <span class="modal-section-sub" id="wrap-flavor-count">Allocated: 0/1</span>
+            </div>
+            <div class="flavor-grid" id="wrap-flavor-grid"></div>
+          </div>
+
+          <div class="divider"></div>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Add-Ons</span>
+              <span class="modal-section-sub">Choose extras for an additional cost.</span>
+            </div>
+            <div class="addon-list" id="wrap-addons-picker" role="group" aria-label="Add-Ons"></div>
+          </div>
+
+          <label class="field-group qty-field">
+            Qty
+            <select id="wrap-qty-select" class="qty-select"></select>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="item-modal-footer">
+      <button class="pill-btn dark full" id="add-wrap-to-order" type="button">Add 1 to order · $9.99</button>
     </div>
   </div>
 </div>
@@ -527,7 +603,7 @@
       </div>
     </div>
     <div class="item-modal-footer">
-      <button class="pill-btn primary full" id="add-quickview-to-order" type="button">Add 1 to order</button>
+      <button class="pill-btn dark full" id="add-quickview-to-order" type="button">Add 1 to order</button>
     </div>
   </div>
 </div>
@@ -620,18 +696,27 @@
     <form id="add-payment-form" class="add-payment-form" novalidate>
       <label class="field-group">
         <span class="field-label">Card number</span>
-        <input type="text" id="payment-card-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="19">
+        <span class="field-with-icon">
+          <input type="text" id="payment-card-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="19">
+          <svg class="field-icon" width="28" height="20" viewBox="0 0 28 20" fill="none" aria-hidden="true"><rect x="1" y="1" width="26" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M1 6.5h26" stroke="currentColor" stroke-width="3"/><path d="M5 14h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
       </label>
       <div class="input-row">
         <label class="field-group">
           <span class="field-label">Exp. date</span>
           <input type="text" id="payment-card-exp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" maxlength="7">
         </label>
-        <label class="field-group">
-          <span class="field-label">Security code</span>
+        <div class="field-group">
+          <div class="field-label-row">
+            <label class="field-label" for="payment-card-cvv">Security code</label>
+            <button class="field-help" id="cvv-help" type="button" aria-expanded="false" aria-controls="cvv-hint" aria-label="Where do I find the security code?">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M9.5 9.4a2.6 2.6 0 0 1 5.1.7c0 1.7-2.6 2.2-2.6 3.9" stroke="#FFF7EA" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2" fill="#FFF7EA"/></svg>
+            </button>
+          </div>
           <input type="text" id="payment-card-cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="CVV" maxlength="4">
-        </label>
+        </div>
       </div>
+      <p class="field-hint" id="cvv-hint" hidden>The 3 digits on the back of your card, or 4 on the front of an American Express.</p>
       <label class="field-group">
         <span class="field-label">Country</span>
         <select id="payment-card-country">

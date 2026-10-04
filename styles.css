@@ -112,6 +112,9 @@ body.is-checkout .site-header { display: none; }
   font-family: var(--deg-font-display); font-size: 20px; line-height: 28px; font-weight: 800; text-transform: none;
 }
 .nav-compact .nav-link:last-child { border-bottom: none; }
+/* Close button for the mobile drawer only, and the dimmed page behind it (see the 640px block). */
+.nav-panel-head { display: none; }
+.nav-backdrop { display: none; }
 
 /* ---------- Menu view ---------- */
 /* Tracks .view's own side padding so the mobile nav's edge-to-edge bleed
@@ -146,10 +149,17 @@ body.is-checkout .site-header { display: none; }
    stretch covers the width in column mode without disturbing flex-grow's
    handling of it in row mode, where width is main-axis instead. */
 .menu-content { flex: 1 1 0%; align-self: stretch; min-width: 0; }
-.store-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
+/* position:relative anchors .store-carry-out-badge (mobile-only, see its
+   own rule) — harmless at every other width since nothing else inside
+   this card is positioned against it. */
+.store-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
+/* Figma annotation (node 231:6791, mobile frame): "in mobile the shop
+   title and the badge is centered." Centers the whole card's text, not
+   just the title — tagline/address directly under a centered heading in
+   this narrow a column read unfinished left-aligned on their own. */
+.store-carry-out-badge { display: none; }
 .store-name { font-size: 32px; line-height: 40px; font-weight: 700; }
-.store-tagline { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
-.store-address { margin: 0; font-size: 14px; color: var(--deg-ink-muted); }
+.store-address { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
 .store-info-btn { margin-top: 16px; padding: 8px 16px; font-size: 14px; }
 
 .sidebar-divider { height: 1px; background: var(--deg-border-primary); }
@@ -184,7 +194,11 @@ body.is-checkout .site-header { display: none; }
   min-height: 62px; padding: 12px 16px;
   background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media);
 }
-.order-mode-toggle { position: relative; background: var(--deg-track-gray); padding: 2px; gap: 0; }
+/* Figma annotation (DECo_Order_260920, node 231:8360): "update toggle bar
+   color" — gold-wash track instead of the neutral gray this inherited
+   from the generic segmented-toggle base, matching the Pickup/Delivery
+   control's own real spec rather than the shared default. */
+.order-mode-toggle { position: relative; background: var(--deg-gold-tint); padding: 2px; gap: 0; }
 /* A shared, absolutely-positioned pill instead of each button drawing its
    own background — app.js measures the active button's real offsetLeft/
    offsetWidth (Pickup and Delivery aren't equal width) and transitions
@@ -194,11 +208,16 @@ body.is-checkout .site-header { display: none; }
    their label text painting above it. */
 .order-mode-pill {
   position: absolute; top: 2px; left: 0; bottom: 2px; width: 0;
-  border-radius: var(--deg-radius-pill); background: var(--deg-white); box-shadow: 0 0 5px rgba(0,0,0,.14);
+  /* Cream (not white) per the same Figma spec — reads correctly against
+     the new gold-wash track, where plain white would look stark. */
+  border-radius: var(--deg-radius-pill); background: var(--deg-cream); box-shadow: 0 0 5px rgba(0,0,0,.14);
   transition: transform .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
   pointer-events: none; z-index: 0;
 }
-.order-mode-option { position: relative; z-index: 1; background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); }
+/* Figma annotation (node 231:8364): "update pill text sizes and weights,
+   and update colors" — 12px (Body XS), not the generic 14px default;
+   weight/color already matched the spec (500/--deg-ink-body) as-is. */
+.order-mode-option { position: relative; z-index: 1; background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 12px; font-weight: 500; color: var(--deg-ink-body); }
 
 .delivery-info { display: flex; align-items: center; gap: 12px; }
 .delivery-info-icon { width: 36px; height: 36px; object-fit: contain; flex: none; }
@@ -207,43 +226,55 @@ body.is-checkout .site-header { display: none; }
 .delivery-info-location { font-size: 12px; font-weight: 600; color: var(--deg-ink-heading); }
 .delivery-info-address { font-size: 12px; line-height: 20px; color: var(--deg-ink-muted); }
 
-/* ---- Feature card ----
-   Image bleeds flush to the card's left/top/bottom edges (no padding
-   around it, clipped to the card radius); only the text+CTA content
-   is padded, and its own children bottom-align — matches the Figma
-   "Button - Customize Build Your Own Dozen" component, which is a
-   ~208px-tall square photo beside the text column.
-
-   .feature-photo gets a deliberate 208px width (Figma's own value,
-   not something to re-derive from content) with aspect-ratio: 1 for
-   the height — align-self: stretch alone doesn't work here: a flex
-   item's own hypothetical cross size still feeds into the row's
-   height even when it stretches, and this image's intrinsic width
-   (its asset is pre-resized to 360px on the long edge) kept winning
-   over any sibling-content-driven size, ballooning the whole card
-   past 350px tall. A definite width sidesteps that entirely. */
-.feature-card {
-  display: flex; gap: 28px; align-items: center; text-align: left; padding: 0;
-  background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card);
-  box-shadow: var(--deg-shadow-card); overflow: hidden; width: 100%; margin-top: 32px;
-}
 .thumb { border-radius: var(--deg-radius-card); background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); display: flex; align-items: center; justify-content: center; flex: none; }
-.feature-photo { width: 208px; aspect-ratio: 1; flex: none; object-fit: cover; }
-.feature-content { display: flex; align-items: flex-end; gap: 16px; flex-grow: 1; min-width: 0; padding: 16px 16px 12px; }
-.feature-body { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-width: 0; }
-.feature-eyebrow { font-weight: 700; font-size: 13px; line-height: 1.3; color: var(--deg-link); }
-/* Was 32px/40px — identical to .store-name, the page's own h1. Sharing
-   that size read as two competing page titles rather than a title and a
-   promoted product beneath it. Stepping down to the same size as
-   .menu-section h2 (24px/32px) reuses an already-established token
-   instead of inventing a new one, and slots this card into the same
-   "section heading" tier as "Deviled Eggs" and the other category
-   headings — appropriate, since it's a featured product announcement,
-   not the page's own identity. */
-.feature-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-heading); white-space: nowrap; }
-.feature-desc { color: var(--deg-ink-muted); font-size: 15px; line-height: 1.5; max-width: 520px; }
 .price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 26px; color: var(--deg-ink-deep); }
-.feature-cta { flex: none; }
+
+/* ---- Featured items ----
+   The delivery-app carousel: heading with round prev/next arrows, then a
+   row of square-photo cards that scrolls (and snaps) sideways. Photo leads,
+   the Quick Add sits on the photo's corner, name and price sit beneath it
+   with no card chrome — the photo is the card. Four and a bit cards show on
+   desktop so the row reads as "there's more"; phones show ~2.3. */
+.featured { margin-top: 32px; }
+.featured-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.featured-head h2 { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+.featured-nav { display: flex; gap: 8px; }
+.featured-arrow {
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center;
+  background: var(--deg-cream-cool); color: var(--deg-ink-deep); transition: background-color .15s ease, opacity .15s ease;
+}
+.featured-arrow:hover:not(:disabled) { background: var(--deg-border-chip); }
+.featured-arrow:disabled { opacity: .35; cursor: default; }
+.featured-arrow:focus-visible { outline: 2px solid var(--deg-ink-deep); outline-offset: 2px; }
+
+.featured-track {
+  --featured-gap: 16px;
+  list-style: none; margin: 0; padding: 4px 0 8px;
+  display: grid; grid-auto-flow: column; gap: var(--featured-gap);
+  grid-auto-columns: calc((100% - 3.5 * var(--featured-gap)) / 4.25);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.featured-track::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .featured-track { scroll-behavior: auto; } }
+
+.featured-card { display: flex; flex-direction: column; gap: 10px; scroll-snap-align: start; cursor: pointer; min-width: 0; }
+.featured-media { position: relative; aspect-ratio: 1; border-radius: var(--deg-radius-card); overflow: hidden; background: var(--deg-cream-cool); }
+.featured-media .shop-card-photo, .featured-media .thumb { width: 100%; height: 100%; border-radius: 0; }
+.featured-media .shop-card-photo { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.featured-card:hover .featured-media .shop-card-photo { transform: scale(1.04); }
+.featured-card:hover .add-btn, .featured-card:focus-within .add-btn { background: var(--deg-ink-deep-hover); }
+.featured-badge {
+  position: absolute; top: 10px; left: 10px; z-index: 1;
+  background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 12px; font-weight: 700; line-height: 1;
+  padding: 6px 10px; border-radius: var(--deg-radius-pill);
+}
+.featured-name {
+  font-weight: 600; font-size: 15px; line-height: 20px; color: var(--deg-ink-deep);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.featured-meta { display: flex; align-items: baseline; gap: 6px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); margin-top: -6px; }
+.featured-price { font-weight: 600; color: var(--deg-ink-body); font-variant-numeric: tabular-nums; }
 
 /* scroll-margin-top matches .store-sidebar's own sticky top (93px =
    .site-header's 69px + its 24px breathing room) — clicking a category
@@ -282,7 +313,20 @@ body.is-checkout .site-header { display: none; }
 .shop-card-media { position: relative; flex: none; width: 161px; align-self: stretch; }
 .shop-card-media .thumb { width: 100%; height: 100%; border-radius: 0; }
 .shop-card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The media box is stretched by the card (align-self: stretch), which isn't a
+   definite height — so height:100% on the photo can't resolve and the image
+   falls back to its own aspect ratio, letting a tall or square photo set the
+   card's height (the portrait wrap photo pushed its card to 184px; square
+   bagel/bowl photos to 163px, against 162px for everything else). Pulling
+   the photo out of flow makes card height depend only on the text and the
+   shared min-height. */
+.shop-card-media > .shop-card-photo, .shop-card-media > .thumb { position: absolute; inset: 0; }
 .delivery-logo { width: 100%; height: 100%; object-fit: contain; padding: 24px; box-sizing: border-box; display: block; filter: brightness(0) invert(1); }
+/* Full Menu card: same shape as a delivery-app card, brand gold panel with a
+   drawn menu glyph in place of an app logo. The glyph is out of flow so it
+   can't affect the card's height (see .shop-card-media > .shop-card-photo). */
+.menu-card-media { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+.menu-card-icon { position: absolute; inset: 0; margin: auto; }
 .add-btn { position: absolute; right: 8px; bottom: 8px; width: 36px; height: 36px; background: var(--deg-ink-deep); color: #fff; border: 2px solid var(--deg-white); box-shadow: var(--deg-shadow-float); transition: background-color .15s ease; }
 /* The Figma shop_list_item component's hover state is defined on the whole
    card, not the button alone — hovering (or focusing) anywhere on the card
@@ -328,7 +372,11 @@ body.is-checkout .site-header { display: none; }
 .item-modal-scroll { flex-grow: 1; overflow-y: auto; }
 .item-modal-row { display: flex; gap: 24px; align-items: flex-start; padding: 4px 24px 24px; }
 .item-modal-media { width: 420px; aspect-ratio: 1; flex: none; align-self: flex-start; position: sticky; top: 16px; border-radius: 24px; background: rgba(0,0,0,.02); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.item-modal-content { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+/* One rhythm for every product modal: --modal-gap separates groups (intro,
+   each divider side, each option section). The description is pulled up to
+   sit 8px under the price regardless of that gap. */
+.item-modal-content { --modal-gap: 24px; flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--modal-gap); }
+.item-modal-title-block + .modal-desc { margin-top: calc(8px - var(--modal-gap)); }
 .item-modal-title-block { display: flex; flex-direction: column; gap: 4px; }
 .item-modal-content h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
 .modal-price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 32px; color: var(--deg-ink-muted); }
@@ -352,27 +400,40 @@ body.is-checkout .site-header { display: none; }
    accent, keeping gold reserved for actual selections. */
 .flavor-exclusions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
 .flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
+/* Reuses .flavor-exclusions' own border-top/label pairing for the wrap
+   modal's per-flavor ingredient line — same "reveal once selected" slot,
+   just a plain sentence instead of a row of NO: chips. */
+.flavor-ingredients-text { font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
 .exclude-chip { padding: 8px 16px; font-size: 13px; }
 .exclude-chip.active { background: var(--deg-ink-deep); color: #FBF3E3; }
 
-/* Bowl Add-Ons are the one .chip use with a second line (the priced
-   cost + note) — everywhere else .chip is single-line label text. */
-.addon-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
-.addon-chip-label { font-size: 14px; }
-.addon-chip-price { font-size: 12px; font-weight: 500; opacity: .7; }
+/* Priced add-ons (bowl + wrap modals) as full-width checkbox rows, per the
+   Figma "Item customize" spec (node 262:1749): cream-cool row, 12px radius,
+   name over a muted price line, 24px checkbox on the right. Selected fills
+   the whole row gold and turns the box solid dark with a white check. */
+.addon-list { display: flex; flex-direction: column; gap: 12px; }
+.addon-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; padding: 16px; border: none; border-radius: var(--deg-radius-card);
+  background: var(--deg-cream-cool); color: var(--deg-ink-body); text-align: left;
+  transition: background-color .15s ease;
+}
+.addon-row:not(.selected):hover { background: var(--deg-border-chip); }
+.addon-row.selected { background: var(--deg-gold); }
+.addon-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.addon-row-name { font-size: 14px; font-weight: 600; }
+.addon-row-note { font-size: 12px; font-weight: 500; opacity: .7; }
+.addon-row-box {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border: 2px solid var(--deg-border-primary); border-radius: 4px;
+  color: #fff; transition: background-color .15s ease;
+}
+.addon-row.selected .addon-row-box { background: var(--deg-ink-deep); }
 
-/* Bowl modal: four consecutive chip-row groups (Add-Ons, Free Eggstras,
-   No, Options) read as one undifferentiated block at the shared
-   .item-modal-content gap (16px) — the same interval used for the tight
-   name/price/description cluster above them. Scoped (not a shared
-   .item-modal-content change) since the dozen and bagel modals only have
-   one or two such groups and were already reviewed at that spacing.
-   Widening the between-group gap while keeping the intro cluster's own
-   internal spacing tight is what actually separates "groups of choices"
-   instead of just adding uniform air everywhere. */
-#bowl-modal .item-modal-content { gap: 32px; }
+/* The bowl's intro (title block + description) is its own wrapper with an 8px
+   gap, so the shared pull-up above must not apply a second time inside it. */
 .bowl-modal-intro { display: flex; flex-direction: column; gap: 8px; }
-.bowl-modal-section .modal-section-head { padding-bottom: 14px; }
+.bowl-modal-intro .modal-desc { margin-top: 0; }
 
 .qty-field { max-width: 220px; }
 /* Otherwise inherits the shared select styling (pill radius, chevron,
@@ -380,7 +441,13 @@ body.is-checkout .site-header { display: none; }
    usual 15px, which keeps mobile Safari from zooming in on focus. */
 .qty-select { font-size: 16px; }
 
-.item-modal-footer { flex: none; padding: 16px 24px; background: var(--deg-white); box-shadow: 0 -4px 8px rgba(0,0,0,.12); }
+/* Cream, not white: .item-modal-inner (the modal body/header behind it)
+   is already --deg-cream, so a white footer used to read as a separate
+   raised card-within-a-card. Matching it makes the whole modal one
+   continuous surface, with depth coming from the shadow alone — the
+   same "elevation separates, not color" pattern the rest of this
+   system already uses. */
+.item-modal-footer { flex: none; padding: 16px 24px; background: var(--deg-cream); box-shadow: 0 -4px 8px rgba(0,0,0,.12); }
 .item-modal-footer .pill-btn { width: 100%; }
 
 /* ---------- Cart drawer ----------
@@ -405,7 +472,7 @@ body.is-checkout .site-header { display: none; }
    space is left (flex: 1 1 auto), and a raised white footer that always sits
    flush at the bottom — never pushed there by a margin-auto hack, which left
    a dead gap on a short cart instead of a properly pinned bar. */
-.drawer-band { flex: none; background: var(--deg-white); padding: 24px; display: flex; flex-direction: column; gap: 4px; }
+.drawer-band { flex: none; background: var(--deg-white); padding: 24px; display: flex; flex-direction: column; }
 .drawer-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; background: var(--deg-cream); padding: 16px 24px; }
 .drawer-header h2 { font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
 
@@ -419,8 +486,10 @@ body.is-checkout .site-header { display: none; }
   .cart-bar { transition-duration: .01ms; }
 }
 .drawer-header { display: flex; align-items: center; justify-content: space-between; }
-.pickup-chip { display: flex; align-items: center; gap: 10px; background: var(--deg-cream); border-radius: var(--deg-radius-pill); padding: 12px 18px; font-size: 13.5px; }
-.pickup-chip-icon { display: block; flex: none; width: 20px; height: 20px; object-fit: contain; }
+/* The header row is 48px tall only because of the close button, which leaves
+   ~8px of empty space under the 32px title line; the negative margin tucks the
+   pickup line up against the title instead of floating below that gap. */
+.pickup-chip { margin-top: -8px; font-size: 13.5px; line-height: 20px; color: var(--deg-ink-body); }
 .drawer-items { display: flex; flex-direction: column; gap: 14px; }
 .drawer-item { display: flex; gap: 14px; align-items: flex-start; border-bottom: 1px solid var(--deg-border-chip); padding-bottom: 14px; }
 .drawer-item:last-child { border-bottom: none; }
@@ -432,7 +501,11 @@ body.is-checkout .site-header { display: none; }
 .drawer-item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .item-price { font-size: 14px; }
 .mini-stepper { display: flex; align-items: center; gap: 8px; }
-.mini-step-btn { width: 26px; height: 26px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); font-size: 13px; }
+/* color (not just border) now matters: the +/- glyph is an inline SVG
+   with stroke="currentColor", not text, so it needs its own explicit
+   color to render in the same ink-deep tone its border already uses —
+   :disabled below already relies on `color` for exactly this. */
+.mini-step-btn { width: 26px; height: 26px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); color: var(--deg-ink-deep); }
 .mini-step-btn:disabled { opacity: .35; border-color: var(--deg-border-chip); color: var(--deg-ink-muted); cursor: not-allowed; }
 .mini-stepper span { font-family: var(--deg-font-body); font-weight: 700; font-size: 14px; line-height: 16px; min-width: 10px; text-align: center; }
 /* Once allocation is maxed, a flavor still at 0 isn't just missing its own
@@ -525,6 +598,13 @@ body.is-checkout .checkout-header { display: block; }
 
 .pickup-time-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); font-size: 15px; font-weight: 600; color: var(--deg-ink-body); text-align: left; }
 .pickup-time-btn:hover { border-color: var(--deg-border-primary); }
+/* Same hover vocabulary as .pickup-time-btn above, so every tappable row in
+   the checkout reads as interactive before the pointer commits to it. */
+.checkout-card .radio-row:not(.active):hover { border-color: var(--deg-border-primary); }
+.payment-add-row:hover { color: var(--deg-ink-deep); }
+.payment-add-row:hover .payment-add-icon { border-color: var(--deg-border-primary); color: var(--deg-ink-deep); }
+.tip-group .chip:not(.active):hover { background: var(--deg-border-chip); }
+.pill-btn.dark:hover:not(:disabled) { background: var(--deg-ink-deep-hover); }
 
 /* The right column is two separate cards (Order summary, Order total)
    rather than one long card — same grouping principle as the left
@@ -535,6 +615,16 @@ body.is-checkout .checkout-header { display: block; }
 .summary-panel h2 { font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
 .summary-lines { display: flex; flex-direction: column; gap: 10px; }
 .tip-group { margin-top: 4px; }
+/* Four equal segments (15 / 18 / 20 / Custom) instead of content-width chips,
+   so the row never wraps in the 287px-wide mobile panel and the buttons read
+   as one set. */
+.tip-group .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tip-group .chip { padding-inline: 8px; text-align: center; }
+/* Appears directly under the chips when Custom is chosen. The $ sits inside
+   the shared pill input; left padding clears it. */
+.tip-custom { position: relative; }
+.tip-custom-prefix { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 600; color: var(--deg-ink-muted); pointer-events: none; }
+.tip-custom input { width: 100%; padding-left: 38px; }
 
 .order-summary-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; padding: 0; text-align: left; }
 .order-summary-toggle-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
@@ -669,7 +759,23 @@ body.is-checkout .checkout-header { display: block; }
 }
 .add-payment-inner > .close-btn { align-self: flex-start; }
 .add-payment-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
-.add-payment-form { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+/* Card-number field carries a generic card glyph at its right edge, and the
+   Security code label carries a "?" that reveals where to find it. */
+.field-with-icon { position: relative; display: block; }
+.field-with-icon input { width: 100%; padding-right: 64px; }
+.field-icon { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); color: var(--deg-ink-placeholder); pointer-events: none; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; min-height: 16px; }
+.field-help { position: relative; display: flex; flex: none; width: 18px; height: 18px; margin: -2px 0; padding: 0; border: none; background: none; color: var(--deg-ink-deep); }
+/* 18px glyph, 44x44 hit area. It extends left (over empty label space), not
+   right: the button sits at the field's right edge, and anything past the
+   form's padding would make the scroll container overflow sideways. */
+.field-help::after { content: ''; position: absolute; inset: -13px -6px -13px -20px; }
+.field-hint { margin: -4px 0 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+/* overflow-y:auto makes overflow-x clip as well, and the fields fill the form's
+   full width — so the 4px focus halo got sliced off on every side. Padding gives
+   the ring room inside the clip box; the equal negative margin keeps the fields
+   exactly where they were. */
+.add-payment-form { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 6px; margin: -6px; scroll-padding: 8px; }
 
 /* ---------- Confirmation ---------- */
 .confirmation-wrap { max-width: 1360px; margin: 0 auto; display: flex; justify-content: center; padding: 20px 40px 60px; }
@@ -702,20 +808,7 @@ body.is-checkout .checkout-header { display: block; }
      24px breathing room used elsewhere = 149px. */
   #menu-top, .menu-section { scroll-margin-top: 149px; }
   .shop-grid { grid-template-columns: minmax(0, 1fr); }
-  /* Stacked, the card's 28px gap (built for the row layout's image-to-
-     text breathing room) stacks on top of .feature-content's own 16px
-     top padding instead of sharing the job with it, pushing the text
-     ~44px below the photo — noticeably farther than every other gap on
-     this card. Zeroing it here leaves that top padding as the only
-     space between photo and text. The button lands symmetrically too:
-     .feature-content's 12px bottom padding was fine in the row layout,
-     where align-items:center means it's just internal breathing room
-     inside a vertically-centered block, never touching the card's true
-     bottom edge — stacked, the button IS the last thing before that
-     edge, so 12px (less than the 16px top inset) reads as cramped. */
-  .feature-card { flex-direction: column; align-items: stretch; gap: 0; }
-  .feature-photo { width: 100%; height: 180px; aspect-ratio: auto; }
-  .feature-content { flex-direction: column; align-items: flex-start; padding-bottom: 16px; }
+  .featured-track { grid-auto-columns: calc((100% - 2.5 * var(--featured-gap)) / 3.25); }
   .checkout-layout { flex-direction: column; }
   /* .checkout-layout's own align-items:flex-start is correct on desktop's
      row layout (so the shorter column isn't stretched to match the
@@ -805,6 +898,35 @@ body.is-checkout .checkout-header { display: block; }
      (which do the actual navigating) further from the top of the page. */
   .store-info-btn, .sidebar-divider, .sidebar-menu-head { display: none; }
 
+  /* Figma annotation (node 231:6791): "in mobile the shop title and the
+     badge is centered." */
+  .store-card { align-items: center; text-align: center; }
+  /* Address hidden under the shop title on mobile — the title and Carry Out
+     badge alone carry this card now. The base 24px bottom padding was sized
+     to balance that hidden copy; left alone, it now stacks with
+     .menu-layout's own 24px gap below and reads as ~48px of dead air between
+     the title and the Pickup/Delivery toggle. */
+  .store-address { display: none; }
+  .store-card { padding-bottom: 8px; }
+
+  /* Figma annotation (node 231:9009): "add a badge that is added to
+     highlight that the shop is for carry out/pickup only — it touches
+     the hero banner." Real exported asset (assets/carry-out-badge.png),
+     not a redrawn/CSS approximation, per that same Figma frame. Centered
+     on the hero's real bottom edge (translateY(-50%) off a point
+     --hero-gap above .store-card's own top, since .store-hero's own
+     margin-bottom opens a gap between the two) so it straddles the
+     hero-to-card boundary itself, not .store-card's top edge — those
+     aren't the same line once that gap exists. Mobile-only: this
+     stacked hero-then-card relationship doesn't exist in the desktop/
+     tablet two-column layout. */
+  .store-carry-out-badge {
+    display: block;
+    position: absolute; top: calc(-1 * var(--hero-gap)); left: 50%; transform: translate(-50%, -50%);
+    width: 99px; height: auto; z-index: 2;
+    pointer-events: none;
+  }
+
   /* 40px is the desktop sidebar-to-content gutter; stacked, with the
      sidebar down to just the store card (the rest hidden above), that
      same value reads as too loose between it and the Pickup/Delivery
@@ -847,16 +969,65 @@ body.is-checkout .checkout-header { display: block; }
      of the viewport instead of the desktop aspect-ratio, and the gap
      before the store name tightens now that the banner reads as a
      full-width edge-to-edge band rather than an inset card. */
+  /* Figma annotation (node 231:6789, "Video"): "banner hero is only 18%
+     the viewport height." */
+  /* Shared with .store-carry-out-badge below: its anchor point has to
+     move in lockstep with this margin, or the badge drifts off the
+     hero's real bottom edge the moment this number changes. Declared on
+     .view (a common ancestor of the hero and the card) so both sides
+     read the same value instead of two hand-synced magic numbers. */
+  .view { --hero-gap: 12px; }
   .store-hero {
-    margin: -24px -16px 12px; border-radius: 0;
-    aspect-ratio: auto; height: 24vh;
+    margin: -24px -16px var(--hero-gap); border-radius: 0;
+    aspect-ratio: auto; height: 18vh;
   }
 
   .back-link-label { display: none; }
+  /* With the label hidden the back control is a bare 26x16 chevron. Pad it
+     out to a 44px touch target and pull it back with equal negative margin,
+     so the chevron stays on the 16px gutter and the header doesn't grow. */
+  .checkout-header-inner .back-link { padding: 15px; margin: -15px; }
+  .order-summary-toggle { padding: 10px 0; margin: -10px 0; }
+  .tip-group .chip { min-height: 44px; }
   .checkout-header-logo { height: 24px; }
   .order-summary-toggle-title { font-size: 18px; line-height: 24px; }
-  .order-mode-row { flex-direction: column; align-items: flex-start; }
-  .feature-card { margin-top: 24px; }
+  /* Figma annotation (node 231:6796, mobile toggle variant): "only the
+     toggle buttons appear in mobile" — the store-address repeat (already
+     shown above in the store card) drops out here, leaving just Pickup/
+     Delivery. Same mobile node also renders the pill labels SemiBold,
+     not the desktop Medium. */
+  .delivery-info { display: none; }
+  .order-mode-option { font-weight: 600; }
+  /* Sized to Uber Eats' own mobile Pickup/Delivery toggle, measured off
+     their live store page at 375px: 36px track (2px inset around a 32px
+     pill), 14px/16px labels, 10px of horizontal padding per option. The
+     12px Figma size above is the desktop spec; at phone scale it read
+     undersized next to the 44px-class controls around it. */
+  .order-mode-option { font-size: 14px; line-height: 16px; padding: 8px 10px; }
+  /* With delivery-info gone, .order-mode-row's own white card now just
+     boxes in the toggle for no reason — drop that bounding box and
+     center the toggle in the space it leaves (align-items, not
+     justify-content: flex-direction is column here, so align-items is
+     the cross/horizontal axis). The gold toggle track itself (.order-
+     mode-toggle) stays — that's the real component chrome, not excess
+     wrapping, per the Figma spec already matched above. */
+  .order-mode-row { flex-direction: column; align-items: center; background: transparent; border: none; padding: 0; min-height: 0; }
+  .featured { margin-top: 24px; }
+  /* Phones swipe the row instead of using arrows; ~2.3 cards hint at more. */
+  .featured-nav { display: none; }
+  .featured-track { --featured-gap: 12px; grid-auto-columns: calc((100% - 1.5 * var(--featured-gap)) / 2.3); }
+  /* Edge-to-edge like Uber Eats' carousel: the scroller spans the full
+     viewport so cards slide off the screen edge instead of being clipped
+     at the content gutter, while padding + scroll-padding keep the first
+     card (and the last, at the end of the scroll) on the 16px gutter.
+     Same bleed pattern as the category tabs above; card width is
+     unchanged because grid percentages resolve against the content box. */
+  .featured-track {
+    width: calc(100% + var(--deg-view-pad-x) * 2);
+    margin: 0 calc(var(--deg-view-pad-x) * -1);
+    padding: 4px var(--deg-view-pad-x) 8px;
+    scroll-padding-inline: var(--deg-view-pad-x);
+  }
   .menu-section { margin-top: 40px; }
 
   .address-card { flex-wrap: wrap; }
@@ -877,22 +1048,94 @@ body.is-checkout .checkout-header { display: block; }
      actually holding it back from filling the screen. */
   .item-modal { padding: 0; }
   .item-modal-inner { border-radius: 0; box-shadow: none; }
-  .item-modal-header { padding: 0 16px; }
+  /* Uber's mobile item page has no top bar and no title-on-scroll: the photo
+     runs to the very top of the screen and a 48px white circle (8px in from
+     the corner) floats over it, pinned while the content scrolls beneath.
+     The header row is kept in the DOM (desktop still uses it) but collapsed
+     to zero height and taken out of flow, so the scroll area starts at the
+     top; only the close button remains. The scrolled-title text is hidden. */
+  .item-modal-inner { position: relative; }
+  .item-modal-header { position: absolute; top: 0; left: 0; right: 0; height: 0; padding: 0; display: block; z-index: 2; }
+  .item-modal-header-title, .item-modal-header-spacer { display: none; }
+  .item-modal-header .close-btn {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--deg-white); box-shadow: var(--deg-shadow-float);
+  }
+  .item-modal-header .close-btn:hover { background: var(--deg-cream-cool); }
   .item-modal-row { padding: 0 16px 24px; }
   /* Cancels .item-modal-row's own 16px side padding (bleeding the photo
      to the true screen edges, same trick .store-hero above uses) and
      drops the desktop inset card's rounded corners — flush edges are
      what makes it read as a hero photo instead of a framed thumbnail. */
   .item-modal-media {
-    width: calc(100% + 32px); margin: 0 -16px 16px; border-radius: 0;
+    width: calc(100% + 32px); margin: 0 -16px; border-radius: 0;
   }
-  /* .item-modal-content's own 16px gap is right for "next section"
-     transitions (Uber measures 14-20px there too) but reads loose between
-     the name/price and the description immediately under them — Uber
-     keeps that intro cluster tight (~8px), matching the bowl modal's own
-     .bowl-modal-intro, which already does this. The other three modals
-     never got that wrapper, so this negative margin gets the same result
-     without restructuring their markup. */
-  .item-modal-title-block + .modal-desc { margin-top: -8px; }
   .item-modal-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+
+  /* ---------- Every other dialog, same full-screen takeover ----------
+     The cart drawer and the three centered dialogs (schedule pickup, choose
+     a store, add card) were floating cards with the page peeking out around
+     them. On a phone they follow the product modals above: edge to edge,
+     no rounded card or drop shadow, a 16px content gutter, and the raised
+     white action bar pinned to the bottom edge. */
+  .cart-drawer { width: 100%; max-width: none; }
+  .drawer-band { padding: 16px; }
+  .drawer-scroll { padding: 16px; }
+  .drawer-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+
+  .pickup-settings-modal { padding: 0; align-items: stretch; }
+  .pickup-settings-inner, .store-locator-inner, .add-payment-inner {
+    width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none;
+    padding: 8px 16px 0; gap: 16px;
+  }
+  .pickup-settings-actions {
+    margin: 0 -16px; padding: 16px; border-radius: 0; box-shadow: 0 -4px 16px rgba(0,0,0,.12);
+  }
+  /* The form is the scroll region; it takes whatever height the title and
+     action bar leave, so the bar sits on the bottom edge even on a short form. */
+  .add-payment-form { flex: 1 1 auto; min-height: 0; }
+  /* The shared stylesheet stacks every .input-row on phones; Exp. date and
+     Security code are short, so they share one row like the reference. */
+  .add-payment-form .input-row { flex-direction: row; gap: 12px; }
+
+  /* ---------- Navigation menu: Uber Eats-style side drawer ----------
+     The compact menu is a small dropdown at tablet width. On a phone it is a
+     side drawer like Uber Eats': a white panel about 80% of the screen wide
+     sliding in from the left over a dimmed page, 24px of padding, no
+     title bar. Tapping the dimmed page dismisses it. The close
+     button stays in the DOM for keyboard and screen-reader users but is
+     visually hidden until it takes keyboard focus. The slide uses the cart's
+     easing: in on the long decelerating curve, out on the short accelerating
+     one. The closed drawer is visibility:hidden (after the slide-out
+     finishes) so its links can't be tabbed to while it's off-screen. */
+  .nav-compact .nav-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 39; background: rgba(19,13,0,.5);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s;
+  }
+  .nav-compact .nav-backdrop.is-open { opacity: 1; visibility: visible; transition: opacity .28s cubic-bezier(.16,1,.3,1), visibility 0s; }
+  .nav-compact .nav-links {
+    position: fixed; top: 0; bottom: 0; left: 0; right: auto; width: 80%; max-width: 320px; max-height: none;
+    display: flex; flex-direction: column; justify-content: normal; align-items: stretch;
+    background: var(--deg-white); border-bottom: none; box-shadow: none;
+    overflow: hidden; opacity: 1;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .2s cubic-bezier(.4,0,1,1), visibility 0s linear .2s;
+  }
+  .nav-compact .nav-links.open {
+    transform: translateX(0); visibility: visible; box-shadow: var(--deg-shadow-modal);
+    transition: transform .32s cubic-bezier(.16,1,.3,1), visibility 0s;
+  }
+  .nav-compact .nav-panel-head { display: block; }
+  .nav-panel-title { display: none; }
+  .nav-compact .nav-panel-head .close-btn { position: absolute; top: 8px; right: 8px; width: 48px; height: 48px; clip-path: inset(50%); }
+  .nav-compact .nav-panel-head .close-btn:focus-visible { clip-path: none; }
+  .nav-compact .nav-links-inner { flex: 1 1 auto; overflow-y: auto; padding: 24px; }
+  /* Link type and row size are the compact menu's own (20px/28px Nunito 800,
+     14px row padding, defined with .nav-compact .nav-link above); only the
+     divider rules are dropped inside the drawer. */
+  .nav-compact .nav-link { border-bottom: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-compact .nav-links { transform: none; opacity: 0; transition: opacity .15s ease, visibility 0s linear .15s; }
+    .nav-compact .nav-links.open { opacity: 1; transition: opacity .15s ease, visibility 0s; }
+  }
 }

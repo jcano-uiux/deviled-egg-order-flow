@@ -3,6 +3,14 @@
 
   const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
   const LAUNCH_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  // Shared source for every quantity-stepper .mini-step-btn (dozen flavor
+  // allocation, bagel spread flavors, cart-drawer qty) — any future +/-
+  // control should pull from these two rather than typing "−"/"+" text
+  // glyphs again. currentColor so .mini-step-btn's own `color` (and its
+  // existing :disabled dimming) still drives the icon exactly like the
+  // text characters did.
+  const STEP_MINUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
+  const STEP_PLUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
   const DELIVERY_APPS = [
     { id: 'doordash', name: 'DoorDash', url: 'https://www.doordash.com', logo: 'assets/logos/doordash.svg', color: '#FF3008' },
@@ -152,17 +160,40 @@
     { id: 'light-lunch', name: 'The “Light Lunch”', price: 69.99, note: 'Per bundle · serves 10', desc: 'A lighter catering option that still packs all the deviled egg flavor.' },
   ];
 
-  // Per the current Figma menu-page layout: Catering's own section no
-  // longer renders on this page (catering has moved off the scrolling
-  // menu — the top nav's own "Catering" link is where that lives now),
-  // but "The All In Power Lunch" survives under a new Sandwich/Wrap
-  // section instead, matching that Figma page 1:1. CATERING above is
-  // left in place rather than deleted — none of its other six items
-  // appear anywhere in the current design, but the data is real (sourced
-  // from earlier work) and reversible/cheap to keep for whenever
-  // catering gets its own page.
+  const WRAP_PRICE = 9.99;
+  const WRAP_IMAGE = 'assets/products/eggceptional-wraps.jpg';
+  const WRAP_DESC = 'Fresh-pressed flatbread wraps built from our signature deviled egg flavors — pick your filling, then add sides.';
+  // Sourced verbatim from deviledeggco.com/product/eggceptional-wraps: each
+  // flavor's own ingredient line, shown once that flavor is selected — this
+  // product has no "NO:" exclusion toggles like the deviled egg flavors do.
+  const WRAP_FLAVORS = [
+    { id: 'blte', label: 'BLTE', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch' },
+    { id: 'cali-roll', label: 'Cali Roll', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame' },
+    { id: 'the-caesar', label: 'The Caesar', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch' },
+    { id: 'buffalo-chicken', label: 'Buffalo Chicken', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch' },
+  ];
+  // "Make it a Meal" is its own highlighted toggle on the live site, but it
+  // shares the exact {label, price, note} shape the bowl modal's own addOns
+  // already use, so it gets Add-Ons' existing chip UI for free as the first
+  // entry here instead of a one-off toggle component built for one row.
+  const WRAP_ADDONS = [
+    { label: 'Make it a Meal', price: 3.49, note: 'Chips & a bottled drink' },
+    { label: 'Cookie', price: 2.00 },
+    { label: 'Gourmet 2-Pack of Deviled Eggs', price: 2.00 },
+    { label: '4oz House-Made Egg Salad', price: 2.00 },
+    { label: 'Bag of Chips', price: 2.00 },
+  ];
+
+  // Replaces "The All In Power Lunch" (a catering item that never actually
+  // belonged in this section — see CATERING above, which keeps it) with the
+  // real Sandwich/Wrap product from deviledeggco.com: a single flavor pick
+  // (up to 1) plus paid Add-Ons. That shape is closer to the bowl modal's
+  // (flavor choice + add-ons together) than the dozen picker's multi-flavor
+  // allocation across a shared 19-flavor list, so rather than bend either
+  // existing modal to fit, this gets its own small dedicated one
+  // (openWrapModal) — see "Wrap customization modal" below.
   const SANDWICH_WRAP = [
-    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes', desc: 'The complete lunch experience — deviled eggs, sides, and drinks for your team.', image: 'assets/products/all-in-power-lunch.jpg' },
+    { id: 'eggceptional-wraps', name: 'Eggceptional Wraps', price: WRAP_PRICE, desc: WRAP_DESC, image: WRAP_IMAGE, wrapFlavors: WRAP_FLAVORS, addOns: WRAP_ADDONS },
   ];
 
   const BAGEL_FLAVORS = [
@@ -228,7 +259,8 @@
     pickupTimeId: null,
     pickupTimeLabel: null,
     payment: 'Apple Pay',
-    tipPct: 18,
+    tipPct: 18, // a percentage, or 'custom' to use tipCustom (dollars)
+    tipCustom: 0,
   };
 
   // Carts saved before product images were wired into the cart/checkout
@@ -314,6 +346,8 @@
     renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
     renderBagelCard();
     renderDeliveryGrid();
+    renderFullMenuGrid();
+    renderFeatured();
   }
 
   function renderDeliveryGrid() {
@@ -350,6 +384,131 @@
     });
   }
 
+  // Printed digital menu board per store (PDF). One file covers both the
+  // McKinney and Rockwall stores; a store without an entry has no menu yet.
+  const DIGITAL_MENU_PDF = 'assets/menus/Digital-Menu-RockwallMcKinney.pdf';
+  const DIGITAL_MENUS = {
+    'McKinney, TX': DIGITAL_MENU_PDF,
+    'Rockwall, TX': DIGITAL_MENU_PDF,
+  };
+  const MENU_ICON = '<svg class="menu-card-icon" width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" stroke="currentColor" stroke-width="3.5"/><path d="M24 24h24M24 34h24M24 44h14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>';
+
+  function renderFullMenuGrid() {
+    const grid = document.getElementById('full-menu-grid');
+    grid.innerHTML = '';
+    const url = DIGITAL_MENUS[state.location];
+    if (!url) {
+      const note = document.createElement('p');
+      note.className = 'muted';
+      note.textContent = `There isn't a digital menu for ${state.location} yet.`;
+      grid.appendChild(note);
+      return;
+    }
+    const card = document.createElement('a');
+    card.className = 'shop-card';
+    card.href = url;
+    card.target = '_blank';
+    card.rel = 'noopener';
+
+    const body = document.createElement('div');
+    body.className = 'shop-card-body';
+    body.innerHTML = `<span class="shop-card-name">${state.location} Digital Menu</span>`;
+    card.appendChild(body);
+
+    const media = document.createElement('div');
+    media.className = 'shop-card-media menu-card-media';
+    media.innerHTML = MENU_ICON;
+    const launch = document.createElement('span');
+    launch.className = 'add-btn';
+    launch.setAttribute('aria-hidden', 'true');
+    launch.innerHTML = LAUNCH_ICON;
+    media.appendChild(launch);
+    card.appendChild(media);
+
+    grid.appendChild(card);
+  }
+
+  // Every product opens its modal first (never an instant add); which modal depends on what it can customize.
+  function openMenuItem(item, keyPrefix, cartCategory) {
+    if (item.wrapFlavors) {
+      openWrapModal(item);
+    } else if (item.pickerConfig) {
+      openDozenModal(item);
+    } else if (item.addOns) {
+      openBowlModal(item);
+    } else {
+      openQuickviewModal(item, { keyPrefix, cartCategory });
+    }
+  }
+
+  // Featured row: real menu items only, each opening the same modal as its grid twin.
+  // Figma annotation (DECo_Order_260920, node 231:7203): "remove this badge
+  // both on mobile and desktop" — the eyebrow/kicker is gone; .featured-badge
+  // stays as reusable infrastructure for a real future trait, just unused
+  // by any current entry below.
+  const FEATURED = [
+    { from: DEVILED_EGGS, id: '12-pack', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
+    { from: DEVILED_EGGS, id: '2-pack', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
+    { from: DEVILED_EGGS, id: '6-pack-6-flavors', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
+    { from: PLATTERS, id: '24-count', keyPrefix: 'platter', cartCategory: 'Party platter' },
+    { from: EGG_SALADS, id: 'whole-pint', keyPrefix: 'saladcup', cartCategory: 'Egg salad' },
+    { from: PROTEIN_BOWLS, id: 'avo-chick-blt', keyPrefix: 'bowl', cartCategory: 'Protein bowl' },
+    { from: PROTEIN_BOWLS, id: 'bangin-brisket', keyPrefix: 'bowl', cartCategory: 'Protein bowl' },
+  ];
+
+  function renderFeatured() {
+    const track = document.getElementById('featured-track');
+    if (!track) return;
+    track.innerHTML = '';
+    FEATURED.forEach((f) => {
+      const item = f.from.find((p) => p.id === f.id);
+      if (!item) return;
+      const li = document.createElement('li');
+      li.className = 'featured-card';
+
+      const media = document.createElement('div');
+      media.className = 'featured-media';
+      if (f.badge) media.insertAdjacentHTML('beforeend', `<span class="featured-badge">${f.badge}</span>`);
+      media.appendChild(productThumb(item));
+      const btn = document.createElement('button');
+      btn.className = 'add-btn';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', (item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize ' + item.name : 'View ' + item.name);
+      btn.innerHTML = ADD_ICON;
+      media.appendChild(btn);
+      li.appendChild(media);
+
+      li.insertAdjacentHTML('beforeend', `
+        <span class="featured-name">${item.name}</span>
+        <span class="featured-meta"><span class="featured-price">${money(item.price)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>`);
+
+      const activate = () => openMenuItem(item, f.keyPrefix, f.cartCategory);
+      btn.addEventListener('click', activate);
+      li.addEventListener('click', (e) => { if (!e.target.closest('.add-btn')) activate(); });
+      track.appendChild(li);
+    });
+    wireFeaturedArrows(track);
+  }
+
+  // Arrows page the row by roughly one visible width and disable themselves at either end.
+  function wireFeaturedArrows(track) {
+    const arrows = document.querySelectorAll('.featured-arrow');
+    const sync = () => {
+      const max = track.scrollWidth - track.clientWidth - 2;
+      arrows.forEach((a) => { a.disabled = a.dataset.dir === '-1' ? track.scrollLeft <= 2 : track.scrollLeft >= max; });
+    };
+    arrows.forEach((a) => {
+      a.onclick = () => {
+        // Smooth paging, except when motion is reduced or the tab is hidden (smooth scrolling stalls there).
+        const still = document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        track.scrollBy({ left: Number(a.dataset.dir) * track.clientWidth * 0.85, behavior: still ? 'instant' : 'smooth' });
+      };
+    });
+    track.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    sync();
+  }
+
   function renderShopGrid(gridId, items, keyPrefix, cartCategory) {
     const grid = document.getElementById(gridId);
     grid.innerHTML = '';
@@ -375,17 +534,9 @@
       const btn = document.createElement('button');
       btn.className = 'add-btn';
       btn.type = 'button';
-      btn.setAttribute('aria-label', (item.pickerConfig || item.addOns) ? 'Customize ' + item.name : 'View ' + item.name);
+      btn.setAttribute('aria-label', (item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize ' + item.name : 'View ' + item.name);
       btn.innerHTML = ADD_ICON;
-      const activate = () => {
-        if (item.pickerConfig) {
-          openDozenModal(item);
-        } else if (item.addOns) {
-          openBowlModal(item);
-        } else {
-          openQuickviewModal(item, { keyPrefix, cartCategory });
-        }
-      };
+      const activate = () => openMenuItem(item, keyPrefix, cartCategory);
       btn.addEventListener('click', activate);
       media.appendChild(btn);
       card.appendChild(media);
@@ -444,11 +595,34 @@
   const navLogoEl = document.querySelector('.logo');
   const navCartEl = document.getElementById('open-cart');
 
+  // Under 640px the open menu is a full-screen panel (see the CSS), so it is
+  // modal in practice: the page and the header's own buttons go inert behind
+  // it and the body stops scrolling. Tablet keeps the lightweight dropdown.
+  const navPanelMq = window.matchMedia('(max-width: 640px)');
+  const navCloseBtn = document.getElementById('close-nav');
+  const navBackdropEl = document.getElementById('nav-backdrop');
+  const navBehindEls = () => [...document.querySelectorAll('#page-root > :not(.site-header)'), navLogoEl, navToggle, navCartEl];
+
   function setNavOpen(open) {
+    const wasOpen = navLinksEl.classList.contains('open');
     navLinksEl.classList.toggle('open', open);
+    navBackdropEl.classList.toggle('is-open', open);
     navToggle.setAttribute('aria-expanded', String(open));
     navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    if (open === wasOpen) return;
+    if (open) {
+      if (!navPanelMq.matches) return;
+      navBehindEls().forEach((el) => { el.inert = true; });
+      document.body.style.overflow = 'hidden';
+      navCloseBtn.focus();
+    } else {
+      navBehindEls().forEach((el) => { el.inert = false; });
+      document.body.style.overflow = '';
+      if (navPanelMq.matches) navToggle.focus();
+    }
   }
+  navCloseBtn.addEventListener('click', () => setNavOpen(false));
+  navPanelMq.addEventListener('change', () => setNavOpen(false));
 
   // Compact (hamburger) nav is content-driven, not tied to a viewport
   // breakpoint: an always-present, off-screen, single-line clone of the
@@ -562,7 +736,7 @@
         b.classList.toggle('active', b.dataset.target === targetId);
       });
 
-      if (state.mode === 'delivery') {
+      if (state.mode !== 'pickup') {
         state.mode = 'pickup';
         document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => {
           b.classList.toggle('active', b.dataset.mode === 'pickup');
@@ -664,13 +838,13 @@
   // no-op on wider screens: the bar is display:none there regardless,
   // so toggling a class on it does nothing visible.
   const drawerNavMobile = document.querySelector('.drawer-nav-mobile');
-  const featureCard = document.querySelector('.feature-card');
+  const featureCard = document.getElementById('featured-items');
   const REVEAL_LINE_PX = 69;
   let revealTicking = false;
   function updateBarReveal() {
     revealTicking = false;
     if (!drawerNavMobile || !featureCard) return;
-    if (state.mode === 'delivery') {
+    if (state.mode !== 'pickup') {
       drawerNavMobile.classList.remove('is-revealed');
       return;
     }
@@ -689,12 +863,13 @@
 
   // ---------- Pickup / delivery toggle ----------
   // Pickup is fulfilled in-house; Delivery hands off to third-party apps
-  // (see #delivery-apps), so nothing past this toggle — cart, checkout,
-  // confirmation — needs to know about a delivery mode.
+  // (see #delivery-apps); Full Menu opens the store's printed digital menu
+  // (see #full-menu) — so nothing past this toggle — cart, checkout,
+  // confirmation — needs to know about a delivery or menu mode.
   function updateModeUI() {
-    const isDelivery = state.mode === 'delivery';
-    document.getElementById('pickup-menu-content').hidden = isDelivery;
-    document.getElementById('delivery-apps').hidden = !isDelivery;
+    document.getElementById('pickup-menu-content').hidden = state.mode !== 'pickup';
+    document.getElementById('delivery-apps').hidden = state.mode !== 'delivery';
+    document.getElementById('full-menu').hidden = state.mode !== 'menu';
     updateBarReveal();
   }
 
@@ -732,7 +907,7 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -743,6 +918,7 @@
     else if (!itemModal.hidden) closeDozenModal();
     else if (!bagelModal.hidden) closeBagelModal();
     else if (!bowlModal.hidden) closeBowlModal();
+    else if (!wrapModal.hidden) closeWrapModal();
     else if (!quickviewModal.hidden) closeQuickviewModal();
     else if (!cartDrawer.hidden) closeCart();
     else if (!pickupSettingsModal.hidden) closePickupSettings();
@@ -777,9 +953,9 @@
         <div class="flavor-row-head">
           <span>${f.label}</span>
           <div class="mini-stepper">
-            <button class="mini-step-btn" type="button" aria-label="Remove a ${f.label} egg" ${qty <= 0 ? 'disabled' : ''}>−</button>
+            <button class="mini-step-btn" type="button" aria-label="Remove a ${f.label} egg" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
             <span>${qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="Add a ${f.label} egg" ${allocated >= activeProduct.total ? 'disabled' : ''}>+</button>
+            <button class="mini-step-btn" type="button" aria-label="Add a ${f.label} egg" ${allocated >= activeProduct.total ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
           </div>
         </div>
         ${showExclusions ? `
@@ -897,9 +1073,6 @@
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
-  document.getElementById('open-dozen-modal').addEventListener('click', () => {
-    openDozenModal(DEVILED_EGGS.find((p) => p.id === '12-pack'));
-  });
   document.getElementById('close-modal').addEventListener('click', closeDozenModal);
   modalBackdrop.addEventListener('click', closeDozenModal);
 
@@ -958,9 +1131,9 @@
       row.innerHTML = `
         <span>${flavor}</span>
         <div class="mini-stepper">
-          <button class="mini-step-btn" type="button" aria-label="Decrease ${flavor}">−</button>
+          <button class="mini-step-btn" type="button" aria-label="Decrease ${flavor}">${STEP_MINUS_ICON}</button>
           <span>${qty}</span>
-          <button class="mini-step-btn" type="button" aria-label="Increase ${flavor}">+</button>
+          <button class="mini-step-btn" type="button" aria-label="Increase ${flavor}">${STEP_PLUS_ICON}</button>
         </div>
       `;
       const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
@@ -988,6 +1161,9 @@
 
   function openBagelModal() {
     lastFocusedEl = document.activeElement;
+    document.getElementById('bagel-modal-image').src = BAGEL_IMAGE;
+    document.getElementById('bagel-modal-price').textContent = money(BAGEL_PRICE);
+    document.getElementById('bagel-modal-desc').textContent = BAGEL_DESC;
     state.bagelToast = 'Not Toasted';
     state.bagelType = 'Plain';
     state.bagelFlavors = {};
@@ -1080,23 +1256,37 @@
   let activeBowl = null;
   wireHeaderTitleReveal(bowlModal, 'bowl-modal-title');
 
-  function renderBowlAddOns() {
-    const container = document.getElementById('bowl-addons-picker');
-    container.innerHTML = activeBowl.addOns.map((addOn, i) => `
-      <button class="chip addon-chip${state.bowlAddOns.has(i) ? ' active' : ''}" type="button" data-index="${i}">
-        <span class="addon-chip-label">${addOn.label}</span>
-        <span class="addon-chip-price">+${money(addOn.price)}${addOn.note ? ' · ' + addOn.note : ''}</span>
-      </button>
-    `).join('');
-    container.querySelectorAll('.addon-chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const i = Number(chip.dataset.index);
-        if (state.bowlAddOns.has(i)) state.bowlAddOns.delete(i);
-        else state.bowlAddOns.add(i);
-        renderBowlAddOns();
-        renderBowlModalFooter();
+  // Shared by the bowl and wrap modals: priced add-ons as full-width checkbox
+  // rows (Figma "Add-Ons" spec). Re-renders on toggle, so keyboard focus is
+  // handed back to the same row afterwards.
+  const ADDON_CHECK_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 7L9 19L3.5 13.5L4.91 12.09L9 16.17L19.59 5.59L21 7Z" fill="currentColor"/></svg>';
+
+  function renderAddOnRows(container, addOns, selected, onChange) {
+    container.innerHTML = addOns.map((addOn, i) => {
+      const on = selected.has(i);
+      return `
+      <button class="addon-row${on ? ' selected' : ''}" type="button" role="checkbox" aria-checked="${on}" data-index="${i}">
+        <span class="addon-row-text">
+          <span class="addon-row-name">${addOn.label}</span>
+          <span class="addon-row-note">+${money(addOn.price)}${addOn.note ? ' · ' + addOn.note : ''}</span>
+        </span>
+        <span class="addon-row-box" aria-hidden="true">${on ? ADDON_CHECK_ICON : ''}</span>
+      </button>`;
+    }).join('');
+    container.querySelectorAll('.addon-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        const i = Number(row.dataset.index);
+        if (selected.has(i)) selected.delete(i);
+        else selected.add(i);
+        renderAddOnRows(container, addOns, selected, onChange);
+        container.querySelector(`.addon-row[data-index="${i}"]`).focus();
+        onChange();
       });
     });
+  }
+
+  function renderBowlAddOns() {
+    renderAddOnRows(document.getElementById('bowl-addons-picker'), activeBowl.addOns, state.bowlAddOns, renderBowlModalFooter);
   }
 
   function renderBowlEggstras() {
@@ -1219,6 +1409,143 @@
       image: activeBowl.image,
     });
     closeBowlModal();
+    openCart();
+  });
+
+  // ---------- Wrap customization modal ----------
+  // Shape is "dozen picker" (allocate a flavor, up to a cap) crossed with
+  // "bowl modal" (paid Add-Ons) — rather than bend either shared modal to
+  // fit a shape neither owns, this is its own small one, built the same
+  // way as the others (own activeWrap/state fields, own open/close).
+  const wrapModalBackdrop = document.getElementById('wrap-modal-backdrop');
+  const wrapModal = document.getElementById('wrap-modal');
+  let activeWrap = null;
+  wireHeaderTitleReveal(wrapModal, 'wrap-modal-title');
+
+  function wrapAllocated() {
+    return Object.values(state.wrapFlavorQty).reduce((sum, n) => sum + n, 0);
+  }
+
+  function renderWrapFlavorGrid() {
+    const grid = document.getElementById('wrap-flavor-grid');
+    grid.innerHTML = '';
+    const allocated = wrapAllocated();
+    activeWrap.wrapFlavors.forEach((f) => {
+      const qty = state.wrapFlavorQty[f.id] || 0;
+      const atLimit = qty <= 0 && allocated >= 1;
+      const row = document.createElement('div');
+      row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
+      row.innerHTML = `
+        <div class="flavor-row-head">
+          <span>${f.label}</span>
+          <div class="mini-stepper">
+            <button class="mini-step-btn" type="button" aria-label="Remove ${f.label}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
+            <span>${qty}</span>
+            <button class="mini-step-btn" type="button" aria-label="Add ${f.label}" ${allocated >= 1 ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
+          </div>
+        </div>
+        ${qty > 0 ? `
+          <div class="flavor-exclusions">
+            <span class="flavor-exclusions-label">Ingredients</span>
+            <span class="flavor-ingredients-text">${f.ingredients}</span>
+          </div>
+        ` : ''}
+      `;
+      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
+      decBtn.addEventListener('click', () => {
+        if ((state.wrapFlavorQty[f.id] || 0) <= 0) return;
+        delete state.wrapFlavorQty[f.id];
+        renderWrapFlavorGrid();
+        renderWrapModalFooter();
+      });
+      incBtn.addEventListener('click', () => {
+        if (wrapAllocated() >= 1) return;
+        state.wrapFlavorQty[f.id] = 1;
+        renderWrapFlavorGrid();
+        renderWrapModalFooter();
+      });
+      grid.appendChild(row);
+    });
+    document.getElementById('wrap-flavor-count').textContent = `Allocated: ${allocated}/1`;
+  }
+
+  function renderWrapAddOns() {
+    renderAddOnRows(document.getElementById('wrap-addons-picker'), activeWrap.addOns, state.wrapAddOns, renderWrapModalFooter);
+  }
+
+  function wrapAddOnsTotal() {
+    let sum = 0;
+    state.wrapAddOns.forEach((i) => { sum += activeWrap.addOns[i].price; });
+    return sum;
+  }
+
+  function renderWrapModalFooter() {
+    document.getElementById('wrap-qty-select').value = String(state.wrapQty);
+    const allocated = wrapAllocated();
+    const unitPrice = activeWrap.price + wrapAddOnsTotal();
+    const total = unitPrice * state.wrapQty;
+    const btn = document.getElementById('add-wrap-to-order');
+    const complete = allocated === 1;
+    btn.disabled = !complete;
+    btn.textContent = complete ? `Add ${state.wrapQty} to order · ${money(total)}` : 'Choose a flavor to continue';
+  }
+
+  function openWrapModal(item) {
+    lastFocusedEl = document.activeElement;
+    activeWrap = item;
+    state.wrapFlavorQty = {};
+    state.wrapAddOns = new Set();
+    state.wrapQty = 1;
+    populateQtySelect(document.getElementById('wrap-qty-select'));
+
+    document.getElementById('wrap-modal-title').textContent = item.name;
+    document.getElementById('wrap-modal-price').textContent = money(item.price);
+    document.getElementById('wrap-modal-image').src = item.image;
+    document.getElementById('wrap-modal-desc').textContent = item.desc || '';
+    document.getElementById('wrap-modal-header-title').textContent = item.name;
+
+    renderWrapFlavorGrid();
+    renderWrapAddOns();
+    renderWrapModalFooter();
+    wrapModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    wrapModal.querySelector('.item-modal-header-title').classList.remove('visible');
+    wrapModalBackdrop.hidden = false;
+    wrapModal.hidden = false;
+    updateInert();
+    document.getElementById('close-wrap-modal').focus();
+  }
+
+  function closeWrapModal() {
+    wrapModalBackdrop.hidden = true;
+    wrapModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('close-wrap-modal').addEventListener('click', closeWrapModal);
+  wrapModalBackdrop.addEventListener('click', closeWrapModal);
+
+  document.getElementById('wrap-qty-select').addEventListener('change', (e) => {
+    state.wrapQty = Number(e.target.value);
+    renderWrapModalFooter();
+  });
+
+  document.getElementById('add-wrap-to-order').addEventListener('click', () => {
+    if (wrapAllocated() !== 1) return;
+    const flavor = activeWrap.wrapFlavors.find((f) => (state.wrapFlavorQty[f.id] || 0) > 0);
+    const addOnLabels = Array.from(state.wrapAddOns).map((i) => activeWrap.addOns[i].label);
+    const parts = [flavor.label];
+    if (addOnLabels.length) parts.push(addOnLabels.join(', '));
+    const unitPrice = activeWrap.price + wrapAddOnsTotal();
+    addToCart({
+      key: 'wrap-' + activeWrap.id + '-' + flavor.id + '-' + JSON.stringify(Array.from(state.wrapAddOns)) + '-' + Date.now(),
+      name: activeWrap.name,
+      sub: parts.join(' · '),
+      price: unitPrice,
+      qty: state.wrapQty,
+      image: activeWrap.image,
+    });
+    closeWrapModal();
     openCart();
   });
 
@@ -1362,9 +1689,9 @@
       actions.innerHTML = `
         <span class="item-price">${money(item.price * item.qty)}</span>
         <div class="mini-stepper">
-          <button class="mini-step-btn" type="button" aria-label="Decrease quantity">−</button>
+          <button class="mini-step-btn" type="button" aria-label="Decrease quantity">${STEP_MINUS_ICON}</button>
           <span>${item.qty}</span>
-          <button class="mini-step-btn" type="button" aria-label="Increase quantity">+</button>
+          <button class="mini-step-btn" type="button" aria-label="Increase quantity">${STEP_PLUS_ICON}</button>
         </div>
       `;
       const [decBtn, , incBtn] = actions.querySelectorAll('.mini-step-btn, span');
@@ -1394,9 +1721,7 @@
     const totalQty = cartCount();
     document.getElementById('drawer-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
 
-    const pickupIcon = '<img class="pickup-chip-icon" src="assets/pickup-confirmed.png" width="20" height="20" alt="">';
-    const chip = document.getElementById('fulfillment-chip');
-    chip.innerHTML = `${pickupIcon}<span>Pickup at <strong>${state.location}</strong></span>`;
+    document.getElementById('fulfillment-chip').innerHTML = `Pickup at <strong>${state.location}</strong>`;
 
     document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
   }
@@ -1520,6 +1845,7 @@
   storeLocatorBackdrop.addEventListener('click', closeStoreLocator);
   document.getElementById('confirm-store-locator').addEventListener('click', () => {
     state.location = pendingStoreLocation;
+    renderFullMenuGrid();
     renderStoreLocatorSummary();
     renderDrawer();
     closeStoreLocator();
@@ -1570,10 +1896,20 @@
   });
   cardZipInput.addEventListener('input', refreshAddPaymentSubmit);
 
+  const cvvHelp = document.getElementById('cvv-help');
+  const cvvHint = document.getElementById('cvv-hint');
+  cvvHelp.addEventListener('click', () => {
+    const open = cvvHint.hidden;
+    cvvHint.hidden = !open;
+    cvvHelp.setAttribute('aria-expanded', String(open));
+  });
+
   function openAddPayment() {
     lastFocusedEl = document.activeElement;
     addPaymentForm.reset();
     refreshAddPaymentSubmit();
+    cvvHint.hidden = true;
+    cvvHelp.setAttribute('aria-expanded', 'false');
     addPaymentBackdrop.hidden = false;
     addPaymentModal.hidden = false;
     updateInert();
@@ -1796,13 +2132,34 @@
     state.payment = btn.dataset.value;
   });
 
+  const tipCustomWrap = document.getElementById('tip-custom');
+  const tipCustomInput = document.getElementById('tip-custom-input');
+
   document.getElementById('tip-picker').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-value]');
     if (!btn) return;
     document.querySelectorAll('#tip-picker .chip').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
-    state.tipPct = Number(btn.dataset.value);
+    const isCustom = btn.dataset.value === 'custom';
+    state.tipPct = isCustom ? 'custom' : Number(btn.dataset.value);
+    tipCustomWrap.hidden = !isCustom;
+    if (isCustom) tipCustomInput.focus();
     renderCheckoutTotals();
+  });
+
+  // Dollars and cents only, up to 4 whole digits: anything else snaps back to
+  // the last valid value instead of letting NaN or a stray character reach the total.
+  let lastValidTip = '';
+  tipCustomInput.addEventListener('input', () => {
+    if (/^\d{0,4}(\.\d{0,2})?$/.test(tipCustomInput.value)) lastValidTip = tipCustomInput.value;
+    else tipCustomInput.value = lastValidTip;
+    state.tipCustom = parseFloat(lastValidTip) || 0;
+    renderCheckoutTotals();
+  });
+  tipCustomInput.addEventListener('blur', () => {
+    if (tipCustomInput.value === '') return;
+    lastValidTip = state.tipCustom.toFixed(2);
+    tipCustomInput.value = lastValidTip;
   });
 
   function renderCheckout() {
@@ -1841,7 +2198,7 @@
 
   function renderCheckoutTotals() {
     const { subtotal, tax, total: preTipTotal } = computeTotals();
-    const tipAmt = subtotal * (state.tipPct / 100);
+    const tipAmt = state.tipPct === 'custom' ? state.tipCustom : subtotal * (state.tipPct / 100);
     const total = preTipTotal + tipAmt;
 
     document.getElementById('sum-subtotal').textContent = money(subtotal);
