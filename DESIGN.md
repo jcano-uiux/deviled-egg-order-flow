@@ -152,12 +152,12 @@ Warm and restrained: a cream-and-ink neutral base carries almost the entire inte
 - **Cool Linen** (`#F5F0E8`): default chip/segmented-track fill, secondary button fill.
 - **Warm Sand** (`#FFEFD5`): gradient partner for photo-placeholder panels.
 - **Golden Wash** (`#FFDEA0`): active sidebar category-nav item fill.
-- **Track Gray** (`#E8E8E8`): the pickup/delivery segmented-toggle track.
+- **Track Gray** (`#E8E8E8`): the segmented-toggle track.
 - **Signal Red** (`#DC2626`): the cart-count badge. Deliberately darkened from the Figma source's `#F04438` — white text on the original only measured 3.8:1 contrast against the 4.5:1 AA floor for its 11px bold size.
 - **Sand Border** (`#D9D1BF`) / **Linen Border** (`#E9E1D8`) / **Hairline Gray** (`#F3F3F3`) / **Bronze Border** (`#88754F`): border hairlines, lightest to most saturated — inputs and cards use Sand/Hairline; the active drawer-nav item and focused inputs use Bronze as the one "accented" border.
 
 ### Named Rules
-**The One Accent Rule.** Golden Yolk is the only saturated color anywhere in the system. It appears on primary buttons, active toggle/chip states, and nowhere else — its rarity is what makes it read as intentional rather than decorative.
+**The One Accent Rule.** Golden Yolk is the only saturated color anywhere in the system. It appears on primary buttons, active toggle/chip states, the selected state of a single-choice row, and nowhere else — its rarity is what makes it read as intentional rather than decorative.
 
 ## Typography
 
@@ -176,15 +176,17 @@ Warm and restrained: a cream-and-ink neutral base carries almost the entire inte
 - **Label** (700, 13px, uppercase): the top navigation only — the single place in the system that uses uppercase tracking-free bold caps.
 
 ### Named Rules
-**The Two-Voice Rule.** Nunito extrabold/bold is reserved for headings — never body copy, never buttons, never labels, and never a price or total. Plus Jakarta Sans carries every other voice in the system, including the uppercase nav labels and every number a customer has to read as money.
+**The Two-Voice Rule.** Nunito is for headers and nothing else. A header is an `h1`/`h2`/`h3`, a named heading class, or a modal or panel title. It is never used for body copy, links, buttons, labels, tags, step numbers, list or group names, prices, totals, distances, or any other number. The one standing exception is the mobile navigation drawer's links (below), which the owner chose to keep. Plus Jakarta Sans carries every other voice in the system, including the uppercase nav labels and every number a customer has to read as money. If a piece of text isn't a header, it is Plus Jakarta Sans, whatever its size or weight.
 
 **The Numbers-Are-Never-Nunito Rule.** An earlier pass in this file wrongly grouped "prices" in with Nunito's headings; a rounded extrabold display face reads as a logotype, not a ledger, and set a dollar figure it looks like a toy-store price tag. Every price and every "Total" — the feature-card price, the cart drawer total, the checkout order-total, the confirmation total — is Plus Jakarta Sans Bold (700) in `--deg-ink-deep`, at whatever size its own context calls for (see Price/Total above). Nunito's domain is strictly `h1`/`h2`/`h3` and named heading classes (`.feature-title`, `.menu-section h2`, `.checkout-card h2`, `.summary-panel h2`).
 
 ## Layout
 
-Centered container, max-width `1280px`, `40px` side padding. The menu view splits into a `276px` sticky left sidebar (store card + category drawer) and a flexible right column holding the hero image, search, pickup/delivery card, feature card, and category sections.
+Centered container, max-width `1280px`, `40px` side padding. The menu view splits into a `276px` sticky left sidebar (store card + category drawer) and a flexible right column holding the hero image, search, store-info card, feature card, and category sections.
 
 Vertical rhythm is deliberately two-tiered: tight spacing *within* a group (16px between cards in the same category grid, 14px between a section heading and its grid), and generous spacing *between* groups (56px before every new category-section heading, scaled to 40px under 640px). The gap between groups is always larger than any gap inside one — that's what makes categories read as distinct groups rather than one continuous scroll.
+
+The same container and the same two-tier rhythm carry the other pages. **Nationwide Shipping** and **Catering** are single-column content pages: a 24px-radius hero panel (gold on Shipping, Deep Ink with egg-shaped cutout photography on Catering), then sections 56px apart (40px under 640px), each a heading with a one-line muted subhead above its cards. Each cart (Pickup, Shipping, Catering) checks out on its own page in the checkout layout (form cards left, order summary right), with the checkout header in place of the site nav.
 
 Responsive behavior is structural, not cosmetic: at ≤900px the sidebar drops above the content and the category drawer becomes a horizontal wrapping row; the two-column shop-grid collapses to one column. At ≤640px the top nav's link list wraps to its own row below the logo/cart, and multi-column form rows stack.
 
@@ -194,7 +196,7 @@ Flat by default, with one very restrained ambient shadow system for cards and ex
 
 ### Shadow Vocabulary
 - **Card** (`0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04)`): the default resting shadow for every card — shop cards, feature card, order-mode card.
-- **Brand** (`0 10px 12px rgba(247,186,23,.25)`): primary CTAs only — the gold buttons ("Customize →", "Add to order", "Place order").
+- **Brand** (`0 10px 12px rgba(247,186,23,.25)`): gold primary buttons only — the page-level call to action (a marketing hero's "Shop Now"/"Order Now", the signup "Subscribe"). Never on a dark surface, where the glow reads as a halo; there the gold fill carries the button alone.
 - **Ambient** (`0 12px 32px rgba(0,0,0,.08)`): larger floating panels — the checkout order-summary panel.
 - **Modal** (`0 24px 64px rgba(19,13,0,.32)`): the item-customization modals.
 - **Float** (`0 2px 12px rgba(0,0,0,.12)`): small circular controls sitting on top of photo/hero media — the add-to-cart button on a card thumbnail, the hero's "more photos" button.
@@ -215,26 +217,41 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 
 ### Buttons
 - **Shape:** pill (`999px` radius) for every variant.
-- **Primary:** Golden Yolk fill, Espresso-on-Gold text, bold (700) 15px, the brand glow shadow. One per screen — the single loudest element in view.
-- **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight — secondary actions like "Store info".
+- **Primary (gold):** Golden Yolk fill, Espresso-on-Gold text, bold (700) 15px, the brand glow shadow. One per screen — the single loudest element in view. Used for page-level calls to action and the signup "Subscribe" button; on a gold surface (the Shipping hero) the button is Dark instead, since gold on gold disappears.
+- **Dark:** Deep Ink fill, warm off-white text (`#FBF3E3`), medium (500) weight. The working action everywhere a customer is building or paying for an order: modal footers ("Add to order", "Add to Bag", "Update order"), "Go to checkout", "Place order", the kit and catering "Add to Bag" / "Order Now" buttons, and secondary actions like "Store info".
 - **Outline:** transparent fill, 1.5px Deep Ink border, Deep Ink text, no shadow — tertiary/back actions.
 - **Icon buttons** (cart, close, quantity steppers, add-to-cart): circular, no border, centered icon; float above photo media use the Float shadow.
 - **Icon button hover (dark fill):** Deep Ink lightens to Warm Ember (`#554523`) on hover, a 150ms background transition.
 
 ### Chips
 - **Style:** Cool Linen fill, Warm Black text, pill radius, no border.
-- **State:** active swaps to Golden Yolk fill / Espresso-on-Gold text and steps up to bold (700). A `.segmented` wrapper (Pickup/Delivery, tip picker) adds a Track Gray track behind transparent chips.
+- **State:** active swaps to Golden Yolk fill / Espresso-on-Gold text and steps up to bold (700). A `.segmented` wrapper (the tip picker, the cart drawer's Pickup | Shipping | Catering tabs with a count on each, the catering Pickup/Delivery choice) adds a Track Gray or Cool Linen track behind transparent chips.
 
 ### Cards / Containers
 - **Corner Style:** `12px` (shop cards, feature card) or `16px` (photo/hero and the pickup-delivery card).
 - **Background:** Pure White on a Eggshell Cream page — the white-on-cream contrast is the only way cards separate from the page; there's no border-heavy treatment.
 - **Shadow Strategy:** the Card shadow — see Elevation & Depth.
 - **Border:** 1px Hairline Gray, present but nearly invisible; it reinforces the shadow rather than replacing it.
-- **Shop card as one interactive unit:** in the source Figma component, the Quick Add button sits inside a single card-wide `Link`, and the component's "hover" variant is defined at the card level — hovering it is what changes the button's fill, not a hover rule on the button alone. Implemented as: the whole card is `cursor: pointer` and clickable (same action as the button — add to cart, or open the customization modal for items that need one), `.shop-card:hover .add-btn`/`:focus-within` drives the Warm Ember fill, and a click listener on the card guards against double-firing when the click actually lands on the button (`.add-btn` keeps its own listener for keyboard/focus users; the card's listener no-ops when the event target is inside it).
+- **Shop card as one interactive unit:** in the source Figma component, the Quick Add button sits inside a single card-wide `Link`, and the component's "hover" variant is defined at the card level — hovering it is what changes the button's fill, not a hover rule on the button alone. Implemented as: the whole card is `cursor: pointer` and clickable (same action as the button — every product opens its own modal first, never an instant add; see PRODUCT.md), `.shop-card:hover .add-btn`/`:focus-within` drives the Warm Ember fill, and a click listener on the card guards against double-firing when the click actually lands on the button (`.add-btn` keeps its own listener for keyboard/focus users; the card's listener no-ops when the event target is inside it).
 
 ### Inputs / Fields
 - **Style:** pill radius, 1px Sand Border, Pure White fill, generous `14px 22px` padding.
 - **Focus:** a two-ring halo — Eggshell Cream ring, then Deep Ink ring — so focus reads against any background, including gold buttons and active chips where a same-hue outline would vanish.
+
+### Selectable rows
+- **Single choice** (`.radio-choice`: one flavor, payment method, pickup time, catering protein, bagel preset, pickup location): Cool Linen row, `12px` radius, name over a muted note, a 24px circular indicator on the right. Selected fills the whole row Golden Yolk and the indicator turns solid Deep Ink with a white dot. Native radios sit inside the label so arrow keys and focus work; the focus halo wraps the row.
+- **Multi choice** (`.addon-row`, checkbox role): same row with a 24px square box. Where many rows can be on at once (catering flavors and sides), selection is a 2px Deep Ink ring plus a filled check instead of a gold fill per row, so gold stays rare.
+- **Saved order block and store cards** (location picker): the saved order is a white 16px-radius card (Nunito title, bold store, muted address, semibold day and time, a dark pill and an underlined text link). Store results are white cards with the name and distance on one line, the address, a one-line status in plain text and a text action with a › (never a badge or an outlined pill); only the closest card carries a dark button, and no gold appears on any of them.
+- **Order tile and row** (`.order-tile`, `.order-row`): on the pickup order page, a tile is a white card with a photo panel, a Nunito 800 name, a muted "N options · from $X" line and a chevron (a 3-column grid with the photo on top from 900px); a row is a white 12px-radius card with a 96px photo, a 16px semibold name, price and calories, a two-line description and a 36px dark Add circle. No gold on either: the dark circle is the one action.
+- **Pickup banner** (`.order-banner`): a full-bleed white strip (screen edge to edge, flush under the header, no vertical padding, a 1px bottom rule) above the menu, its content on the page gutter: a pin, "Pickup at" + the store (and its address from tablet width up), the day and time in semibold, and an outline pill **Change**. No gold: the pin disc is the only tint, and drops away on phones so the day and time fit on one line.
+- **Allocation** (`.flavor-row`): a white row with a − / + stepper, for splitting a fixed number of pieces across flavors. In the dozen picker the row leads with the flavor's poster (56px, play badge); tapping it opens that flavor's clip (2:3, muted, looping) and live description inline under the stepper, one open at a time.
+
+### Cart drawer
+- A right-hand drawer (full screen on phones) holding three carts. With more than one cart in use it shows a full-width segmented tab bar (Pickup | Shipping | Catering, each with an item count; Catering counts lines, not boxes); with one it shows none. Each tab has its own one-line context under the title, its own items, its own total (Pickup total includes tax; Shipping and Catering show a subtotal and say fees come at checkout) and its own "Go to checkout".
+- Lines step with a −/+ stepper; a catering box meal instead shows "Edit" (reopens its modal filled in) and a trash button. Removing any line shows a Deep Ink "Removed … Undo" bar for 8 seconds.
+
+### Modals
+- Product modals are full-screen on phones and a 1000px, `32px`-radius dialog on desktop: a photo panel and a content column, a sticky footer with the Dark "Add to order" button that states what is still missing ("Choose 10 sandwiches to continue") until the order is valid. Catering cutouts sit in a compact 300px Cool Linen panel; the box meal modal fills the space below the photo with a live "Your order" summary (hidden on phones).
 
 ### Navigation
 
@@ -245,7 +262,8 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Links:** bold (700) `13px` Plus Jakarta Sans, uppercase, Warm Black (`#140F0A`), `10px` padding on each link, centered as a group in the remaining space. No letter-spacing and no gap beyond each link's own padding — Figma's link list has neither; the uppercase weight and padding alone carry the rhythm. `16px` margin between the link list and the cart button.
 - **Cart button:** `40px` Deep Ink (`#130D00`) circle, centered `18px` icon. The count badge is `18px` (grows via `min-width` for 2+ digits), Signal Red fill, white bold `11px` text, positioned `4px` above and `6px` right of the button's own edges (i.e. it overhangs the circle on the top-right corner, not flush-inset).
 - **A found-and-fixed rhythm bug:** the nav previously stacked a container-level `gap: 16px` *on top of* the logo's own `margin-right: 16px` and the cart button's own `margin-left: 16px`, doubling both side gaps to 32px. The container has no gap of its own — spacing comes entirely from each element's individual margin, matching Figma's own per-element (not per-container) spacing model.
-- **Mobile (<640px):** the link list wraps to its own full-width row below the logo/cart row (this breakpoint is not in the Figma file — an original responsive decision). The container's `gap` splits into `row-gap` only, so the vertical gap before the wrapped link row doesn't re-introduce the same doubling against the logo's horizontal margin.
+- **Links (current):** Pickup & Delivery, Nationwide Shipping, Catering, Gift Cards, Corporate Gifting, About, Franchise, Contact. The page being viewed carries a 3px Golden Yolk underline (`aria-current`).
+- **Mobile (≤640px):** the link list is a left side drawer (80% of the viewport, max 320px) behind a dimmed backdrop with the page inert, opened from a menu button at the left of the header. Its links are the one sanctioned exception to the Two-Voice Rule: Nunito 800 at 20px/28px in sentence case, 24px drawer padding. The owner chose to leave them as they are; this exception covers those links only, never any other navigation or UI text. This replaced the earlier wrap-to-its-own-row layout.
 
 **Sidebar category drawer** — a second navigation surface, not shown in the top-nav frame but part of the same menu page:
 
@@ -257,7 +275,7 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 
 ### Do:
 - **Do** keep Golden Yolk to primary CTAs and active-selection states only — one per screen is the target.
-- **Do** use Nunito extrabold/bold exclusively for headings; everything else — including every price and total — is Plus Jakarta Sans.
+- **Do** use Nunito exclusively for headers (plus the mobile nav drawer's links, the one sanctioned exception); every other piece of text — links, buttons, labels, prices, totals, distances, numbers — is Plus Jakarta Sans.
 - **Do** make the gap between content groups larger than the gap within a group — that's the entire grouping mechanism in this system, not borders or dividers.
 - **Do** reuse an existing radius/shadow/spacing token before introducing a new value; the scales above already cover buttons, cards, panels, and photo containers.
 - **Do** prefer a project token over a raw Figma literal when a source design's color is unbound to a variable — several near-duplicate grays in the Figma file (`#4b4b4b`, `#5e5e5e`, `#6b6155`) are one-off authoring slips a few percent off Warm Taupe (`#635E57`), which is the bound, repeated token and the real source of truth.
@@ -267,3 +285,12 @@ Soft and confident: near-universal pill/rounded radius, very low-contrast card s
 - **Don't** use a colored shadow anywhere except the primary-CTA brand glow — cards, hover states, and chips all stay on the neutral Card shadow or no shadow at all.
 - **Don't** introduce a sharp (`0px`) corner anywhere; every rectangle in this system has a radius.
 - **Don't** letter-space the nav labels or add extra gap between them — the uppercase weight and each link's own padding already carry the rhythm.
+- **Don't** set Nunito on anything that isn't a header, however large or bold it is meant to feel; reach for Plus Jakarta Sans 700/800 instead.
+- **Don't** set any label in tracked uppercase except the top navigation; chips and tags that need a name use sentence-case chip type.
+- **Don't** make "Add to Bag" (or any add-to-order control) a link to an outside page. It opens the product's in-app modal and adds to the in-app cart — shipping kits included. See PRODUCT.md principle 5.
+
+### Known deviations (built, not yet brought back to the rules above)
+The Nationwide Shipping and Catering pages were built before these rules were re-checked against them. Treat these as bugs to fix, not as precedents, and see the critique notes in `.impeccable/critique/`:
+- Nunito on non-header text has been moved to Plus Jakarta Sans everywhere except the mobile nav drawer's links (the sanctioned exception). That covered the Shipping and Catering prices, the Shipping step numbers, and the store locator's distances, state names and pickup-dock store name; none remain.
+- They spend gold on tags (`.kit-tag`, `.cater-tag`), step numbers, bullet dots and status pills, beyond the one-accent rule, and their tags and status labels are tracked uppercase.
+- The hero language differs by page (gold panel on Shipping, Deep Ink on Catering); the difference is intentional, the gold budget is not.

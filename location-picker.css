@@ -1,0 +1,293 @@
+/* =========================================================================
+   Location picker (#view-location-picker), moved in from the standalone
+   deviled-egg-store-locator project. Every rule is scoped to the view so it
+   can't touch the rest of the prototype; the site header is the order-flow's
+   own (the picker's separate nav was dropped). Colors, radii and shadows are
+   the shared tokens in design-system.css.
+   ========================================================================= */
+#view-location-picker { --page-gutter: 64px; }
+@media (max-width: 1200px) { #view-location-picker { --page-gutter: 32px; } }
+@media (max-width: 600px) { #view-location-picker { --page-gutter: 20px; } }
+#view-location-picker { padding: 0; max-width: none; font-size: 16px; line-height: 1.5; }
+#view-location-picker .deg-btn {
+  font-family: var(--deg-font-body); font-weight: 700; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: var(--deg-radius-pill);
+}
+#view-location-picker .deg-btn-dark { background: var(--deg-ink-deep); color: #FBF3E3; padding: 16px 32px; font-size: 16px; }
+#view-location-picker .deg-btn-compact { background: var(--deg-ink-deep); color: #FBF3E3; padding: 7px 14px; font-size: 14px; }
+#view-location-picker .deg-btn-text { background: transparent; color: var(--deg-link); padding: 0; font-weight: 600; font-size: 14px; border-radius: 0; }
+#view-location-picker .deg-btn-icon { background: var(--deg-ink-deep); color: #fff; width: 44px; height: 44px; border-radius: 50%; justify-content: center; padding: 0; }
+#view-location-picker .deg-input {
+  width: 100%; font-family: var(--deg-font-body); font-size: 15px; padding: 16px 24px;
+  border-radius: var(--deg-radius-pill); border: 1px solid var(--deg-border-input); background: var(--deg-white); color: var(--deg-ink-body);
+}
+#view-location-picker .deg-input::placeholder { color: var(--deg-ink-muted); }
+#view-location-picker ::selection { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+#view-location-picker svg { display: block; }
+#view-location-picker button { font: inherit; }
+#view-location-picker a { text-underline-offset: 3px; }
+#view-location-picker .skip-link { position: absolute; left: 16px; top: -60px; z-index: 50; background: var(--deg-ink-deep); color: #FBF3E3; padding: 10px 18px; border-radius: var(--deg-radius-pill); font-weight: 700; text-decoration: none; }
+#view-location-picker .skip-link:focus { top: 12px; }
+#view-location-picker .deg-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#view-location-picker .deg-btn { transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .18s, background-color .18s; }
+#view-location-picker .deg-btn-dark:hover, #view-location-picker .deg-btn-compact:hover { background: #3A2C10; }
+#view-location-picker .deg-btn-text:hover { text-decoration: underline; }
+#view-location-picker .deg-btn[disabled] { opacity: .55; cursor: progress; transform: none; }
+#view-location-picker .finder {
+  display: grid; grid-template-columns: minmax(340px, 491px) minmax(0, 1fr); column-gap: 64px; align-items: center;
+  padding: 32px 64px 60px 0;
+  background: var(--deg-white);
+  border-bottom: 1px solid var(--deg-border-input);
+  overflow: clip;
+}
+#view-location-picker .finder-copy { padding: 16px 40px 60px; display: flex; flex-direction: column; align-items: flex-start; }
+#view-location-picker .finder-copy h1 { font-size: 48px; line-height: 1.05; letter-spacing: -0.02em; color: var(--deg-ink-deep); text-wrap: balance; margin: 0 0 24px; }
+#view-location-picker .finder-lede { font-size: 16px; line-height: 1.5; color: var(--deg-ink-heading); max-width: 411px; margin: 0 0 40px; }
+#view-location-picker .zip-form {
+  position: relative; width: 100%; max-width: 350px; height: 50px;
+  background: var(--deg-white); border: 1.5px solid var(--deg-border-primary); border-radius: var(--deg-radius-pill);
+  transition: border-color .18s, box-shadow .18s;
+}
+/* The field is the page's main control, so its edge must read on white (bronze is 4.5:1; the pale sand it had was 1.5:1) and its focus is the same two-ring halo every control gets, drawn around the whole pill while the field is focused (the search button carries its own ring), not gold on white. */
+#view-location-picker .zip-form:has(.zip-input:focus) { border-color: var(--deg-ink-deep); box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+#view-location-picker .zip-form.has-error, #view-location-picker .zip-form.has-error:has(.zip-input:focus) { border-color: #B3261E; }
+#view-location-picker .zip-input { height: 100%; border: none; background: transparent; padding: 0 60px 0 22px; font-size: 16px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+#view-location-picker .zip-input:focus, #view-location-picker .zip-input:focus-visible { outline: none; box-shadow: none; }
+#view-location-picker .zip-submit {
+  position: absolute; top: -1.5px; right: -1.5px; width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer;
+  display: grid; place-items: center; background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand);
+  transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .18s;
+}
+#view-location-picker .zip-submit:hover { transform: scale(1.05); box-shadow: 0 12px 26px rgba(247,186,23,.4); }
+#view-location-picker .zip-submit:focus-visible { box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+#view-location-picker .zip-submit[disabled] { opacity: .55; cursor: progress; transform: none; }
+#view-location-picker .zip-submit svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+#view-location-picker .form-message { min-height: 20px; max-width: 350px; margin: 8px 0 0 22px; font-size: 13px; color: var(--deg-ink-muted); }
+#view-location-picker .form-message:empty { min-height: 0; margin: 0; }
+#view-location-picker .form-message.is-error { color: #9A2019; font-weight: 600; }
+#view-location-picker .lede-phone { display: none; }
+#view-location-picker .locate-link {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 4px 0 0 12px; padding: 0 10px; border: none; background: none; cursor: pointer;
+  font-weight: 600; font-size: 14px; color: var(--deg-link);
+}
+#view-location-picker .locate-link svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+#view-location-picker .locate-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+#view-location-picker .locate-link[disabled] { opacity: .55; cursor: progress; }
+@media (min-width: 901px) and (max-width: 1200px) {
+  #view-location-picker .finder { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); column-gap: 32px; padding-right: 32px; }
+  #view-location-picker .finder-copy { padding: 16px 24px 48px 32px; }
+  #view-location-picker .finder-copy h1 { font-size: 42px; }
+}
+#view-location-picker .finder.is-state-view { position: relative; display: flex; flex-direction: column; height: 40vh; min-height: 300px; padding: 16px var(--page-gutter); }
+#view-location-picker .finder.is-state-view .finder-copy { display: none; }
+#view-location-picker .finder.is-state-view .map-wrap { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
+#view-location-picker .finder.is-state-view .map-legend { position: absolute; top: 16px; right: var(--page-gutter); margin: 0; max-width: calc(100% - 2 * var(--page-gutter)); }
+#view-location-picker .finder.is-state-view .map-stage { flex: 1; min-height: 0; }
+#view-location-picker .finder.is-state-view .us-map { height: 100%; }
+#view-location-picker .map-wrap { min-width: 0; }
+#view-location-picker .map-stage { position: relative; z-index: 0; }
+#view-location-picker .finder-copy, #view-location-picker .map-legend { position: relative; z-index: 1; }
+#view-location-picker .finder-copy { background: var(--deg-white); align-self: stretch; justify-content: center; }
+#view-location-picker .map-legend ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+#view-location-picker .map-legend .deg-btn-compact { margin: -4px -10px -4px 0; padding: 6px 14px; font-size: 13px; white-space: nowrap; }
+#view-location-picker .us-map { width: 100%; height: auto; overflow: visible; }
+#view-location-picker .us-map .state { fill: var(--deg-white); stroke: none; transition: fill .15s, stroke-width .2s; }
+#view-location-picker .us-map .state.has-stores { cursor: pointer; }
+#view-location-picker .us-map .state.is-active { fill: var(--deg-gold); stroke: var(--deg-gold); stroke-width: 3; stroke-linejoin: round; }
+#view-location-picker .us-map .state.has-stores:hover { fill: var(--deg-gold); stroke: var(--deg-gold); stroke-width: 1.2; stroke-linejoin: round; }
+#view-location-picker .us-map .state:focus { outline: none; }
+#view-location-picker .us-map .state:focus-visible { stroke: var(--deg-ink-deep); stroke-width: 2.5; stroke-linejoin: round; }
+#view-location-picker .us-map .borders { fill: none; stroke: var(--deg-gold); stroke-width: 1.2; stroke-linejoin: round; pointer-events: none; }
+#view-location-picker .us-map .dot { stroke: var(--deg-white); cursor: pointer; transition: r .2s; }
+#view-location-picker .us-map .dot.real { fill: var(--deg-ink-deep); }
+#view-location-picker .us-map .dot.demo { fill: var(--deg-link); }
+#view-location-picker .us-map .dot.soon { fill: var(--deg-white); stroke: var(--deg-link); }
+#view-location-picker .us-map .dot.is-near { fill: var(--deg-gold); stroke: var(--deg-ink-deep); }
+#view-location-picker .us-map .you-ring { fill: rgba(247,186,23,.25); stroke: var(--deg-gold); }
+#view-location-picker .us-map .you-dot { fill: var(--deg-ink-deep); stroke: var(--deg-white); }
+#view-location-picker .map-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--deg-ink-muted); font-size: 15px; }
+#view-location-picker .map-tooltip {
+  position: absolute; pointer-events: none; z-index: 3; transform: translate(-50%, calc(-100% - 12px));
+  background: var(--deg-ink-deep); color: #FBF3E3; font-size: 13px; font-weight: 600; white-space: nowrap;
+  padding: 7px 14px; border-radius: var(--deg-radius-pill); box-shadow: var(--deg-shadow-ambient);
+}
+#view-location-picker .map-legend {
+  display: flex; align-items: center; width: fit-content; gap: 20px; margin: 0 0 16px auto; padding: 10px 18px;
+  background: var(--deg-white); border: 1px solid var(--deg-border-input); border-radius: var(--deg-radius-pill);
+  box-shadow: 0 2px 8px rgba(19,13,0,.06);
+  font-size: 13px; color: var(--deg-ink-muted);
+}
+#view-location-picker .map-legend li { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+#view-location-picker .key { width: 11px; height: 11px; border-radius: 50%; }
+#view-location-picker .key-real { background: var(--deg-ink-deep); }
+#view-location-picker .key-demo { background: var(--deg-link); }
+#view-location-picker .key-soon { background: var(--deg-white); border: 2px solid var(--deg-link); }
+#view-location-picker .results { padding: 40px var(--page-gutter) 64px; }
+#view-location-picker .results-head .deg-btn-text { min-height: 44px; padding: 0 8px; margin-right: -8px; }
+#view-location-picker .results-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+#view-location-picker .results-head h2 { font-size: 28px; line-height: 1.3; color: var(--deg-ink-heading); }
+#view-location-picker .result-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+#view-location-picker .loc-card {
+  display: flex; flex-direction: column; gap: 6px; height: 100%;
+  background: var(--deg-white); border-radius: var(--deg-radius-media); padding: 24px 28px;
+  border: 1.5px solid transparent; box-shadow: var(--deg-shadow-ambient);
+  transition: border-color .2s, transform .2s cubic-bezier(.16,1,.3,1);
+}
+#view-location-picker .loc-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+#view-location-picker .loc-card h3 { font-size: 20px; line-height: 1.2; color: var(--deg-ink-deep); }
+#view-location-picker .distance { font-family: var(--deg-font-body); font-weight: 600; font-size: 15px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#view-location-picker .loc-card .address { font-size: 14px; color: var(--deg-ink-muted); margin: 0; }
+#view-location-picker .loc-status { margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
+#view-location-picker .loc-card .card-actions { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 12px; }
+/* The secondary action is a text link, so a list of stores carries one dark button at most. */
+#view-location-picker .result-pick { min-height: 44px; margin-left: -2px; padding: 0 2px; font-size: 15px; font-weight: 700; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+#view-location-picker .result-pick::after { content: " ›"; text-decoration: none; display: inline-block; margin-left: 2px; }
+#view-location-picker .result-lead { grid-column: 1 / -1; }
+#view-location-picker .loc-card.is-lead { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; padding: 28px 32px; }
+#view-location-picker .lead-main { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+#view-location-picker .loc-card.is-lead h3 { font-size: 30px; line-height: 1.1; letter-spacing: -0.01em; }
+#view-location-picker .lead-meta { margin: 0; font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+#view-location-picker .lead-side { flex: none; }
+#view-location-picker .lead-pick { min-height: 52px; padding: 0 30px; }
+
+/* "Continue your pickup order": the saved store, day and time, with the one dark action to carry on. */
+#view-location-picker .saved-order { margin: 16px 0 20px; padding: 20px 24px; max-width: 480px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-card); }
+#view-location-picker .saved-order h2 { font-size: 20px; line-height: 28px; color: var(--deg-ink-heading); margin-bottom: 8px; }
+#view-location-picker .saved-order p { margin: 0; }
+#view-location-picker .saved-store { font-size: 18px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); }
+#view-location-picker .saved-address { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+#view-location-picker .saved-when { margin-top: 8px !important; font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+#view-location-picker .saved-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; }
+#view-location-picker .saved-actions .deg-btn-dark { min-height: 48px; padding: 0 28px; }
+#view-location-picker .saved-actions .deg-btn-text { min-height: 44px; padding: 0 4px; font-size: 15px; font-weight: 700; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+#view-location-picker .directory { background: var(--deg-white); padding: clamp(40px, 6vw, 72px) clamp(16px, 4vw, 48px) 72px; outline: none; }
+#view-location-picker .directory > * { max-width: 1224px; margin-left: auto; margin-right: auto; }
+#view-location-picker .results:not([hidden]) + .directory { border-top: 1px solid var(--deg-border-input); }
+#view-location-picker .directory-head h2 { font-size: clamp(30px, 3.4vw, 40px); line-height: 1.15; color: var(--deg-ink-deep); letter-spacing: -0.02em; }
+#view-location-picker .directory-head p { color: var(--deg-ink-muted); margin: 8px 0 0; }
+#view-location-picker .state-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 40px; align-items: start; margin-top: 32px; }
+#view-location-picker .state-column { border-top: 1px solid var(--deg-border-chip); }
+#view-location-picker .state-group { border-bottom: 1px solid var(--deg-border-chip); scroll-margin-top: 24px; }
+#view-location-picker .state-group summary {
+  display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px; margin: 0 -12px;
+  list-style: none; cursor: pointer; border-radius: var(--deg-radius-compact); transition: background-color .15s;
+}
+#view-location-picker .state-group summary::-webkit-details-marker { display: none; }
+#view-location-picker .state-group summary:hover { background: var(--deg-cream-alt); }
+#view-location-picker .state-group summary:focus-visible { outline: 3px solid var(--deg-ink-deep); outline-offset: -3px; }
+#view-location-picker .state-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 19px; line-height: 1.2; color: var(--deg-ink-heading); }
+#view-location-picker .state-group .count { font-size: 13px; font-weight: 600; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+#view-location-picker .state-chevron { margin-left: auto; flex: none; color: var(--deg-ink-muted); transition: transform .25s cubic-bezier(.16,1,.3,1); }
+#view-location-picker .state-group[open] .state-chevron { transform: rotate(180deg); }
+#view-location-picker .state-group.is-active summary { background: var(--deg-cream-alt); }
+#view-location-picker .state-group.is-active .count { background: var(--deg-gold); color: var(--deg-ink-on-gold); padding: 3px 10px; border-radius: var(--deg-radius-pill); }
+#view-location-picker .state-group.is-active .state-name { color: var(--deg-ink-deep); }
+#view-location-picker .state-group ul { list-style: none; margin: 0 0 12px; padding: 0; }
+@media (prefers-reduced-motion: reduce) {
+  #view-location-picker .state-chevron { transition: none; }
+}
+#view-location-picker .dir-store { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0; border-top: 1px solid var(--deg-border-chip); }
+#view-location-picker .dir-store:first-child { border-top: none; }
+#view-location-picker .dir-store-name { font-weight: 600; font-size: 15px; }
+#view-location-picker .dir-store-name small { display: block; font-weight: 400; font-size: 13px; color: var(--deg-ink-muted); }
+#view-location-picker .dir-store .deg-btn-text { font-size: 13px; white-space: nowrap; min-height: 44px; padding: 0 8px; margin-right: -8px; }
+#view-location-picker .dock {
+  position: fixed; z-index: 30; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom)); display: flex; align-items: flex-end; pointer-events: none;
+}
+body.has-dock #view-location-picker { padding-bottom: 92px; }
+#view-location-picker .search-fab {
+  margin-left: auto; pointer-events: auto;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 22px 0 18px;
+  border: none; border-radius: var(--deg-radius-pill); cursor: pointer;
+  background: var(--deg-gold); color: var(--deg-ink-on-gold); font: 700 15px/1 var(--deg-font-body);
+  box-shadow: var(--deg-shadow-brand), 0 4px 12px rgba(19,13,0,.12);
+  transition: opacity .25s ease, transform .35s cubic-bezier(.16,1,.3,1);
+}
+#view-location-picker .search-fab svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+#view-location-picker .search-fab:hover { transform: translateY(-1px); }
+#view-location-picker .search-fab.is-away { opacity: 0; transform: translateY(16px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  #view-location-picker .search-fab { transition: none; }
+}
+@media (max-width: 900px) {
+  #view-location-picker .state-columns { grid-template-columns: 1fr; }
+  #view-location-picker .state-column + .state-column { border-top: 0; }
+  #view-location-picker .finder { grid-template-columns: 1fr; padding: 24px 20px 48px; row-gap: 0; }
+  #view-location-picker .finder-copy { margin: -24px -20px 0; padding: 40px 20px 24px; }
+  #view-location-picker .finder-copy h1 { font-size: 40px; }
+  #view-location-picker .finder-copy h1 br { display: none; }
+}
+@media (max-width: 600px) {
+  #view-location-picker .map-wrap, #view-location-picker .finder.is-state-view .map-wrap { display: none; }
+  #view-location-picker .finder.is-state-view { display: grid; height: auto; min-height: 0; }
+  #view-location-picker .finder.is-state-view .finder-copy { display: flex; }
+  #view-location-picker .lede-map { display: none; }
+  #view-location-picker .lede-phone { display: inline; }
+  #view-location-picker .results-head h2 { font-size: 24px; }
+  #view-location-picker .results { padding-top: 32px; padding-bottom: 48px; }
+  #view-location-picker .result-list { gap: 16px; }
+  #view-location-picker .loc-card { padding: 20px 24px; }
+  #view-location-picker .loc-card.is-lead { flex-direction: column; align-items: stretch; gap: 16px; padding: 24px; }
+  #view-location-picker .loc-card.is-lead h3 { font-size: 26px; }
+  #view-location-picker .lead-pick { width: 100%; justify-content: center; }
+}
+
+.location-picker-fine { margin: 0; padding: 24px clamp(16px, 4vw, 48px) 40px; background: var(--deg-white); text-align: center; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+
+/* "No store near you yet": a plain, full-width notice above the nearest real store. */
+#view-location-picker .result-empty { grid-column: 1 / -1; }
+#view-location-picker .empty-state { padding: 20px 24px; border-radius: var(--deg-radius-media); background: var(--deg-cream-deep); color: var(--deg-ink-heading); }
+#view-location-picker .empty-state h3 { font-size: 20px; line-height: 1.25; color: var(--deg-ink-deep); }
+#view-location-picker .empty-state p { margin: 8px 0 0; font-size: 15px; line-height: 22px; max-width: 60ch; }
+#view-location-picker .empty-state a { font-weight: 700; color: var(--deg-ink-deep); text-underline-offset: 3px; }
+
+
+/* =========================================================================
+   First screen on phones: the four stores that take orders sit right under
+   the search; the by-state list is a disclosure below them.
+   ========================================================================= */
+#view-location-picker .quick-stores { padding: 24px var(--page-gutter) 28px; }
+#view-location-picker .quick-stores h2 { font-size: 24px; line-height: 32px; color: var(--deg-ink-heading); margin-bottom: 14px; }
+#view-location-picker .quick-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+#view-location-picker .quick-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 16px 16px 20px;
+  background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-card);
+}
+#view-location-picker .quick-text { min-width: 0; }
+#view-location-picker .quick-text h3 { font-size: 18px; line-height: 24px; color: var(--deg-ink-deep); }
+#view-location-picker .quick-text p { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+#view-location-picker .quick-pick { flex: none; min-height: 44px; padding: 0 18px; font-size: 15px; white-space: nowrap; justify-content: center; }
+
+/* The by-state list as a disclosure. It reads "See other locations" closed and "Hide other locations" open. */
+#view-location-picker .other-locations { border-top: 1px solid var(--deg-border-chip); background: var(--deg-white); }
+#view-location-picker .other-locations > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 0 var(--page-gutter);
+  list-style: none; cursor: pointer; font-weight: 700; font-size: 16px; color: var(--deg-ink-deep);
+}
+#view-location-picker .other-locations > summary::-webkit-details-marker { display: none; }
+#view-location-picker .other-locations > summary:hover { background: var(--deg-cream-alt); }
+#view-location-picker .other-locations > summary:focus-visible { outline: 3px solid var(--deg-ink-deep); outline-offset: -3px; }
+#view-location-picker .other-locations .other-close { display: none; }
+#view-location-picker .other-locations[open] .other-open { display: none; }
+#view-location-picker .other-locations[open] .other-close { display: inline; }
+#view-location-picker .other-locations[open] > summary .state-chevron { transform: rotate(180deg); }
+#view-location-picker .other-locations > .directory { border-top: 1px solid var(--deg-border-chip); }
+
+@media (min-width: 601px) {
+  #view-location-picker .quick-stores { display: none; }
+}
+@media (max-width: 600px) {
+  /* Close the dead white under "Use my location": the stores follow straight on. */
+  #view-location-picker .finder { padding-bottom: 0; border-bottom: none; }
+  #view-location-picker .finder-copy { padding-bottom: 8px; }
+  #view-location-picker .results:not([hidden]) + .other-locations { border-top: 1px solid var(--deg-border-chip); }
+}
+
+/* Anything the page scrolls to must clear the sticky site header (69px) plus the usual 24px of air, as on the menu: the results heading and "Clear search", a state row opened from the pickup bar, and the skip link's target. */
+#view-location-picker .results,
+#view-location-picker .quick-stores,
+#view-location-picker .other-locations,
+#view-location-picker .directory,
+#view-location-picker .state-group { scroll-margin-top: 93px; }
+

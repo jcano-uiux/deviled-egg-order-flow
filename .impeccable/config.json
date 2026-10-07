@@ -35,6 +35,15 @@
         ],
         "createdAt": "2026-09-28T16:58:51.923Z",
         "reason": "Agent: .order-mode-pill is a stadium-shaped (999px radius) pill whose two segments (Pickup/Delivery) are genuinely different widths; scaling via transform (scaleX) instead of animating width would visually distort the semicircular end-caps into ellipses. The element is small, absolutely-positioned, and animates once per click for 250ms — negligible reflow cost, not a sustained/continuous animation."
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-10-07T08:59:49.110Z",
+        "reason": "The locator hero (.finder) deliberately clips the zoomed US map so it never draws over the search column; the map's only positioned child, its tooltip, is clamped inside the map stage, so nothing is cut off."
       }
     ]
   }

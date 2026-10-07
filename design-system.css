@@ -54,7 +54,7 @@
   --deg-radius-tight: 8px;       /* small controls: search field, active nav-drawer item */
   --deg-radius-card: 12px;       /* dominant card radius (menu cards, feature card) */
   --deg-radius-compact: 14px;    /* small tiles, selectable rows */
-  --deg-radius-media: 16px;      /* standalone photo/hero containers; also the order-mode/delivery-info card */
+  --deg-radius-media: 16px;      /* standalone photo/hero containers; also the store-info card */
   --deg-radius-panel: 24px;      /* large feature panels, modals */
 
   /* Elevation */
@@ -187,20 +187,34 @@ select {
 .segmented .chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
 
 /* ---------- Selectable rows ----------
-   Two variants for a full-width, bordered, single- or multi-select row.
-   Both share the same selected-state treatment (gold border + cream fill)
-   so a user learns the pattern once. Pick by content shape — don't merge
-   them, they serve different jobs:
-     .radio-row  — single-select, label only (payment method).
-     .flavor-row — multi-select with a per-item quantity stepper (bagel
-                   spread, Build Your Own Dozen); the cap is enforced by
-                   disabling the +/- buttons, not the row itself. */
-.radio-list { display: flex; flex-direction: column; gap: 10px; }
+   Two variants for a full-width, single- or multi-select row. Pick by content
+   shape — don't merge them, they serve different jobs:
+     .radio-choice — single-select (payment method, pickup time, one-flavor
+                     products). Native radios inside a label, a circular
+                     indicator on the right, solid gold when selected. The
+                     whole card carries the focus halo; .radio-choice-extra
+                     holds anything that belongs to the selected choice (it
+                     can't sit inside the label when it contains buttons).
+     .flavor-row   — multi-select with a per-item quantity stepper (Build Your
+                     Own Dozen); the cap is enforced by disabling the +/-
+                     buttons, not the row itself. */
+.radio-list { display: flex; flex-direction: column; gap: 12px; }
 
-.radio-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 15px; color: var(--deg-ink-body); width: 100%; }
-.radio-row.active { border-color: var(--deg-gold); background: var(--deg-cream); }
-.radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--deg-border-input); flex: none; }
-.radio-row.active .radio-dot { border: 5px solid var(--deg-gold); background: var(--deg-white); }
+.radio-choice { background: var(--deg-cream-cool); border-radius: var(--deg-radius-card); transition: background-color .15s ease; }
+.radio-choice:hover { background: var(--deg-border-chip); }
+.radio-choice.selected, .radio-choice.selected:hover { background: var(--deg-gold); }
+.radio-choice:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.radio-choice-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; cursor: pointer; }
+.radio-choice-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; box-shadow: none; }
+.radio-choice-text { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-width: 0; }
+.radio-choice-name { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); }
+.radio-choice-note { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-body); opacity: .7; }
+.radio-choice-ind { flex: none; display: grid; place-items: center; width: 24px; height: 24px; box-sizing: border-box; border: 2px solid var(--deg-border-primary); border-radius: 50%; transition: background-color .15s ease; }
+.radio-choice-ind::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: transparent; }
+.radio-choice.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.radio-choice.selected .radio-choice-ind::after { background: #fff; }
+.radio-choice-extra { padding: 0 16px 16px; }
+.radio-choice-extra:empty { display: none; }
 
 .flavor-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 13px 16px 13px 19px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); width: 100%; }
 .flavor-row.selected { border-color: var(--deg-gold); background: var(--deg-cream); }

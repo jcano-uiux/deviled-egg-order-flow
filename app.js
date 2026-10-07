@@ -2,7 +2,6 @@
   const TAX_RATE = 0.0825;
 
   const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
-  const LAUNCH_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   // Shared source for every quantity-stepper .mini-step-btn (dozen flavor
   // allocation, bagel spread flavors, cart-drawer qty) — any future +/-
   // control should pull from these two rather than typing "−"/"+" text
@@ -12,12 +11,6 @@
   const STEP_MINUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
   const STEP_PLUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
-  const DELIVERY_APPS = [
-    { id: 'doordash', name: 'DoorDash', url: 'https://www.doordash.com', logo: 'assets/logos/doordash.svg', color: '#FF3008' },
-    { id: 'ubereats', name: 'Uber Eats', url: 'https://www.ubereats.com', logo: 'assets/logos/ubereats.svg', color: '#06C167' },
-    { id: 'grubhub', name: 'Grubhub', url: 'https://www.grubhub.com', logo: 'assets/logos/grubhub.svg', color: '#FF5500' },
-  ];
-
   const eggThumb = () => {
     const div = document.createElement('div');
     div.className = 'thumb';
@@ -25,9 +18,18 @@
     return div;
   };
 
+  // The coffee bar has no photo: an authored cup, so its modal and cart line aren't an empty square.
+  const coffeeThumb = () => {
+    const div = document.createElement('div');
+    div.className = 'thumb thumb-coffee';
+    div.innerHTML = '<svg width="44%" height="44%" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V9Z" stroke="#88754F" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16" stroke="#88754F" stroke-width="1.6" stroke-linecap="round"/><path d="M8 3.5c0 1.2 1 1.3 1 2.5M11.5 3.5c0 1.2 1 1.3 1 2.5" stroke="#88754F" stroke-width="1.6" stroke-linecap="round"/></svg>';
+    return div;
+  };
+
   // Real product photo when we have one; the placeholder egg icon otherwise
   // (a few catering bundles have no matching photo in the client asset pack).
   const productThumb = (item) => {
+    if (item.icon === 'coffee') return coffeeThumb();
     if (!item.image) return eggThumb();
     const img = document.createElement('img');
     img.className = 'shop-card-photo';
@@ -133,7 +135,7 @@
   // Both sizes are "pick one flavor for the whole tub" on the live site —
   // a real picker (same +/- allocation widget and per-flavor exclusions as
   // the deviled egg packs), not a plain add as first assumed. total:1/
-  // maxFlavors:1 means the picker's own generic "allocate all N" copy needs
+  // maxFlavors:1 means the picker's own generic "choose N eggs" copy needs
   // a singular-safe path (see openDozenModal/renderModalFooter) since every
   // pack size before this had total > 1.
   const EGG_SALADS = [
@@ -238,14 +240,79 @@
     { id: 'walking-taco', label: 'Walking Taco', exclusions: ['Refried beans', 'Grilled chicken', 'Cheddar', 'Lettuce', 'Nacho Cheese Doritos', 'Sour cream'] },
   ];
 
+  // Each flavor's own clip, poster and copy, taken from the live 12 Pack page
+  // (assets/flavors/<file>.mp4 and .jpg; the live page's descriptions verbatim,
+  // calories and protein are per egg). Chicken and Waffle's live description is
+  // just its three parts and the page lists no nutrition for it.
+  const FLAVOR_MEDIA = {
+    'blte': { file: 'BTLE', desc: "This brunch-inspired egg stacks all the best parts of a BLT—loaded with bacon, juicy cherry tomato, shredded romaine lettuce—on top of our ranch-spiked yolk filling. One bite, and you’ll understand why we added the “E” for egg.", cal: 85, protein: '5' },
+    'backyard-bbq': { file: 'Backyard-BBQ', desc: "Get ready for a backyard classic, reinvented. Savory yolk mix piled high with Texas beef brisket, a pickled jalapeño, sweet BBQ sauce, and red onion. It’s like your favorite summer cookout, packed into one bold, bite-sized egg.", cal: 75, protein: '3.5' },
+    'ballpark-special': { file: 'Ballpark', desc: "Think of this as your stadium snack—elevated. Creamy dijon and mayo deviled egg centers get the all-star treatment with an all beef hot dog slice, zesty mustard, ketchup, red onion, crunchy dill pickle, and crushed potato chips on top. It’s a home run of flavor.", cal: 85, protein: '3' },
+    'buffalo-blue-cheese': { file: 'Buffalo-Blue', desc: "For fans of bold heat and creamy cheese, this one’s for you. Spicy hot sauce yolk filling meets tangy blue cheese crumbles, all finished with a drizzle of hot buffalo sauce. Fiery, rich, and perfect for heat-seekers.", cal: 60, protein: '6.5' },
+    'buffalo-chicken-ranch': { file: 'Buffalo-Chicken', desc: "Spice and comfort collide in this creamy, tangy delight. Tender grilled chicken perches atop a ranch-kissed yolk filling, finished with a cool drizzle of ranch, buffalo sauce and a dash of chopped red onion.", cal: 50, protein: '4.5' },
+    'cali-roll': { file: 'Cali-Roll', desc: "All the California roll flavor—none of the chopsticks. This sushi-inspired egg is filled with our house-made spicy crab mix, cucumber slivers, black sesame, and a sweet teriyaki drizzle. It’s bright, cool, and sure to blow your mind.", cal: 45, protein: '3' },
+    'cheeseburger': { file: 'Cheeseburger', desc: "Think of this as your favorite burger… minus the bun. Creamy flavor packed yolk filling, hot seasoned ground beef patty, melted american cheese, dill pickle and onion. Topped with romaine lettuce and a ketchup drizzle on top.", cal: 70, protein: '4.5' },
+    'chicken-bacon-ranch': { file: 'Chicken-Bacon-Ranch', desc: "What happens when grilled chicken, bacon, and ranch come together? Deviled egg magic. This savory bite is topped with shredded cheddar for even more creamy indulgence.", cal: 77, protein: '5.5' },
+    'chicken-caesar': { file: 'The-Caesar', desc: "Salad meets snack. Our Caesar-inspired yolk filling gets crowned with grilled chicken, crunchy lettuce, parmesan, and bits. Finished with a drizzle of creamy Caesar dressing, it’s got all the richness of your favorite salad in one savory scoop.", cal: 85, protein: '5.5' },
+    'chicken-pickle-egg': { file: 'Chicken-Pickle', desc: "Simple, satisfying, and wildly craveable. Juicy grilled chicken and a crisp pickle ride atop a lightly sweet yolk blend for a salty-sweet punch that brings classic deli vibes in every bite.", cal: 60, protein: '4.5' },
+    'chicken-waffle': { file: 'Chicken-Waffle', desc: "Chicken, Waffle and Syrup" },
+    'crab-rangoon': { file: 'Crab-Rangoon', desc: "Cream cheese, krab, and a crispy wonton topper—this egg takes its cue from a beloved takeout favorite. Drizzled with sweet & sour sauce, it’s the perfect sweet-savory bite.", cal: 70, protein: '3.5' },
+    'everything-seasoning': { file: 'Everything', desc: "Inspired by your favorite bagel. A creamy cream cheese yolk mix gets topped with a hearty sprinkle of everything bagel seasoning—think sesame, garlic, poppy, and sea salt. Brunch just got better.", cal: 55, protein: '3.5' },
+    'jalapeno-popper': { file: 'Popper', desc: "Cheesy. Spicy. Bacon-y. This egg hits all the popper notes with a smooth cream cheese yolk, topped with crispy bacon, fresh jalapeño, and a chipotle drizzle for a good smoky measure.", cal: 70, protein: '4.5' },
+    'smoked-salmon': { file: 'Smoked-Salmon', desc: "Elegant and rich, these deviled eggs bring together silky cream cheese, flakes of fully cooked wild caught smoked salmon, capers, and red onion. Perfect for brunch spreads or any excuse to feel fancy.", cal: 65, protein: '4' },
+    'south-of-the-border': { file: 'South-Of-The-Border', desc: "Add a little fiesta to your plate. These eggs feature a spicy cholula yolk filling, jalapeño slices, and sharp cheddar crumbles. It’s bold, bright, and made for the salsa lovers.", cal: 50, protein: '4' },
+    'sriracha-bacon': { file: 'Sriracha-Bacon', desc: "These eggs are here to bring the heat. Creamy yolk meets fiery sriracha, then gets topped with a hearty helping of bacon and another splash of sriracha to turn things up a notch.", cal: 65, protein: '4.5' },
+    'traditional': { file: 'Traditional', desc: "Classic for a reason. Smooth, velvety yolk mix with a touch of dijon and mayo, finished with a dusting of paprika. Sometimes, you just want the original.", cal: 60, protein: '2.5' },
+    'walking-taco': { file: 'Walking-Taco', desc: "Part taco, part deviled egg, fully addictive. Creamy yolk meets seasoned grilled chicken, refried beans, cheese, lettuce, and crushed nacho Doritos. Topped with sour cream, it’s flavor in every crunchy-creamy bite.", cal: 65, protein: '5' },
+  };
+
+  // Nationwide shipping kits (Nationwide Shipping page). Contents are the live
+  // product pages' own: the kit copy, the 12 flavors those pages offer (each
+  // with the same "NO:" ingredient toggles as FLAVORS above) and the shipping
+  // and storage note. They open the same dozen-style modal as the menu's packs
+  // and add to the in-app bag — never an outside page.
+  const SHIPPING_NOTICE = 'Our eggs are never frozen and ship in coolers on ice in kits to be assembled at your convenience. We do require overnight shipping during summer months but offer less costly options in the fall & winter in time for the holidays! Once our eggs arrive, refrigerate them (cannot be frozen) and consume within 3 days.';
+  const KIT_FLAVOR_IDS = ['backyard-bbq', 'buffalo-blue-cheese', 'buffalo-chicken-ranch', 'cali-roll', 'chicken-bacon-ranch', 'chicken-pickle-egg', 'everything-seasoning', 'jalapeno-popper', 'smoked-salmon', 'south-of-the-border', 'sriracha-bacon', 'traditional'];
+  const SHIPPING_KITS = [
+    {
+      id: 'kit-sampler', name: 'Mini Deviled Egg Salad Sampler', price: 74.99, image: 'assets/shipping/kit-sampler.png', ships: true, cart: 'shipping',
+      desc: 'Try all of our top sellers- shipped right to your door. This is a great gift for birthdays, anniversaries or just because.',
+      detailsLabel: 'This kit includes:',
+      details: ['(18) 2oz deviled egg salads perfect for eggsploring our options before your next big event.'],
+      fixedFlavors: ['Traditional', 'Everything Seasoning', 'Smoked Salmon', 'South of the Border', 'Sriracha Bacon', 'Jalapeno Popper', 'Crab Rangoon', 'Chicken Bacon Ranch', 'Cali Roll', 'Buffalo Blue Cheese', 'Buffalo Chicken', 'Chicken N a Pickle', 'Chicken Caesar', 'Gyro', 'Cheeseburger', 'BBQ Chicken', 'Featured Flavor!'],
+      notice: SHIPPING_NOTICE,
+    },
+    {
+      id: 'kit-24', name: '24 Count Kit', price: 64.99, image: 'assets/shipping/kit-24.png', ships: true, cart: 'shipping',
+      desc: 'Deviled Eggs — choose 2 flavors.',
+      details: ['24 egg white halves conveniently packaged into egg trays with lids perfect for transporting or storing.', '2 flavors of yolk filling in piping bags for the perfect presentation.', 'Toppings for your deviled egg flavors of choice.'],
+      flavorIds: KIT_FLAVOR_IDS, pickerConfig: { total: 24, maxFlavors: 2 },
+      notice: SHIPPING_NOTICE,
+    },
+    {
+      id: 'kit-36', name: '36 Count Kit', price: 99.99, image: 'assets/shipping/kit-24.png', ships: true, cart: 'shipping',
+      desc: 'Deviled Eggs — choose 3 flavors.',
+      details: ['36 egg white halves conveniently packaged into egg trays with lids perfect for transporting or storing.', '3 flavors of yolk filling in piping bags for the perfect presentation.', 'Toppings for your deviled egg flavors of choice.'],
+      flavorIds: KIT_FLAVOR_IDS, pickerConfig: { total: 36, maxFlavors: 3 },
+      notice: SHIPPING_NOTICE,
+    },
+  ];
+
+  // Three carts, one per fulfillment path, never merged: Pickup (the location
+  // menus), Shipping (Nationwide Shipping kits) and Catering. Each checks out
+  // on its own page. Delivery is not a cart: it hands off to the partner apps.
+  const CART_KINDS = ['pickup', 'shipping', 'catering'];
+  const CART_LABELS = { pickup: 'Pickup', shipping: 'Shipping', catering: 'Catering' };
+
   const state = {
-    cart: [],
+    carts: { pickup: [], shipping: [], catering: [] },
+    drawerCart: 'pickup',
     modalFlavorQty: {},
     modalExclusions: {},
     modalQty: 1,
     bagelToast: 'Not Toasted',
     bagelType: 'Plain',
-    bagelFlavors: {},
+    bagelFlavor: null,
     bagelOptions: new Set(),
     bagelQty: 1,
     bowlAddOns: new Set(),
@@ -253,7 +320,6 @@
     bowlExclusions: new Set(),
     bowlOptions: new Set(),
     bowlQty: 1,
-    mode: 'pickup',
     location: 'McKinney, TX',
     pickupDateKey: null,
     pickupTimeId: null,
@@ -272,43 +338,150 @@
     if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
   });
   PRODUCT_IMAGE_BY_NAME['Full Size Bagel'] = BAGEL_IMAGE;
+  SHIPPING_KITS.forEach((k) => { PRODUCT_IMAGE_BY_NAME[k.name] = k.image; });
 
+  // Saved carts: the current per-path shape, or the older single list, whose
+  // shipping kits (tagged `ships`) move to the Shipping cart.
+  const withImage = (item) => ({ ...item, image: item.image || PRODUCT_IMAGE_BY_NAME[item.name] });
   try {
-    const saved = JSON.parse(localStorage.getItem('deg-cart') || 'null');
-    if (Array.isArray(saved)) {
-      state.cart = saved.map((item) => ({ ...item, image: item.image || PRODUCT_IMAGE_BY_NAME[item.name] }));
+    const saved = JSON.parse(localStorage.getItem('deg-carts') || 'null');
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      CART_KINDS.forEach((kind) => { if (Array.isArray(saved[kind])) state.carts[kind] = saved[kind].map(withImage); });
+    } else {
+      const legacy = JSON.parse(localStorage.getItem('deg-cart') || 'null');
+      if (Array.isArray(legacy)) {
+        legacy.forEach((item) => state.carts[item.ships ? 'shipping' : 'pickup'].push(withImage(item)));
+      }
     }
   } catch (e) { /* ignore corrupt storage */ }
 
   function persistCart() {
-    localStorage.setItem('deg-cart', JSON.stringify(state.cart));
+    localStorage.setItem('deg-carts', JSON.stringify(state.carts));
+    localStorage.removeItem('deg-cart');
   }
 
-  function money(n) { return '$' + n.toFixed(2); }
+  function money(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
-  function cartCount() {
-    return state.cart.reduce((sum, item) => sum + item.qty, 0);
+  // Items across every cart (the header badge), or one cart's.
+  // Catering counts lines, not boxes: 200 boxes is one order line, and "211 items" on two lines was misleading.
+  const unitsIn = (kind, items) => (kind === 'catering' ? items.length : items.reduce((n, item) => n + item.qty, 0));
+  function cartCount(kind) {
+    const kinds = kind ? [kind] : CART_KINDS;
+    return kinds.reduce((sum, k) => sum + unitsIn(k, state.carts[k]), 0);
   }
 
-  function cartSubtotal() {
-    return state.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  // A line's price × qty, plus anything charged once per line (a catering box's drinks).
+  const lineTotal = (item) => item.price * item.qty + (item.extra || 0);
+  // A line's detail text: a box meal's is rebuilt from its saved choices, so it can never disagree with them.
+  const lineSub = (item) => (item.config ? boxLineSub(item) : item.sub || '');
+
+  function cartSubtotal(kind) {
+    return state.carts[kind].reduce((sum, item) => sum + lineTotal(item), 0);
   }
 
+  // Which cart an entry belongs to travels with it (`entry.cart`); pickup is the default.
+  // How much the last add moved the badge, so the add flight can hold the old count until it lands.
+  let lastAddDelta = 0;
   function addToCart(entry) {
-    const existing = state.cart.find((c) => c.key === entry.key);
+    const cart = state.carts[entry.cart || 'pickup'];
+    const before = cartCount();
+    const existing = cart.find((c) => c.key === entry.key);
     if (existing) {
       existing.qty += entry.qty;
     } else {
-      state.cart.push(entry);
+      cart.push(entry);
     }
+    lastAddDelta = cartCount() - before;
     persistCart();
     renderCartBadge();
     renderDrawer();
   }
 
+  // ---------- Add-to-order moment ----------
+  // Tapping Add closes the modal and the customer stays on the menu: the product
+  // condenses into a token, arcs to the cart button, the button wobbles like a
+  // nudged egg as it lands, the count ticks up (held at its old value until
+  // then), and phones that can buzz do. The cart drawer is not opened; the
+  // customer opens it when they choose. Reduced motion skips the flight and
+  // keeps a calm opacity pulse.
+  const CART_FLIGHT_MS = 640;
+  const easeInOutCubic = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+  const easeOutCubic = (p) => 1 - Math.pow(1 - p, 3);
+
+  function flyThumb(image, origin, target) {
+    const t = target.getBoundingClientRect();
+    const x1 = t.left + t.width / 2;
+    const y1 = t.top + t.height / 2;
+    const size = 112;
+    const endScale = 28 / size;
+    const startScale = Math.min(3.2, Math.max(1, origin.size / size));
+    const dx = x1 - origin.x;
+    const dy = y1 - origin.y;
+    const lift = Math.min(150, Math.max(70, Math.abs(dy) * 0.35));
+    const el = document.createElement('div');
+    el.className = 'fly-thumb';
+    el.style.cssText = `left:${origin.x - size / 2}px;top:${origin.y - size / 2}px;width:${size}px;height:${size}px;`;
+    if (image) el.style.backgroundImage = `url("${image}")`;
+    document.body.appendChild(el);
+    const steps = 18;
+    const frames = Array.from({ length: steps + 1 }, (_, i) => {
+      const p = i / steps;
+      const e = easeInOutCubic(p);
+      const x = dx * e;
+      const y = dy * e - lift * 4 * e * (1 - e);
+      // photo condenses to token size over the first fifth, then shrinks into the cart
+      const scale = p < 0.2
+        ? startScale + (1 - startScale) * easeOutCubic(p / 0.2)
+        : 1 + (endScale - 1) * easeInOutCubic((p - 0.2) / 0.8);
+      return { transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${-16 * e}deg)` };
+    });
+    const anim = el.animate(frames, { duration: CART_FLIGHT_MS, easing: 'linear', fill: 'forwards' });
+    return anim.finished.catch(() => {}).then(() => el.remove());
+  }
+
+  function landCartPop(target, badge) {
+    [target, badge].forEach((el) => { el.classList.remove('is-pop', 'is-bump'); void el.offsetWidth; });
+    target.classList.add('is-pop');
+    badge.classList.add('is-bump');
+    window.setTimeout(() => { target.classList.remove('is-pop'); badge.classList.remove('is-bump'); }, 650);
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
+  function celebrateAdd(modal, closeModalFn, image, qty) {
+    const target = document.getElementById('open-cart');
+    const badge = document.getElementById('cart-badge');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Origin: the product photo if its centre is on screen, else the Add button
+    // (always visible in the modal footer).
+    let origin = null;
+    const photo = modal.querySelector('.item-modal-media');
+    if (photo) {
+      const r = photo.getBoundingClientRect();
+      const cy = r.top + r.height / 2;
+      if (r.height > 0 && cy > 0 && cy < window.innerHeight) origin = { x: r.left + r.width / 2, y: cy, size: Math.min(r.width, r.height) };
+    }
+    if (!origin) {
+      const addBtn = modal.querySelector('.item-modal-footer .pill-btn');
+      if (addBtn) { const r = addBtn.getBoundingClientRect(); origin = { x: r.left + r.width / 2, y: r.top + r.height / 2, size: 0 }; }
+    }
+    closeModalFn();
+    const land = () => {
+      cartCountHeld = null;
+      renderCartBadge();
+      landCartPop(target, badge);
+    };
+    if (reduce || !origin || !target.animate || target.getBoundingClientRect().width === 0) { land(); return; }
+    cartCountHeld = cartCount() - lastAddDelta;
+    renderCartBadge();
+    flyThumb(image, origin, target).then(land);
+  }
+
   // ---------- Header / cart badge ----------
+  // While an add-to-order flight is in the air, the badge and the mobile cart
+  // bar keep showing the previous count (see celebrateAdd); null = show the truth.
+  let cartCountHeld = null;
   function renderCartBadge() {
-    document.getElementById('cart-badge').textContent = String(cartCount());
+    document.getElementById('cart-badge').textContent = String(cartCountHeld ?? cartCount());
     updateCartBar();
   }
 
@@ -320,8 +493,11 @@
   const cartBar = document.getElementById('cart-bar');
   let cartBarHideTimer = null;
   function updateCartBar() {
-    const count = cartCount();
-    const show = count > 0 && !views.menu.hidden;
+    // The bar belongs to the menu, so it counts the pickup cart only; a count
+    // held for a flight in progress is taken off the same way.
+    const pending = cartCountHeld === null ? 0 : cartCount() - cartCountHeld;
+    const count = cartCount('pickup') - pending;
+    const show = count > 0 && (!views.menu.hidden || !views.order.hidden);
     if (show) {
       if (cartBarHideTimer) { window.clearTimeout(cartBarHideTimer); cartBarHideTimer = null; }
       document.getElementById('cart-bar-count').textContent = `(${count})`;
@@ -345,94 +521,14 @@
     renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
     renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
     renderBagelCard();
-    renderDeliveryGrid();
-    renderFullMenuGrid();
     renderFeatured();
-  }
-
-  function renderDeliveryGrid() {
-    const grid = document.getElementById('delivery-grid');
-    grid.innerHTML = '';
-    DELIVERY_APPS.forEach((app) => {
-      const card = document.createElement('a');
-      card.className = 'shop-card';
-      card.href = app.url;
-      card.target = '_blank';
-      card.rel = 'noopener';
-
-      const body = document.createElement('div');
-      body.className = 'shop-card-body';
-      body.innerHTML = `<span class="shop-card-name">${app.name}</span>`;
-      card.appendChild(body);
-
-      const media = document.createElement('div');
-      media.className = 'shop-card-media';
-      media.style.background = app.color;
-      const logo = document.createElement('img');
-      logo.className = 'delivery-logo';
-      logo.src = app.logo;
-      logo.alt = app.name + ' logo';
-      media.appendChild(logo);
-      const launch = document.createElement('span');
-      launch.className = 'add-btn';
-      launch.setAttribute('aria-hidden', 'true');
-      launch.innerHTML = LAUNCH_ICON;
-      media.appendChild(launch);
-      card.appendChild(media);
-
-      grid.appendChild(card);
-    });
-  }
-
-  // Printed digital menu board per store (PDF). One file covers both the
-  // McKinney and Rockwall stores; a store without an entry has no menu yet.
-  const DIGITAL_MENU_PDF = 'assets/menus/Digital-Menu-RockwallMcKinney.pdf';
-  const DIGITAL_MENUS = {
-    'McKinney, TX': DIGITAL_MENU_PDF,
-    'Rockwall, TX': DIGITAL_MENU_PDF,
-  };
-  const MENU_ICON = '<svg class="menu-card-icon" width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true"><rect x="14" y="8" width="44" height="56" rx="6" stroke="currentColor" stroke-width="3.5"/><path d="M24 24h24M24 34h24M24 44h14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>';
-
-  function renderFullMenuGrid() {
-    const grid = document.getElementById('full-menu-grid');
-    grid.innerHTML = '';
-    const url = DIGITAL_MENUS[state.location];
-    if (!url) {
-      const note = document.createElement('p');
-      note.className = 'muted';
-      note.textContent = `There isn't a digital menu for ${state.location} yet.`;
-      grid.appendChild(note);
-      return;
-    }
-    const card = document.createElement('a');
-    card.className = 'shop-card';
-    card.href = url;
-    card.target = '_blank';
-    card.rel = 'noopener';
-
-    const body = document.createElement('div');
-    body.className = 'shop-card-body';
-    body.innerHTML = `<span class="shop-card-name">${state.location} Digital Menu</span>`;
-    card.appendChild(body);
-
-    const media = document.createElement('div');
-    media.className = 'shop-card-media menu-card-media';
-    media.innerHTML = MENU_ICON;
-    const launch = document.createElement('span');
-    launch.className = 'add-btn';
-    launch.setAttribute('aria-hidden', 'true');
-    launch.innerHTML = LAUNCH_ICON;
-    media.appendChild(launch);
-    card.appendChild(media);
-
-    grid.appendChild(card);
   }
 
   // Every product opens its modal first (never an instant add); which modal depends on what it can customize.
   function openMenuItem(item, keyPrefix, cartCategory) {
     if (item.wrapFlavors) {
       openWrapModal(item);
-    } else if (item.pickerConfig) {
+    } else if (item.pickerConfig || item.fixedFlavors) {
       openDozenModal(item);
     } else if (item.addOns) {
       openBowlModal(item);
@@ -585,6 +681,92 @@
     grid.appendChild(card);
   }
 
+  // ---------- Pickup order page (#order) ----------
+  // The Pickup funnel's third step, laid out like Chipotle's mobile ordering: a list of category tiles, and a tile
+  // that stands for several products (the pack sizes, the egg salad sizes, the bowls) opens a screen of rows.
+  // A tile for a single product opens its modal straight away. Every row opens the same modal as its card on #menu.
+  const ORDER_GROUPS = [
+    { id: 'deviled-eggs', name: 'Deviled Eggs', image: 'assets/products/12-pack.jpg', items: DEVILED_EGGS, keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
+    { id: 'egg-salads', name: 'Egg Salads', image: 'assets/products/egg-salad-pint.jpg', items: EGG_SALADS, keyPrefix: 'saladcup', cartCategory: 'Egg salad' },
+    { id: 'protein-bowls', name: 'Protein Bowls', image: 'assets/products/avo-chick-blt-bowl.jpg', items: PROTEIN_BOWLS, keyPrefix: 'bowl', cartCategory: 'Protein bowl' },
+    { id: 'bagels', name: 'Bagels', image: BAGEL_IMAGE, price: BAGEL_PRICE, open: () => openBagelModal() },
+    { id: 'sandwich-wrap', name: 'Sandwich/Wrap', image: WRAP_IMAGE, items: SANDWICH_WRAP, keyPrefix: 'wrap', cartCategory: 'Sandwich/Wrap' },
+  ];
+  const orderGroupSingle = (g) => g.open || (g.items.length === 1 ? () => openMenuItem(g.items[0], g.keyPrefix, g.cartCategory) : null);
+  const ORDER_CHEVRON = '<svg class="order-tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const orderTilesScreen = document.getElementById('order-tiles-screen');
+  const orderGroupScreen = document.getElementById('order-group-screen');
+
+  function renderOrderTiles() {
+    document.getElementById('order-tiles').innerHTML = ORDER_GROUPS.map((g) => {
+      const single = !!orderGroupSingle(g);
+      const from = g.items ? Math.min(...g.items.map((i) => i.price)) : g.price;
+      const sub = single ? money(from) : `${g.items.length} options · from ${money(from)}`;
+      return `<li><button class="order-tile" type="button" data-group="${g.id}">
+        <span class="order-tile-media"><img src="${g.image}" alt="" loading="lazy"></span>
+        <span class="order-tile-text"><span class="order-tile-name">${g.name}</span><span class="order-tile-sub">${sub}</span></span>
+        ${ORDER_CHEVRON}
+      </button></li>`;
+    }).join('');
+  }
+
+  function showOrderTiles() {
+    orderTilesScreen.hidden = false;
+    orderGroupScreen.hidden = true;
+  }
+
+  function renderOrderRows(g) {
+    const list = document.getElementById('order-rows');
+    list.innerHTML = '';
+    g.items.forEach((item) => {
+      const li = document.createElement('li');
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'order-row';
+      row.setAttribute('aria-label', `${(item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'} ${item.name}`);
+      row.innerHTML = `
+        <span class="order-row-media"></span>
+        <span class="order-row-text">
+          <span class="order-row-name">${item.name}</span>
+          <span class="order-row-meta"><span class="order-row-price">${money(item.price)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>
+          ${item.desc ? `<span class="order-row-desc">${item.desc}</span>` : ''}
+        </span>
+        <span class="order-row-add" aria-hidden="true">${ADD_ICON}</span>`;
+      row.querySelector('.order-row-media').appendChild(productThumb(item));
+      row.addEventListener('click', () => openMenuItem(item, g.keyPrefix, g.cartCategory));
+      li.appendChild(row);
+      list.appendChild(li);
+    });
+  }
+
+  // `push` is false when the URL already names the group (a reload, a shared link, the browser's Back button).
+  function openOrderGroup(id, { push = true } = {}) {
+    const g = ORDER_GROUPS.find((x) => x.id === id);
+    if (!g) return;
+    const single = orderGroupSingle(g);
+    if (single) { single(); return; }
+    document.getElementById('order-group-title').textContent = g.name;
+    renderOrderRows(g);
+    orderTilesScreen.hidden = true;
+    orderGroupScreen.hidden = false;
+    if (push) history.pushState({ orderGroup: id }, '', '#order/' + id);
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    document.getElementById('order-group-title').focus({ preventScroll: true });
+  }
+
+  document.getElementById('order-tiles').addEventListener('click', (e) => {
+    const tile = e.target.closest('.order-tile');
+    if (tile) openOrderGroup(tile.dataset.group);
+  });
+  document.getElementById('order-back').addEventListener('click', () => {
+    // Back out of a screen this visit pushed; a group opened by a link has nothing behind it, so just show the tiles.
+    if (history.state && history.state.orderGroup) { history.back(); return; }
+    history.replaceState(null, '', '#order');
+    showOrderTiles();
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  });
+  renderOrderTiles();
+
   // ---------- Nav menu toggle (tablet/mobile) ----------
   // A lightweight disclosure, not a modal: no backdrop dim or inert
   // background, since the page content is unrelated to picking a nav
@@ -736,15 +918,6 @@
         b.classList.toggle('active', b.dataset.target === targetId);
       });
 
-      if (state.mode !== 'pickup') {
-        state.mode = 'pickup';
-        document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => {
-          b.classList.toggle('active', b.dataset.mode === 'pickup');
-        });
-        updateModeUI();
-        updateOrderModePill();
-      }
-
       const target = document.getElementById(targetId);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -825,18 +998,9 @@
     }, true);
   })();
 
-  // Mobile-only: the category pill bar stays hidden (see the ≤640px
-  // CSS — position:fixed, opacity:0) until the user has scrolled about
-  // halfway down the featured-item card, then fades in as a floating
-  // bar — except in Delivery mode, where there's no scrollable category
-  // content underneath it to navigate to, so it never reveals no matter
-  // the scroll position. Not wrapped in its own IIFE (unlike the drag-
-  // to-scroll block above it) so updateModeUI, below, can re-run
-  // updateBarReveal on every mode switch — needed because switching
-  // modes alone doesn't fire a scroll event, so a bar already revealed
-  // before switching to Delivery would otherwise just sit there. A
-  // no-op on wider screens: the bar is display:none there regardless,
-  // so toggling a class on it does nothing visible.
+  // Mobile-only: the category pill bar stays hidden (see the ≤640px CSS — position:fixed, opacity:0) until the
+  // user has scrolled about halfway down the featured-item card, then fades in as a floating bar. A no-op on
+  // wider screens: the bar is display:none there regardless, so toggling a class on it does nothing visible.
   const drawerNavMobile = document.querySelector('.drawer-nav-mobile');
   const featureCard = document.getElementById('featured-items');
   const REVEAL_LINE_PX = 69;
@@ -844,10 +1008,8 @@
   function updateBarReveal() {
     revealTicking = false;
     if (!drawerNavMobile || !featureCard) return;
-    if (state.mode !== 'pickup') {
-      drawerNavMobile.classList.remove('is-revealed');
-      return;
-    }
+    // A hidden menu has no layout (its rect is all zeros), which would read as "scrolled past the featured card".
+    if (document.getElementById('view-menu').hidden) { drawerNavMobile.classList.remove('is-revealed'); return; }
     const rect = featureCard.getBoundingClientRect();
     const midpoint = rect.top + rect.height / 2;
     drawerNavMobile.classList.toggle('is-revealed', midpoint <= REVEAL_LINE_PX);
@@ -861,53 +1023,12 @@
   window.addEventListener('resize', onScrollForReveal);
   updateBarReveal();
 
-  // ---------- Pickup / delivery toggle ----------
-  // Pickup is fulfilled in-house; Delivery hands off to third-party apps
-  // (see #delivery-apps); Full Menu opens the store's printed digital menu
-  // (see #full-menu) — so nothing past this toggle — cart, checkout,
-  // confirmation — needs to know about a delivery or menu mode.
-  function updateModeUI() {
-    document.getElementById('pickup-menu-content').hidden = state.mode !== 'pickup';
-    document.getElementById('delivery-apps').hidden = state.mode !== 'delivery';
-    document.getElementById('full-menu').hidden = state.mode !== 'menu';
-    updateBarReveal();
-  }
-
-  // Pickup and Delivery aren't the same width, so the pill can't just
-  // slide at a fixed 50% — it's measured off the real active button and
-  // slid+resized to match, which is also why this needs re-running on
-  // load/resize (webfont swap or a width-changing breakpoint moves both
-  // buttons without any click ever firing).
-  const orderModeToggle = document.getElementById('order-mode');
-  const orderModePill = orderModeToggle.querySelector('.order-mode-pill');
-  function updateOrderModePill() {
-    const active = orderModeToggle.querySelector('.order-mode-option.active');
-    if (!active) return;
-    orderModePill.style.width = active.offsetWidth + 'px';
-    orderModePill.style.transform = `translateX(${active.offsetLeft}px)`;
-  }
-
-  orderModeToggle.addEventListener('click', (e) => {
-    const btn = e.target.closest('.order-mode-option');
-    if (!btn) return;
-    document.querySelectorAll('#order-mode .order-mode-option').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.mode = btn.dataset.mode;
-    updateModeUI();
-    updateOrderModePill();
-  });
-
-  updateOrderModePill();
-  window.addEventListener('resize', updateOrderModePill);
-  window.addEventListener('load', updateOrderModePill);
-  setTimeout(updateOrderModePill, 300);
-
   // ---------- Overlay focus management ----------
   const pageRoot = document.getElementById('page-root');
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden || !paymentMethodsModal.hidden || !boxModal.hidden || !ldModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -924,21 +1045,187 @@
     else if (!pickupSettingsModal.hidden) closePickupSettings();
     else if (!storeLocatorModal.hidden) closeStoreLocator();
     else if (!addPaymentModal.hidden) closeAddPayment();
+    else if (!paymentMethodsModal.hidden) closePaymentMethods();
+    else if (!boxModal.hidden) closeBoxModal();
+    else if (!ldModal.hidden) closeLocationDetails();
   });
 
   // ---------- Item customization modal ----------
   const modalBackdrop = document.getElementById('modal-backdrop');
   const itemModal = document.getElementById('item-modal');
 
+  // One row of a single-choice (radio) list, shared by every one-flavor picker.
+  // The native radio sits inside the label; anything extra for the selected row
+  // (e.g. "Remove ingredients" chips) goes in the sibling .radio-choice-extra,
+  // because interactive controls can't live inside a label.
+  const escapeHTML = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const radioChoiceHTML = ({ group, value, label, note, selected }) => `
+    <div class="radio-choice${selected ? ' selected' : ''}">
+      <label class="radio-choice-row">
+        <input class="radio-choice-input" type="radio" name="${group}" value="${value}"${selected ? ' checked' : ''}>
+        <span class="radio-choice-text">
+          <span class="radio-choice-name">${escapeHTML(label)}</span>
+          ${note ? `<span class="radio-choice-note">${escapeHTML(note)}</span>` : ''}
+        </span>
+        <span class="radio-choice-ind" aria-hidden="true"></span>
+      </label>
+      <div class="radio-choice-extra"></div>
+    </div>`;
+
+  // What one allocated piece is called: eggs by default, a catering bundle's own unit otherwise.
+  const eggWord = (n) => {
+    const unit = activeProduct && activeProduct.unit;
+    return unit ? unit[n === 1 ? 0 : 1] : (n === 1 ? 'egg' : 'eggs');
+  };
+
+  // First-time guidance, kept next to the picker it explains: what the + does
+  // (it adds one "step" of eggs, total ÷ max flavors, not one egg), how many
+  // flavors are allowed, and how far along the mix is. The meter has one slot
+  // per flavor the pack allows, so the distribution is visible, not just stated.
+  function renderFlavorGuidance(allocated) {
+    const { total, maxFlavors, step } = activeProduct;
+    const hint = document.getElementById('flavor-hint');
+    const meter = document.getElementById('flavor-meter');
+    const complete = allocated === total;
+    if (total === 1) {
+      meter.hidden = true;
+      hint.textContent = 'Pick 1 flavor.';
+      return;
+    }
+    meter.hidden = false;
+    hint.textContent = complete
+      ? `All ${total} ${eggWord(total)} chosen. Tap − on a flavor to change your mix.${activeProduct.hintTail || ''}`
+      : `Pick up to ${maxFlavors} flavors. Each + adds ${step} ${eggWord(step)}.${activeProduct.hintTail || ''}`;
+    document.getElementById('flavor-count').textContent = complete
+      ? `${total} of ${total} ${eggWord(total)}`
+      : `${allocated} of ${total} ${eggWord(total)} · ${total - allocated} to go`;
+    const filled = Math.round(allocated / step);
+    document.getElementById('flavor-meter-bar').innerHTML = Array.from({ length: maxFlavors }, (_, i) =>
+      `<span class="flavor-meter-seg${i < filled ? ' filled' : ''}"></span>`).join('');
+  }
+
+  // The flavors the open product offers: the full menu list, or a kit's own subset.
+  function flavorList() {
+    if (activeProduct.flavors) return activeProduct.flavors;
+    return activeProduct.flavorIds ? FLAVORS.filter((f) => activeProduct.flavorIds.includes(f.id)) : FLAVORS;
+  }
+
   function dozenAllocated() {
     return Object.values(state.modalFlavorQty).reduce((sum, n) => sum + n, 0);
   }
 
+  // Single-flavor products (the egg salads): one pick, so radios instead of
+  // steppers. Exclusion chips live in the selected row's .radio-choice-extra and
+  // everything updates in place (a re-render would drop keyboard focus).
+  function renderSingleFlavorExtra(group, flavor) {
+    const extra = group.querySelector('.radio-choice-extra');
+    if (!flavor || !flavor.exclusions || !flavor.exclusions.length) { extra.innerHTML = ''; return; }
+    const excluded = state.modalExclusions[flavor.id] || new Set();
+    extra.innerHTML = `
+      <div class="flavor-exclusions">
+        <span class="flavor-exclusions-label">Remove ingredients</span>
+        <div class="chip-row">
+          ${flavor.exclusions.map((ing) => `<button class="chip exclude-chip${excluded.has(ing) ? ' active' : ''}" type="button">NO: ${ing}</button>`).join('')}
+        </div>
+      </div>`;
+    extra.querySelectorAll('.exclude-chip').forEach((chip, i) => {
+      chip.addEventListener('click', () => {
+        const ing = flavor.exclusions[i];
+        const set = state.modalExclusions[flavor.id] || new Set();
+        if (set.has(ing)) set.delete(ing); else set.add(ing);
+        state.modalExclusions[flavor.id] = set;
+        chip.classList.toggle('active', set.has(ing));
+      });
+    });
+  }
+
+  function renderSingleFlavorRadios(grid) {
+    const chosenId = Object.keys(state.modalFlavorQty)[0] || null;
+    const flavors = flavorList();
+    grid.innerHTML = flavors.map((f) => radioChoiceHTML({
+      group: 'dozen-flavor', value: f.id, label: f.label, selected: f.id === chosenId,
+    })).join('');
+    const groups = [...grid.querySelectorAll('.radio-choice')];
+    groups.forEach((group, i) => { if (flavors[i].id === chosenId) renderSingleFlavorExtra(group, flavors[i]); });
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        state.modalFlavorQty = { [input.value]: 1 };
+        state.modalExclusions = {};
+        groups.forEach((group, i) => {
+          const on = group.querySelector('.radio-choice-input').checked;
+          group.classList.toggle('selected', on);
+          renderSingleFlavorExtra(group, on ? flavors[i] : null);
+        });
+        renderModalFooter();
+        renderFlavorGuidance(dozenAllocated());
+      });
+    });
+    renderFlavorGuidance(dozenAllocated());
+  }
+
+  // One flavor's clip can be open at a time, inline in its own row. The <video>
+  // element outlives the grid re-renders (every + / - redraws the rows) so the
+  // clip keeps playing while the customer adds eggs.
+  const PLAY_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg>';
+  const flavorReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let flavorWatch = { id: null, wrap: null, playing: false };
+
+  function stopFlavorWatch() {
+    const video = flavorWatch.wrap && flavorWatch.wrap.querySelector('video');
+    if (video) video.pause();
+    flavorWatch = { id: null, wrap: null, playing: false };
+  }
+
+  function flavorWatchMedia(f) {
+    if (flavorWatch.wrap) return flavorWatch.wrap;
+    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
+    const wrap = document.createElement('button');
+    wrap.type = 'button';
+    wrap.className = 'flavor-watch-media';
+    wrap.innerHTML = `<video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span>`;
+    const video = wrap.querySelector('video');
+    const paint = () => {
+      const paused = video.paused;
+      wrap.classList.toggle('is-paused', paused);
+      wrap.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} the ${f.label} video`);
+    };
+    video.addEventListener('play', paint);
+    video.addEventListener('pause', paint);
+    wrap.addEventListener('click', () => {
+      flavorWatch.playing = video.paused;
+      if (video.paused) video.play().catch(() => {}); else video.pause();
+    });
+    paint();
+    flavorWatch.wrap = wrap;
+    return wrap;
+  }
+
+  function toggleFlavorWatch(id) {
+    const reopen = flavorWatch.id !== id;
+    stopFlavorWatch();
+    if (reopen) flavorWatch = { id, wrap: null, playing: !flavorReduceMotion.matches };
+    renderFlavorGrid();
+    const row = document.querySelector(`#flavor-grid [data-flavor="${id}"]`);
+    if (!row) return;
+    row.querySelector('.flavor-thumb').focus({ preventScroll: true });
+    if (reopen) row.scrollIntoView({ block: 'nearest', behavior: flavorReduceMotion.matches ? 'auto' : 'smooth' });
+  }
+
   function renderFlavorGrid() {
     const grid = document.getElementById('flavor-grid');
+    const single = activeProduct.total === 1;
+    grid.classList.toggle('addon-list', single);
+    if (single) {
+      grid.setAttribute('role', 'radiogroup');
+      grid.setAttribute('aria-label', 'Flavor');
+      renderSingleFlavorRadios(grid);
+      return;
+    }
+    grid.removeAttribute('role');
+    grid.removeAttribute('aria-label');
     grid.innerHTML = '';
     const allocated = dozenAllocated();
-    FLAVORS.forEach((f) => {
+    flavorList().forEach((f) => {
       const qty = state.modalFlavorQty[f.id] || 0;
       const atLimit = qty <= 0 && allocated >= activeProduct.total;
       const showExclusions = qty > 0 && f.exclusions && f.exclusions.length > 0;
@@ -947,17 +1234,31 @@
       // Selecting a flavor and excluding an ingredient from it are one
       // continuous card — the exclusion chips live inside the same
       // .flavor-row button, not a separate block stacked below it.
+      const media = FLAVOR_MEDIA[f.id];
+      const watching = !!media && flavorWatch.id === f.id;
+      const statLine = f.desc || (media && media.cal ? `${media.cal} cal · ${media.protein}g protein each` : '');
       const row = document.createElement('div');
       row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
+      row.dataset.flavor = f.id;
       row.innerHTML = `
         <div class="flavor-row-head">
-          <span>${f.label}</span>
+          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(f.label)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${PLAY_ICON}</span></button>` : ''}
+          <span class="flavor-row-name">${f.label}${statLine ? `<small class="flavor-row-desc">${escapeHTML(statLine)}</small>` : ''}</span>
           <div class="mini-stepper">
-            <button class="mini-step-btn" type="button" aria-label="Remove a ${f.label} egg" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
+            <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Remove ' + f.label : 'Remove ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
             <span>${qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="Add a ${f.label} egg" ${allocated >= activeProduct.total ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
+            <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Choose ' + f.label : 'Add ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${allocated >= activeProduct.total ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
           </div>
         </div>
+        ${watching ? `
+          <div class="flavor-watch" id="flavor-watch-${f.id}">
+            <div class="flavor-watch-slot"></div>
+            <div class="flavor-watch-copy">
+              <p>${escapeHTML(media.desc)}</p>
+              <button class="flavor-watch-hide" type="button">Hide video</button>
+            </div>
+          </div>
+        ` : ''}
         ${showExclusions ? `
           <div class="flavor-exclusions">
             <span class="flavor-exclusions-label">Remove ingredients</span>
@@ -967,6 +1268,13 @@
           </div>
         ` : ''}
       `;
+      if (media) {
+        row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
+      }
+      if (watching) {
+        row.querySelector('.flavor-watch-hide').addEventListener('click', () => toggleFlavorWatch(f.id));
+        row.querySelector('.flavor-watch-slot').replaceWith(flavorWatchMedia(f));
+      }
       const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
       decBtn.addEventListener('click', () => {
         const current = state.modalFlavorQty[f.id] || 0;
@@ -1000,8 +1308,10 @@
       }
 
       grid.appendChild(row);
+      // The grid redraws on every + / -, which pauses a re-attached video; pick the clip up again unless the customer paused it.
+      if (watching && flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
     });
-    document.getElementById('flavor-count').textContent = `Allocated: ${allocated}/${activeProduct.total}`;
+    renderFlavorGuidance(allocated);
   }
 
   function populateQtySelect(select, max = 10) {
@@ -1019,26 +1329,29 @@
     const total = activeProduct.price * state.modalQty;
     const allocated = dozenAllocated();
     const btn = document.getElementById('add-to-order');
-    const complete = allocated === activeProduct.total;
+    const complete = activeProduct.fixedFlavors || allocated === activeProduct.total;
     btn.disabled = !complete;
     // total:1 (the egg salads — one flavor for the whole tub) reads oddly
-    // through the "Allocate all N eggs" copy every multi-piece pack uses;
+    // through the "Choose N eggs" copy every multi-piece pack uses;
     // singular products get their own natural phrasing instead.
     btn.textContent = complete
       ? `Add ${state.modalQty} to order · ${money(total)}`
       : activeProduct.total === 1
         ? 'Choose a flavor to continue'
-        : `Allocate all ${activeProduct.total} eggs to continue`;
+        : `Choose ${activeProduct.total - allocated} ${allocated === 0 ? '' : 'more '}${eggWord(activeProduct.total - allocated)} to continue`;
   }
 
   function openDozenModal(product) {
     lastFocusedEl = document.activeElement;
+    // A fixed-flavor kit (the sampler) has nothing to allocate: no picker config.
+    const picker = product.pickerConfig || { total: 0, maxFlavors: 1 };
     activeProduct = {
       ...product,
-      total: product.pickerConfig.total,
-      maxFlavors: product.pickerConfig.maxFlavors,
-      step: product.pickerConfig.total / product.pickerConfig.maxFlavors,
+      total: picker.total,
+      maxFlavors: picker.maxFlavors,
+      step: picker.total / picker.maxFlavors,
     };
+    stopFlavorWatch();
     state.modalFlavorQty = {};
     state.modalExclusions = {};
     state.modalQty = 1;
@@ -1048,6 +1361,8 @@
     document.getElementById('dozen-modal-title').textContent = activeProduct.name;
     document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
     document.getElementById('dozen-modal-image').src = activeProduct.image;
+    // Catering cutouts sit in the same compact panel as the box modal's, not stretched to a 420px photo.
+    itemModal.querySelector('.item-modal-media').classList.toggle('item-modal-media-cutout', !!activeProduct.cutout);
     // The item's own authored description, not a generated sentence — this
     // modal now also serves the egg salads (a tub, not "deviled eggs"), so
     // a hardcoded "N deviled eggs, hand piped fresh daily" no longer fits
@@ -1056,17 +1371,37 @@
     document.getElementById('flavor-section-title').textContent = activeProduct.maxFlavors === 1 ? 'Choose your flavor' : 'Choose your flavors';
     itemModal.querySelector('.item-modal-header-title').textContent = activeProduct.name;
 
-    renderFlavorGrid();
+    // Kit extras: what's in the box, the fixed flavor lineup, the shipping note.
+    document.getElementById('dozen-modal-desc').hidden = !activeProduct.desc;
+    const info = document.getElementById('dozen-modal-info');
+    info.hidden = !(activeProduct.details && activeProduct.details.length);
+    document.getElementById('dozen-modal-info-label').textContent = activeProduct.detailsLabel || "What's included";
+    document.getElementById('dozen-modal-details').innerHTML = (activeProduct.details || []).map((d) => `<li>${escapeHTML(d)}</li>`).join('');
+    document.getElementById('flavor-block').hidden = !!activeProduct.fixedFlavors;
+    document.getElementById('fixed-flavors').hidden = !activeProduct.fixedFlavors;
+    document.getElementById('fixed-flavors-list').innerHTML = (activeProduct.fixedFlavors || []).map((f) => `<li>${escapeHTML(f)}</li>`).join('');
+    const notice = document.getElementById('dozen-modal-notice');
+    notice.hidden = !activeProduct.notice;
+    notice.textContent = activeProduct.notice || '';
+
+    state.bagelPreset = 'mixed';
+    document.getElementById('bagel-preset-block').hidden = !activeProduct.bagelPresets;
+    if (activeProduct.bagelPresets) renderBagelPresets();
+
+    if (!activeProduct.fixedFlavors) renderFlavorGrid();
     renderModalFooter();
-    itemModal.querySelector('.item-modal-scroll').scrollTop = 0;
     itemModal.querySelector('.item-modal-header-title').classList.remove('visible');
     modalBackdrop.hidden = false;
     itemModal.hidden = false;
+    // After un-hiding: a hidden element ignores scrollTop, so the long kit modal
+    // would otherwise reopen where the last one was scrolled to.
+    itemModal.querySelector('.item-modal-scroll').scrollTop = 0;
     updateInert();
     document.getElementById('close-modal').focus();
   }
 
   function closeDozenModal() {
+    stopFlavorWatch();
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
     updateInert();
@@ -1082,22 +1417,26 @@
   });
 
   document.getElementById('add-to-order').addEventListener('click', () => {
-    if (dozenAllocated() !== activeProduct.total) return;
-    const flavorLabels = FLAVORS.filter((f) => (state.modalFlavorQty[f.id] || 0) > 0).map((f) => {
+    if (!activeProduct.fixedFlavors && dozenAllocated() !== activeProduct.total) return;
+    const flavorLabels = flavorList().filter((f) => (state.modalFlavorQty[f.id] || 0) > 0).map((f) => {
       const excluded = state.modalExclusions[f.id];
       return excluded && excluded.size ? `${f.label} (no ${[...excluded].join(', ').toLowerCase()})` : f.label;
     });
     const note = document.getElementById('item-note').value.trim();
+    // Shipping kits say so on their bag line; the sampler has no flavors to list.
+    const parts = [activeProduct.fixedFlavors ? '18 mini egg salads' : flavorLabels.join(', ')];
+    if (activeProduct.bagelPresets) parts.unshift(activeProduct.bagelPresets.find((p) => p.id === state.bagelPreset).label);
+    if (activeProduct.ships) parts.push('Ships nationwide');
     addToCart({
+      cart: activeProduct.cart || 'pickup',
       key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
       name: activeProduct.name,
-      sub: flavorLabels.join(', ') + (note ? ' · Note: ' + note : ''),
+      sub: parts.join(' · ') + (note ? ' · Note: ' + note : ''),
       price: activeProduct.price,
       qty: state.modalQty,
       image: activeProduct.image,
     });
-    closeDozenModal();
-    openCart();
+    celebrateAdd(itemModal, closeDozenModal, activeProduct.image, state.modalQty);
   });
 
   // ---------- Bagel customization modal ----------
@@ -1120,43 +1459,30 @@
   wireHeaderTitleReveal(itemModal, 'dozen-modal-title');
   wireHeaderTitleReveal(bagelModal, 'bagel-modal-title');
 
-  function renderBagelFlavorSteppers() {
-    const container = document.getElementById('bagel-flavor-steppers');
-    container.innerHTML = '';
-    BAGEL_FLAVORS.forEach((flavor) => {
-      const qty = state.bagelFlavors[flavor] || 0;
-      const row = document.createElement('div');
-      row.className = 'flavor-row' + (qty > 0 ? ' selected' : '');
-      row.style.justifyContent = 'space-between';
-      row.innerHTML = `
-        <span>${flavor}</span>
-        <div class="mini-stepper">
-          <button class="mini-step-btn" type="button" aria-label="Decrease ${flavor}">${STEP_MINUS_ICON}</button>
-          <span>${qty}</span>
-          <button class="mini-step-btn" type="button" aria-label="Increase ${flavor}">${STEP_PLUS_ICON}</button>
-        </div>
-      `;
-      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
-      decBtn.addEventListener('click', () => {
-        const current = state.bagelFlavors[flavor] || 0;
-        if (current <= 1) delete state.bagelFlavors[flavor];
-        else state.bagelFlavors[flavor] = current - 1;
-        renderBagelFlavorSteppers();
+  // Yolk spread: exactly one flavor, as native radios (same row as the wrap and
+  // egg salads). Updated in place on change so keyboard focus survives.
+  function renderBagelFlavorRadios() {
+    const grid = document.getElementById('bagel-flavor-grid');
+    grid.innerHTML = BAGEL_FLAVORS.map((flavor, i) => radioChoiceHTML({
+      group: 'bagel-flavor', value: i, label: flavor, selected: state.bagelFlavor === flavor,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        state.bagelFlavor = BAGEL_FLAVORS[Number(input.value)];
+        grid.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
+        renderBagelModalFooter();
       });
-      incBtn.addEventListener('click', () => {
-        state.bagelFlavors[flavor] = (state.bagelFlavors[flavor] || 0) + 1;
-        renderBagelFlavorSteppers();
-      });
-      container.appendChild(row);
     });
-    const total = Object.values(state.bagelFlavors).reduce((sum, n) => sum + n, 0);
-    document.getElementById('bagel-spread-count').textContent = `${total} added`;
   }
 
   function renderBagelModalFooter() {
     document.getElementById('bagel-qty-select').value = String(state.bagelQty);
     const total = BAGEL_PRICE * state.bagelQty;
-    document.getElementById('add-bagel-to-order').textContent = `Add ${state.bagelQty} to order · ${money(total)}`;
+    const btn = document.getElementById('add-bagel-to-order');
+    btn.disabled = !state.bagelFlavor;
+    btn.textContent = state.bagelFlavor ? `Add ${state.bagelQty} to order · ${money(total)}` : 'Choose a flavor to continue';
   }
 
   function openBagelModal() {
@@ -1166,14 +1492,14 @@
     document.getElementById('bagel-modal-desc').textContent = BAGEL_DESC;
     state.bagelToast = 'Not Toasted';
     state.bagelType = 'Plain';
-    state.bagelFlavors = {};
+    state.bagelFlavor = null;
     state.bagelOptions = new Set();
     state.bagelQty = 1;
     populateQtySelect(document.getElementById('bagel-qty-select'));
     document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelToast));
     document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelType));
     document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.remove('active'));
-    renderBagelFlavorSteppers();
+    renderBagelFlavorRadios();
     renderBagelModalFooter();
     bagelModal.querySelector('.item-modal-scroll').scrollTop = 0;
     bagelModal.querySelector('.item-modal-header-title').classList.remove('visible');
@@ -1228,22 +1554,18 @@
   });
 
   document.getElementById('add-bagel-to-order').addEventListener('click', () => {
-    const flavorParts = Object.entries(state.bagelFlavors)
-      .filter(([, qty]) => qty > 0)
-      .map(([flavor, qty]) => (qty > 1 ? `${qty}x ${flavor}` : flavor));
-    const parts = [state.bagelType, state.bagelToast];
-    if (flavorParts.length) parts.push(flavorParts.join(', '));
+    if (!state.bagelFlavor) return;
+    const parts = [state.bagelType, state.bagelToast, state.bagelFlavor];
     if (state.bagelOptions.size) parts.push(Array.from(state.bagelOptions).join(', '));
     addToCart({
-      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavors, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
+      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavor, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
       name: 'Full Size Bagel',
       sub: parts.join(' · '),
       price: BAGEL_PRICE,
       qty: state.bagelQty,
       image: BAGEL_IMAGE,
     });
-    closeBagelModal();
-    openCart();
+    celebrateAdd(bagelModal, closeBagelModal, BAGEL_IMAGE, state.bagelQty);
   });
 
   // ---------- Bowl customization modal ----------
@@ -1408,8 +1730,7 @@
       qty: state.bowlQty,
       image: activeBowl.image,
     });
-    closeBowlModal();
-    openCart();
+    celebrateAdd(bowlModal, closeBowlModal, activeBowl.image, state.bowlQty);
   });
 
   // ---------- Wrap customization modal ----------
@@ -1422,51 +1743,23 @@
   let activeWrap = null;
   wireHeaderTitleReveal(wrapModal, 'wrap-modal-title');
 
-  function wrapAllocated() {
-    return Object.values(state.wrapFlavorQty).reduce((sum, n) => sum + n, 0);
-  }
-
+  // One flavor, chosen with native radios. Rows are built once per open and
+  // updated in place on change: re-rendering would destroy the focused radio
+  // and break arrow-key navigation within the group.
   function renderWrapFlavorGrid() {
     const grid = document.getElementById('wrap-flavor-grid');
-    grid.innerHTML = '';
-    const allocated = wrapAllocated();
-    activeWrap.wrapFlavors.forEach((f) => {
-      const qty = state.wrapFlavorQty[f.id] || 0;
-      const atLimit = qty <= 0 && allocated >= 1;
-      const row = document.createElement('div');
-      row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
-      row.innerHTML = `
-        <div class="flavor-row-head">
-          <span>${f.label}</span>
-          <div class="mini-stepper">
-            <button class="mini-step-btn" type="button" aria-label="Remove ${f.label}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
-            <span>${qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="Add ${f.label}" ${allocated >= 1 ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
-          </div>
-        </div>
-        ${qty > 0 ? `
-          <div class="flavor-exclusions">
-            <span class="flavor-exclusions-label">Ingredients</span>
-            <span class="flavor-ingredients-text">${f.ingredients}</span>
-          </div>
-        ` : ''}
-      `;
-      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
-      decBtn.addEventListener('click', () => {
-        if ((state.wrapFlavorQty[f.id] || 0) <= 0) return;
-        delete state.wrapFlavorQty[f.id];
-        renderWrapFlavorGrid();
+    grid.innerHTML = activeWrap.wrapFlavors.map((f) => radioChoiceHTML({
+      group: 'wrap-flavor', value: f.id, label: f.label, note: f.ingredients, selected: state.wrapFlavor === f.id,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        state.wrapFlavor = input.value;
+        grid.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
         renderWrapModalFooter();
       });
-      incBtn.addEventListener('click', () => {
-        if (wrapAllocated() >= 1) return;
-        state.wrapFlavorQty[f.id] = 1;
-        renderWrapFlavorGrid();
-        renderWrapModalFooter();
-      });
-      grid.appendChild(row);
     });
-    document.getElementById('wrap-flavor-count').textContent = `Allocated: ${allocated}/1`;
   }
 
   function renderWrapAddOns() {
@@ -1481,11 +1774,10 @@
 
   function renderWrapModalFooter() {
     document.getElementById('wrap-qty-select').value = String(state.wrapQty);
-    const allocated = wrapAllocated();
     const unitPrice = activeWrap.price + wrapAddOnsTotal();
     const total = unitPrice * state.wrapQty;
     const btn = document.getElementById('add-wrap-to-order');
-    const complete = allocated === 1;
+    const complete = Boolean(state.wrapFlavor);
     btn.disabled = !complete;
     btn.textContent = complete ? `Add ${state.wrapQty} to order · ${money(total)}` : 'Choose a flavor to continue';
   }
@@ -1493,7 +1785,7 @@
   function openWrapModal(item) {
     lastFocusedEl = document.activeElement;
     activeWrap = item;
-    state.wrapFlavorQty = {};
+    state.wrapFlavor = null;
     state.wrapAddOns = new Set();
     state.wrapQty = 1;
     populateQtySelect(document.getElementById('wrap-qty-select'));
@@ -1531,8 +1823,8 @@
   });
 
   document.getElementById('add-wrap-to-order').addEventListener('click', () => {
-    if (wrapAllocated() !== 1) return;
-    const flavor = activeWrap.wrapFlavors.find((f) => (state.wrapFlavorQty[f.id] || 0) > 0);
+    const flavor = activeWrap.wrapFlavors.find((f) => f.id === state.wrapFlavor);
+    if (!flavor) return;
     const addOnLabels = Array.from(state.wrapAddOns).map((i) => activeWrap.addOns[i].label);
     const parts = [flavor.label];
     if (addOnLabels.length) parts.push(addOnLabels.join(', '));
@@ -1545,8 +1837,7 @@
       qty: state.wrapQty,
       image: activeWrap.image,
     });
-    closeWrapModal();
-    openCart();
+    celebrateAdd(wrapModal, closeWrapModal, activeWrap.image, state.wrapQty);
   });
 
   // ---------- Quick view modal (no customization — qty + a bigger photo) ----------
@@ -1604,15 +1895,418 @@
     const qty = Number(document.getElementById('quickview-qty-select').value);
     const { keyPrefix, cartCategory } = activeQuickview.cartMeta;
     addToCart({
+      cart: activeQuickview.cartMeta.cart || 'pickup',
       key: keyPrefix + '-' + activeQuickview.id,
       name: activeQuickview.name,
       sub: cartCategory,
       price: activeQuickview.price,
       qty,
       image: activeQuickview.image,
+      icon: activeQuickview.icon,
     });
-    closeQuickviewModal();
-    openCart();
+    celebrateAdd(quickviewModal, closeQuickviewModal, activeQuickview.image, qty);
+  });
+
+  // ---------- Catering items ----------
+  // Every catering "Order Now" opens its own modal and adds to the Catering
+  // cart. Contents are the live catering order form's own (flavor lists with
+  // descriptions, sides and prices, drinks, minimums).
+  const CATERING_SANDWICHES = [{"id": "blte-sw", "label": "BLTE", "desc": "Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "cali-sw", "label": "Cali Roll", "desc": "Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame"}, {"id": "veggie-sw", "label": "Vegetarian", "desc": "Cream Cheese, Cucumbers, Tomato & Everything Seasoning"}, {"id": "caesar-sw", "label": "The Caesar", "desc": "Caesar Yolk Mix, Grilled Chicken, Bacon, Parmean Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "bbq-sw", "label": "Backyard BBQ", "desc": "Traditional Yolk Mix, BBQ Brisket, Lettuce, Pickled Jalapeno, Red Onion, BBQ Sauce, Cheddar Cheese"}, {"id": "buffalo-sw", "label": "Buffalo Chicken", "desc": "Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch"}];
+  const CATERING_BOWLS = [{"id": "avo-blt-bowl", "label": "Avocado Chicken BLT", "desc": "Egg Whites, Grilled Chicken, Bacon, Fresh Avocado, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "buffalo-bowl", "label": "Buffalo Chicken Bowl", "desc": "Egg Whites, Lettuce, Grilled Chicken, Red Onion, Buffalo Sauce, Cheddar Cheese & House-Made Creamy Ranch"}, {"id": "caesar-bowl", "label": "The Caesar Bowl", "desc": "Egg Whites, Grilled Chicken, Capers, Romaine Lettuce, Red Onion, Creamy Caesar & Parmesan Cheese"}, {"id": "brisket-bowl", "label": "Banging Brisket Bowl", "desc": "Egg Whites, BBQ Brisket, Lettuce, Pickled Jalapeño, Red Onion, BBQ Sauce & Cheddar Cheese"}, {"id": "poke-bowl", "label": "Poke-Egg-Bowl", "desc": "Egg Whites, Imitation Crab, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki Sauce & Black Sesame Seeds"}, {"id": "walking-taco-bowl", "label": "Walking Taco Bowl", "desc": "Egg Whites, Refried Beans, Grilled Chicken, Lettuce, Cheddar Cheese, Cholula Hot Sauce, Sour Cream & Doritos"}];
+  const CATERING_EGGS = [{"id": "buffalo-blue", "label": "Buffalo Blue", "desc": "Hot Sauce Yolk Mix, Blue Cheese Crumbles & A Hot Sauce Drizzle"}, {"id": "buffalo-chicken", "label": "Buffalo Chicken Egg", "desc": "Buffalo Sauce Infused Yolk Mix, Grilled Chicken, Red Onion & A Buffalo Sauce Drizzle"}, {"id": "walking-taco", "label": "Walking Taco Egg", "desc": "Cholula Infused Yolk Mix, Grilled Chicken, Refried Beans, Lettuce, Sour Cream, Cheddar Cheese & Crumbled Doritos"}, {"id": "jalapeno-popper", "label": "Jalapeño Popper", "desc": "Cream Cheese Yolk Mix, Bacon Crumbles, Fresh Jalapeño Slice & A Chipotle Sauce Drizzle"}, {"id": "chicken-pickle", "label": "Chicken N A Pickle", "desc": "Sweet Chicken Sauce Yolk Mix, Grilled Chicken, A Dill Pickle Slice & A Sweet Chicken Sauce Drizzle"}, {"id": "smoked-salmon", "label": "Smoked Salmon", "desc": "Cream Cheese Infused Yolk Mix, Capers, Red Onion & Fully Cooked Wild Caught Smoked Salmon"}, {"id": "crab-rangoon", "label": "Crab Rangoon", "desc": "Sweet Crab Mix, Cream Cheese Infused Yolk Mix, Crispy Wontons & A Sweet & Sour Sauce Drizzle"}, {"id": "cali-roll", "label": "Cali Roll Egg", "desc": "Spicy Mayo Crab Mix, Fresh Cucumber Slice, Black Sesame Seeds & A Teriyaki Sauce Drizzle"}, {"id": "sriracha-bacon", "label": "Sriracha Bacon", "desc": "Sriracha Yolk Mix, Bacon Crumbles & A Sriracha Drizzle"}, {"id": "blte", "label": "BLTE Egg", "desc": "Ranch Yolk Mix, Bacon Crumbles, Lettuce, Cherry Tomato Slice & A Ranch Sauce Drizzle"}, {"id": "south-border", "label": "South of the Border", "desc": "Cholula Infused Yolk Mix, Cheddar Cheese & Fresh Jalapeño Slice"}, {"id": "chicken-caesar", "label": "Chicken Caesar", "desc": "Caesar Infused Yolk Mix, Grilled Chicken, Lettuce, Parmesan Cheese & A Caesar Drizzle"}, {"id": "backyard-bbq", "label": "Backyard BBQ Egg", "desc": "Smokey BBQ In The Base, Traditional Yolk Mix, Dill Pickle Slice & A BBQ Sauce Drizzle"}, {"id": "chicken-bacon-ranch", "label": "Chicken Bacon Ranch", "desc": "Ranch Yolk Mix, Grilled Chicken, Bacon Crumbles, Cheddar Cheese & A Ranch Sauce Drizzle"}, {"id": "traditional", "label": "Traditional", "desc": "Mayo & Dijon Infused Yolk Mix, Paprika Seasoning"}, {"id": "everything", "label": "Everything Seasoning", "desc": "Cream Cheese Infused Yolk Mix, Everything Seasoning"}];
+  const CATERING_COFFEE_NOTE = 'The Coffee Bar Included';
+  const CATERING_DRINKS = { price: 3, choices: ['Water', 'Sprite', 'Coke', 'Unsweet Tea', 'Sweet Tea'], maxEach: 10 };
+  // Sides a box can add. `flavor` ones ask which deviled egg flavor goes in them.
+  const SIDE_COOKIE = { id: 'cookie', label: 'Cookie', price: 2 };
+  const SIDE_PICKLE = { id: 'pickle', label: 'Kosher Dill Pickle', price: 1 };
+  const SIDE_EGG_SALAD = { id: 'egg-salad', label: '4oz House-Made Egg Salad', price: 2, flavor: true };
+  const BAGEL_PRESETS = [
+    { id: 'mixed', label: '5 Plain, 5 Everything', note: 'Our usual mix' },
+    { id: 'all-everything', label: '10 Everything', note: 'All Everything bagels' },
+    { id: 'all-plain', label: '10 Plain', note: 'All Plain bagels' },
+  ];
+
+  const CATERING_ITEMS = {
+    classic: {
+      kind: 'box', id: 'classic', name: 'The Classic Choice', price: 10, minQty: 10, image: 'assets/catering/classic.png',
+      desc: 'Choose sandwich or bowl, up to 2 flavors, then a side.',
+      included: ['Kettle Cooked Chips'],
+      sides: [SIDE_COOKIE, SIDE_PICKLE, { id: 'eggs-2pack', label: '2-Pack of Gourmet Deviled Eggs', price: 4, flavor: true }, SIDE_EGG_SALAD],
+    },
+    allin: {
+      kind: 'box', id: 'allin', name: 'The "All In" Power Lunch', price: 12.5, minQty: 10, image: 'assets/catering/allin.png',
+      desc: 'Choose sandwich or bowl, up to 2 flavors, then pick your sides.',
+      included: ['Kettle Cooked Chips', 'Cookie'],
+      sides: [{ id: 'eggs-2pack', label: 'Gourmet 2-Pack of Deviled Eggs', price: 4, flavor: true }, SIDE_PICKLE, SIDE_EGG_SALAD, { id: 'bag-chips', label: 'Bag of Chips', price: 2 }],
+      drinks: CATERING_DRINKS,
+    },
+    'power-pair': {
+      kind: 'bundle', id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, image: 'assets/catering/power-pair.png',
+      desc: 'Serves 10 People',
+      details: ['10 Signature 2-Pack Gourmet Deviled Eggs (20 eggs total)', CATERING_COFFEE_NOTE],
+      flavors: CATERING_EGGS, unit: ['two-pack', 'two-packs'],
+    },
+    'bagel-brew': {
+      kind: 'bundle', id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, image: 'assets/catering/bagel-brew.png',
+      desc: 'Serves 10 People',
+      details: ['Bagel Box: 5 Plain Bagels | 5 Everything Bagels', 'Choice of 2 Signature Egg Spreads, Toppings, or Cream Cheese', CATERING_COFFEE_NOTE],
+      flavors: CATERING_EGGS, unit: ['spread', 'spreads'], bagelPresets: BAGEL_PRESETS,
+    },
+    'hungry-team': {
+      kind: 'bundle', id: 'hungry-team', name: 'The "Hungry Team"', price: 99.99, image: 'assets/catering/light-lunch.png',
+      desc: 'Serves 10 People: Best Value For a Full Meal',
+      details: ['10 Signature Full-Sandwiches | Choose Up To 2 Flavors', CATERING_COFFEE_NOTE],
+      flavors: CATERING_SANDWICHES, unit: ['sandwich', 'sandwiches'],
+    },
+    'light-lunch': {
+      kind: 'bundle', id: 'light-lunch', name: 'The "Light Lunch"', price: 69.99, image: 'assets/catering/light-lunch.png',
+      desc: 'Serves 10 People',
+      details: ['10 Signature Half-Sandwiches | Choose Up To 2 Flavors', CATERING_COFFEE_NOTE],
+      flavors: CATERING_SANDWICHES, unit: ['sandwich', 'sandwiches'],
+    },
+    'coffee-bar': {
+      kind: 'simple', id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, icon: 'coffee',
+      desc: 'Serves 10-12 People: 96oz Hardy Coffee, Cream, Sugar & Sweeteners, and setup: Cups, Lids & Stirrers.',
+    },
+  };
+
+  function openCateringItem(id) {
+    const item = CATERING_ITEMS[id];
+    if (item.kind === 'box') { openBoxModal(item); return; }
+    if (item.kind === 'simple') { openQuickviewModal(item, { keyPrefix: 'catering', cartCategory: 'Catering · Add-on station · Serves 10-12', cart: 'catering' }); return; }
+    // A bundle is one dozen-style picker: its 10 pieces go out in steps of 5
+    // across up to 2 flavors, and every bundle ordered gets the same mix.
+    openDozenModal({
+      ...item,
+      cart: 'catering',
+      cutout: true,
+      pickerConfig: { total: 10, maxFlavors: 2 },
+      hintTail: ' Every bundle gets the same mix.',
+    });
+  }
+
+  document.querySelectorAll('[data-cater-order]').forEach((btn) => {
+    btn.addEventListener('click', () => openCateringItem(btn.dataset.caterOrder));
+  });
+
+  function renderBagelPresets() {
+    const grid = document.getElementById('bagel-preset-grid');
+    grid.innerHTML = BAGEL_PRESETS.map((p) => radioChoiceHTML({
+      group: 'bagel-preset', value: p.id, label: p.label, note: p.note, selected: p.id === state.bagelPreset,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        state.bagelPreset = input.value;
+        grid.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
+      });
+    });
+  }
+
+  // ---------- Catering box meal modal ----------
+  // protein (sandwich or bowl) → up to 2 flavors, split evenly across the
+  // boxes → included sides → optional paid sides (some ask for an egg flavor)
+  // → drinks (The "All In" only) → how many boxes (10 minimum).
+  const boxModalBackdrop = document.getElementById('box-modal-backdrop');
+  const boxModal = document.getElementById('box-modal');
+  const box = { item: null, editing: null, protein: null, flavors: [], sides: new Set(), sideFlavor: {}, drinks: {}, qty: 10 };
+  wireHeaderTitleReveal(boxModal, 'box-modal-title');
+
+  const BOX_PROTEINS = [
+    { id: 'sandwich', label: 'Signature Full Sandwich', note: '', flavors: CATERING_SANDWICHES },
+    { id: 'bowl', label: 'Lunch Size Bowl', note: 'High protein', flavors: CATERING_BOWLS },
+  ];
+  // 10 to 40 one at a time, then bigger steps up to a 200-box event.
+  const BOX_QTY_OPTIONS = [...Array.from({ length: 31 }, (_, i) => 10 + i), 45, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200];
+  const boxProtein = () => BOX_PROTEINS.find((p) => p.id === box.protein);
+  const boxDrinkCount = () => Object.values(box.drinks).reduce((a, n) => a + n, 0);
+  const boxSides = () => box.item.sides.filter((side) => box.sides.has(side.id));
+  const boxUnitPrice = () => box.item.price + boxSides().reduce((sum, side) => sum + side.price, 0);
+  const boxDrinkCost = () => boxDrinkCount() * CATERING_DRINKS.price;
+
+  // The boxes split as evenly as they can between the chosen flavors, the extra one going to the first.
+  function boxSplit() {
+    const n = box.flavors.length;
+    if (!n) return [];
+    return box.flavors.map((id, i) => ({ id, qty: Math.floor(box.qty / n) + (i < box.qty % n ? 1 : 0) }));
+  }
+
+  function renderBoxProteins() {
+    const grid = document.getElementById('box-protein-grid');
+    grid.innerHTML = BOX_PROTEINS.map((p) => radioChoiceHTML({
+      group: 'box-protein', value: p.id, label: p.label, note: p.note, selected: p.id === box.protein,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        box.protein = input.value;
+        box.flavors = [];
+        grid.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
+        renderBoxFlavors();
+        renderBoxFooter();
+      });
+    });
+  }
+
+  function renderBoxFlavors() {
+    const grid = document.getElementById('box-flavor-grid');
+    const hint = document.getElementById('box-flavor-hint');
+    if (!box.protein) {
+      grid.innerHTML = '';
+      hint.textContent = 'Choose sandwich or bowl first.';
+      return;
+    }
+    const flavors = boxProtein().flavors;
+    const full = box.flavors.length >= 2;
+    hint.textContent = box.flavors.length === 2
+      ? 'Two flavors chosen. Your boxes split evenly between them.'
+      : 'Pick up to 2 flavors. Two flavors split your boxes evenly.';
+    grid.innerHTML = flavors.map((f) => {
+      const on = box.flavors.includes(f.id);
+      const blocked = full && !on;
+      return `
+      <button class="addon-row${on ? ' selected' : ''}${blocked ? ' at-limit' : ''}" type="button" role="checkbox" aria-checked="${on}"${blocked ? ' aria-disabled="true"' : ''} data-id="${f.id}">
+        <span class="addon-row-text">
+          <span class="addon-row-name">${escapeHTML(f.label)}</span>
+          <span class="addon-row-note">${escapeHTML(f.desc)}</span>
+        </span>
+        <span class="addon-row-box" aria-hidden="true">${on ? ADDON_CHECK_ICON : ''}</span>
+      </button>`;
+    }).join('');
+    grid.querySelectorAll('.addon-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        const id = row.dataset.id;
+        const at = box.flavors.indexOf(id);
+        if (at >= 0) box.flavors.splice(at, 1);
+        else if (box.flavors.length < 2) box.flavors.push(id);
+        else return;
+        renderBoxFlavors();
+        grid.querySelector(`.addon-row[data-id="${id}"]`).focus();
+        renderBoxFooter();
+      });
+    });
+  }
+
+  function renderBoxSides() {
+    const grid = document.getElementById('box-sides-grid');
+    grid.innerHTML = box.item.sides.map((side) => {
+      const on = box.sides.has(side.id);
+      const flavorPick = on && side.flavor ? `
+        <label class="side-flavor">
+          <span class="side-flavor-label">${side.id === 'egg-salad' ? 'Egg salad flavor' : 'Deviled egg flavor'}</span>
+          <select data-side="${side.id}"><option value="">Choose a flavor</option>${CATERING_EGGS.map((f) => `<option value="${f.id}"${box.sideFlavor[side.id] === f.id ? ' selected' : ''}>${escapeHTML(f.label)}</option>`).join('')}</select>
+        </label>` : '';
+      return `
+      <div class="side-option">
+        <button class="addon-row${on ? ' selected' : ''}" type="button" role="checkbox" aria-checked="${on}" data-side="${side.id}">
+          <span class="addon-row-text">
+            <span class="addon-row-name">${escapeHTML(side.label)}</span>
+            <span class="addon-row-note">+${money(side.price)} per box</span>
+          </span>
+          <span class="addon-row-box" aria-hidden="true">${on ? ADDON_CHECK_ICON : ''}</span>
+        </button>${flavorPick}
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('button.addon-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        const id = row.dataset.side;
+        if (box.sides.has(id)) { box.sides.delete(id); delete box.sideFlavor[id]; } else box.sides.add(id);
+        renderBoxSides();
+        grid.querySelector(`button.addon-row[data-side="${id}"]`).focus();
+        renderBoxFooter();
+      });
+    });
+    grid.querySelectorAll('select[data-side]').forEach((select) => {
+      select.addEventListener('change', () => {
+        box.sideFlavor[select.dataset.side] = select.value;
+        renderBoxFooter();
+      });
+    });
+  }
+
+  function renderBoxDrinks() {
+    const block = document.getElementById('box-drinks-block');
+    block.hidden = !box.item.drinks;
+    if (!box.item.drinks) return;
+    document.getElementById('box-drinks-sub').textContent = `${money(CATERING_DRINKS.price)} each. Choose any mix.`;
+    const grid = document.getElementById('box-drinks-grid');
+    grid.innerHTML = '';
+    CATERING_DRINKS.choices.forEach((name) => {
+      const qty = box.drinks[name] || 0;
+      const row = document.createElement('div');
+      row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '');
+      row.innerHTML = `
+        <div class="flavor-row-head">
+          <span class="flavor-row-name">${escapeHTML(name)}</span>
+          <div class="mini-stepper">
+            <button class="mini-step-btn" type="button" aria-label="Remove one ${escapeHTML(name)}"${qty <= 0 ? ' disabled' : ''}>${STEP_MINUS_ICON}</button>
+            <span>${qty}</span>
+            <button class="mini-step-btn" type="button" aria-label="Add one ${escapeHTML(name)}"${qty >= CATERING_DRINKS.maxEach ? ' disabled' : ''}>${STEP_PLUS_ICON}</button>
+          </div>
+        </div>`;
+      const [dec, inc] = row.querySelectorAll('.mini-step-btn');
+      dec.addEventListener('click', () => { box.drinks[name] = Math.max(0, qty - 1); if (!box.drinks[name]) delete box.drinks[name]; renderBoxDrinks(); renderBoxFooter(); });
+      inc.addEventListener('click', () => { box.drinks[name] = qty + 1; renderBoxDrinks(); renderBoxFooter(); });
+      grid.appendChild(row);
+    });
+  }
+
+  // What still has to be chosen before the box can go in the cart, or null.
+  function boxMissing() {
+    if (!box.protein) return 'Choose a protein to continue';
+    if (!box.flavors.length) return 'Pick a flavor to continue';
+    const needFlavor = boxSides().find((side) => side.flavor && !box.sideFlavor[side.id]);
+    if (needFlavor) return `Choose a flavor for your ${needFlavor.id === 'egg-salad' ? 'egg salad' : 'deviled eggs'} to continue`;
+    return null;
+  }
+
+  // The "Your box" panel beside the form: what's been chosen so far, in plain words.
+  function renderBoxSummary() {
+    const rows = [];
+    if (box.protein) {
+      const flavors = boxProtein().flavors;
+      const split = boxSplit().map(({ id, qty }) => `${flavors.find((f) => f.id === id).label} ×${qty}`);
+      rows.push([boxProtein().label.replace('Signature ', ''), split.join(', ') || 'Pick a flavor']);
+    }
+    rows.push(['Included', box.item.included.join(', ')]);
+    const sides = boxSides();
+    if (sides.length) rows.push(['Added sides', sides.map((side) => side.label).join(', ')]);
+    const drinks = Object.entries(box.drinks).map(([name, n]) => `${n} ${name}`);
+    if (drinks.length) rows.push(['Drinks', drinks.join(', ')]);
+    document.getElementById('box-summary').innerHTML = `
+      <p class="box-summary-title">Your order</p>
+      <dl class="box-summary-list">${rows.map(([k, v]) => `<div><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl>
+      <p class="box-summary-total"><span>${box.qty} boxes</span><strong>${money(boxUnitPrice() * box.qty + boxDrinkCost())}</strong></p>`;
+  }
+
+  function renderBoxFooter() {
+    const total = boxUnitPrice() * box.qty + boxDrinkCost();
+    document.getElementById('box-qty-select').value = String(box.qty);
+    document.querySelectorAll('#box-qty-presets .chip').forEach((chip) => {
+      const on = Number(chip.dataset.qty) === box.qty;
+      chip.classList.toggle('active', on);
+      chip.setAttribute('aria-checked', String(on));
+    });
+    document.getElementById('box-count-total').textContent = `${money(total)} total`;
+    const btn = document.getElementById('add-box-to-order');
+    const missing = boxMissing();
+    btn.disabled = !!missing;
+    btn.textContent = missing || `${box.editing ? 'Update order' : `Add ${box.qty} to order`} · ${money(total)}`;
+    document.getElementById('box-modal-price').textContent = `${money(boxUnitPrice())} / box`;
+    renderBoxSummary();
+  }
+
+  function openBoxModal(item, line) {
+    lastFocusedEl = document.activeElement;
+    // Editing refills every choice from the line's saved config; a new box starts blank at the minimum.
+    const cfg = line && line.config;
+    Object.assign(box, {
+      item, editing: line || null,
+      protein: cfg ? cfg.protein : null,
+      flavors: cfg ? [...cfg.flavors] : [],
+      sides: new Set(cfg ? cfg.sides : []),
+      sideFlavor: cfg ? { ...cfg.sideFlavor } : {},
+      drinks: cfg ? { ...cfg.drinks } : {},
+      qty: line ? line.qty : item.minQty,
+    });
+    document.getElementById('box-modal-title').textContent = item.name;
+    document.getElementById('box-modal-header-title').textContent = item.name;
+    document.getElementById('box-modal-desc').textContent = item.desc;
+    const image = document.getElementById('box-modal-image');
+    image.src = item.image;
+    image.alt = item.name;
+    document.getElementById('box-included').innerHTML = item.included.map((i) => `<li>${escapeHTML(i)}</li>`).join('');
+    document.getElementById('box-qty-help').textContent = `Minimum ${item.minQty} boxes · ${money(item.minQty * item.price)}`;
+    const qtySelect = document.getElementById('box-qty-select');
+    // Any count is allowed up to 200; an edited line's own count is always an option.
+    const options = [...new Set([...BOX_QTY_OPTIONS, box.qty])].sort((x, y) => x - y);
+    qtySelect.innerHTML = options.map((n) => `<option value="${n}">${n}</option>`).join('');
+
+    renderBoxProteins();
+    renderBoxFlavors();
+    renderBoxSides();
+    renderBoxDrinks();
+    document.getElementById('box-note').value = cfg ? cfg.note : '';
+    renderBoxFooter();
+    boxModal.querySelector('.item-modal-header-title').classList.remove('visible');
+    boxModalBackdrop.hidden = false;
+    boxModal.hidden = false;
+    boxModal.querySelector('.item-modal-scroll').scrollTop = 0;
+    updateInert();
+    document.getElementById('close-box-modal').focus();
+  }
+
+  function closeBoxModal() {
+    boxModalBackdrop.hidden = true;
+    boxModal.hidden = true;
+    updateInert();
+    // Cancelling an edit returns to the drawer it came from.
+    if (box.editing) { box.editing = null; openCart('catering'); return; }
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('close-box-modal').addEventListener('click', closeBoxModal);
+  boxModalBackdrop.addEventListener('click', closeBoxModal);
+  document.getElementById('box-qty-select').addEventListener('change', (e) => {
+    box.qty = Number(e.target.value);
+    renderBoxFlavors();
+    renderBoxFooter();
+  });
+  document.getElementById('box-qty-presets').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    box.qty = Number(chip.dataset.qty);
+    renderBoxFooter();
+  });
+
+  // A box line's detail text, from its saved choices alone.
+  function boxLineSub(line) {
+    const cfg = line.config;
+    const item = CATERING_ITEMS[cfg.itemId];
+    const protein = BOX_PROTEINS.find((p) => p.id === cfg.protein);
+    const n = cfg.flavors.length;
+    const split = cfg.flavors.map((id, i) => `${escapeHTML(protein.flavors.find((f) => f.id === id).label)} ×${Math.floor(line.qty / n) + (i < line.qty % n ? 1 : 0)}`);
+    const sides = item.sides.filter((side) => cfg.sides.includes(side.id))
+      .map((side) => `+ ${escapeHTML(side.label)}${side.flavor ? ` (${escapeHTML(CATERING_EGGS.find((f) => f.id === cfg.sideFlavor[side.id]).label)})` : ''}`);
+    const drinks = Object.entries(cfg.drinks).map(([name, count]) => `${count} ${escapeHTML(name)}`);
+    const parts = [`${escapeHTML(protein.label.replace('Signature ', ''))}: ${split.join(', ')}`, ...sides];
+    if (drinks.length) parts.push('Drinks: ' + drinks.join(', '));
+    if (cfg.note) parts.push('Note: ' + escapeHTML(cfg.note));
+    return parts.join(' · ');
+  }
+
+  function editCateringLine(line) {
+    closeCart();
+    openBoxModal(CATERING_ITEMS[line.config.itemId], line);
+  }
+
+  document.getElementById('add-box-to-order').addEventListener('click', () => {
+    if (boxMissing()) return;
+    const config = {
+      type: 'box', itemId: box.item.id, protein: box.protein, flavors: [...box.flavors],
+      sides: [...box.sides], sideFlavor: { ...box.sideFlavor }, drinks: { ...box.drinks },
+      note: document.getElementById('box-note').value.trim(),
+    };
+    const fields = { price: boxUnitPrice(), extra: boxDrinkCost(), qty: box.qty, config };
+    if (box.editing) {
+      // Update the line where it sits; no add flight, back to the drawer.
+      Object.assign(box.editing, fields);
+      persistCart();
+      renderCartBadge();
+      closeBoxModal();
+      return;
+    }
+    addToCart({
+      cart: 'catering',
+      key: `box-${box.item.id}-${Date.now()}`,
+      name: box.item.name,
+      minQty: box.item.minQty,
+      image: box.item.image,
+      ...fields,
+    });
+    celebrateAdd(boxModal, closeBoxModal, box.item.image, box.qty);
   });
 
   // ---------- Cart drawer ----------
@@ -1620,9 +2314,20 @@
   const cartDrawer = document.getElementById('cart-drawer');
   let cartCloseTimer = null;
 
-  function openCart() {
+  // The drawer opens on the cart that belongs to the page the customer is on
+  // (or the one a checkout's back link names); if that one is empty it opens
+  // on the first cart that has something in it.
+  function defaultDrawerCart() {
+    const here = !views.shipping.hidden ? 'shipping' : !views.catering.hidden ? 'catering' : 'pickup';
+    if (state.carts[here].length) return here;
+    return CART_KINDS.find((k) => state.carts[k].length) || here;
+  }
+
+  function openCart(kind) {
     if (cartCloseTimer) { window.clearTimeout(cartCloseTimer); cartCloseTimer = null; }
     lastFocusedEl = document.activeElement;
+    state.drawerCart = CART_KINDS.includes(kind) ? kind : defaultDrawerCart();
+    hideDrawerUndo();
     renderDrawer();
     cartBackdrop.hidden = false;
     cartDrawer.hidden = false;
@@ -1654,24 +2359,114 @@
   cartBackdrop.addEventListener('click', closeCart);
 
   function computeTotals() {
-    const subtotal = cartSubtotal();
+    const subtotal = cartSubtotal('pickup');
     const tax = subtotal * TAX_RATE;
     const total = subtotal + tax;
     return { subtotal, tax, total };
   }
 
+  const DRAWER_EMPTY = {
+    pickup: 'Your cart is empty. Add something delicious from the menu.',
+    shipping: 'No shipping kits yet. Add one from Nationwide Shipping.',
+    catering: 'No catering items yet. Add one from Catering.',
+  };
+  const DRAWER_NOTE = {
+    shipping: 'Shipping is added at checkout.',
+    catering: 'Delivery fee and tax are added at checkout.',
+  };
+
+  function drawerContextHTML(kind) {
+    if (kind === 'shipping') return 'Ships nationwide · order Mon–Wed for week-of arrival';
+    if (kind === 'catering') return 'Catering · box meals are a 10-box minimum';
+    return `Pickup at <strong>${state.location}</strong>`;
+  }
+
+  // One tab per cart that has something in it (plus the one being viewed).
+  // With only one such cart there is nothing to switch between, so the tabs
+  // disappear and the drawer looks as it always did.
+  function renderCartTabs() {
+    const tabs = document.getElementById('cart-tabs');
+    const kinds = CART_KINDS.filter((k) => state.carts[k].length || k === state.drawerCart);
+    tabs.hidden = kinds.length < 2;
+    tabs.innerHTML = kinds.map((k) => `
+      <button class="chip cart-tab${k === state.drawerCart ? ' active' : ''}" id="cart-tab-${k}" type="button" role="tab" data-cart="${k}"
+        aria-selected="${k === state.drawerCart}" aria-controls="drawer-items" tabindex="${k === state.drawerCart ? 0 : -1}">
+        ${CART_LABELS[k]}<span class="cart-tab-count" aria-label="${cartCount(k)} items">${cartCount(k)}</span>
+      </button>`).join('');
+  }
+
+  document.getElementById('cart-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.cart-tab');
+    if (!tab) return;
+    state.drawerCart = tab.dataset.cart;
+    renderDrawer();
+    document.getElementById('cart-tab-' + state.drawerCart).focus();
+  });
+
+  document.getElementById('cart-tabs').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const tabs = [...document.querySelectorAll('#cart-tabs .cart-tab')];
+    const i = tabs.findIndex((t) => t.dataset.cart === state.drawerCart);
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    e.preventDefault();
+    next.click();
+  });
+
+  const TRASH_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // Removing a line is undoable for a few seconds: the drawer says so, and puts the line back where it was.
+  let drawerUndo = null;
+  let drawerUndoTimer = null;
+  function hideDrawerUndo() {
+    window.clearTimeout(drawerUndoTimer);
+    drawerUndo = null;
+    document.getElementById('drawer-undo').hidden = true;
+  }
+  function removeCartLine(kind, index) {
+    const [item] = state.carts[kind].splice(index, 1);
+    persistCart();
+    renderCartBadge();
+    drawerUndo = { kind, index, item };
+    window.clearTimeout(drawerUndoTimer);
+    drawerUndoTimer = window.setTimeout(hideDrawerUndo, 8000);
+    renderDrawer();
+    const bar = document.getElementById('drawer-undo');
+    document.getElementById('drawer-undo-text').textContent = `Removed ${item.name}.`;
+    bar.hidden = false;
+  }
+  document.getElementById('drawer-undo-btn').addEventListener('click', () => {
+    if (!drawerUndo) return;
+    const { kind, index, item } = drawerUndo;
+    state.carts[kind].splice(Math.min(index, state.carts[kind].length), 0, item);
+    state.drawerCart = kind;
+    hideDrawerUndo();
+    persistCart();
+    renderCartBadge();
+    renderDrawer();
+  });
+
   function renderDrawer() {
+    // Emptying the cart being viewed moves on to the next one that has items.
+    if (!state.carts[state.drawerCart].length) {
+      const other = CART_KINDS.find((k) => state.carts[k].length);
+      if (other) state.drawerCart = other;
+    }
+    const kind = state.drawerCart;
+    const items = state.carts[kind];
     const list = document.getElementById('drawer-items');
     list.innerHTML = '';
+    list.setAttribute('aria-labelledby', 'cart-tab-' + kind);
+    list.setAttribute('role', 'tabpanel');
+    renderCartTabs();
 
-    if (state.cart.length === 0) {
+    if (items.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-cart';
-      empty.textContent = 'Your cart is empty. Add something delicious from the menu.';
+      empty.textContent = DRAWER_EMPTY[kind];
       list.appendChild(empty);
     }
 
-    state.cart.forEach((item, index) => {
+    items.forEach((item, index) => {
       const row = document.createElement('div');
       row.className = 'drawer-item';
       const thumb = productThumb(item);
@@ -1681,75 +2476,303 @@
 
       const body = document.createElement('div');
       body.className = 'drawer-item-body';
-      body.innerHTML = `<span class="drawer-item-name">${item.name}</span><span class="drawer-item-sub">${item.sub}</span>`;
+      body.innerHTML = `<span class="drawer-item-name">${escapeHTML(item.name)}</span><span class="drawer-item-sub">${lineSub(item)}</span>`;
       row.appendChild(body);
 
       const actions = document.createElement('div');
       actions.className = 'drawer-item-actions';
-      actions.innerHTML = `
-        <span class="item-price">${money(item.price * item.qty)}</span>
-        <div class="mini-stepper">
-          <button class="mini-step-btn" type="button" aria-label="Decrease quantity">${STEP_MINUS_ICON}</button>
-          <span>${item.qty}</span>
-          <button class="mini-step-btn" type="button" aria-label="Increase quantity">${STEP_PLUS_ICON}</button>
-        </div>
-      `;
-      const [decBtn, , incBtn] = actions.querySelectorAll('.mini-step-btn, span');
-      actions.querySelectorAll('.mini-step-btn')[0].addEventListener('click', () => {
-        if (item.qty <= 1) {
-          state.cart.splice(index, 1);
-        } else {
-          item.qty -= 1;
-        }
-        persistCart();
-        renderCartBadge();
-        renderDrawer();
-      });
-      actions.querySelectorAll('.mini-step-btn')[1].addEventListener('click', () => {
-        item.qty += 1;
-        persistCart();
-        renderCartBadge();
-        renderDrawer();
-      });
+      if (item.config) {
+        // A box meal's flavor split depends on its box count, so its count can't
+        // be nudged here: Edit reopens the modal with every choice filled in.
+        actions.innerHTML = `
+          <span class="item-price">${money(lineTotal(item))}</span>
+          <span class="drawer-item-qty">${item.qty} ${item.qty === 1 ? 'box' : 'boxes'}</span>
+          <div class="drawer-item-buttons">
+            <button class="text-btn drawer-edit-btn" type="button" aria-label="Edit ${escapeHTML(item.name)}">Edit</button>
+            <button class="icon-btn drawer-trash-btn" type="button" aria-label="Remove ${escapeHTML(item.name)}">${TRASH_ICON}</button>
+          </div>`;
+        actions.querySelector('.drawer-edit-btn').addEventListener('click', () => editCateringLine(item));
+        actions.querySelector('.drawer-trash-btn').addEventListener('click', () => removeCartLine(kind, index));
+      } else {
+        actions.innerHTML = `
+          <span class="item-price">${money(lineTotal(item))}</span>
+          <div class="mini-stepper">
+            <button class="mini-step-btn" type="button" aria-label="${item.qty <= 1 ? 'Remove ' + escapeHTML(item.name) : 'Decrease quantity of ' + escapeHTML(item.name)}">${STEP_MINUS_ICON}</button>
+            <span>${item.qty}</span>
+            <button class="mini-step-btn" type="button" aria-label="Increase quantity of ${escapeHTML(item.name)}">${STEP_PLUS_ICON}</button>
+          </div>
+        `;
+        const [decBtn, incBtn] = actions.querySelectorAll('.mini-step-btn');
+        decBtn.addEventListener('click', () => {
+          if (item.qty <= 1) {
+            removeCartLine(kind, index);
+          } else {
+            item.qty -= 1;
+            persistCart();
+            renderCartBadge();
+            renderDrawer();
+          }
+        });
+        incBtn.addEventListener('click', () => {
+          item.qty += 1;
+          persistCart();
+          renderCartBadge();
+          renderDrawer();
+        });
+      }
       row.appendChild(actions);
       list.appendChild(row);
     });
 
-    const { total } = computeTotals();
-    document.getElementById('drawer-total').textContent = money(total);
+    // Pickup shows its total with tax, as it always has; the other two carts
+    // owe fees that only checkout knows, so they show a subtotal and say so.
+    const isPickup = kind === 'pickup';
+    document.getElementById('drawer-total-label').textContent = isPickup ? 'Total' : 'Subtotal';
+    document.getElementById('drawer-total').textContent = money(isPickup ? computeTotals().total : cartSubtotal(kind));
+    const note = document.getElementById('drawer-total-note');
+    note.hidden = isPickup || items.length === 0;
+    note.textContent = DRAWER_NOTE[kind] || '';
 
-    const totalQty = cartCount();
+    const totalQty = cartCount(kind);
     document.getElementById('drawer-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
 
-    document.getElementById('fulfillment-chip').innerHTML = `Pickup at <strong>${state.location}</strong>`;
+    document.getElementById('fulfillment-chip').innerHTML = drawerContextHTML(kind);
 
-    document.getElementById('go-to-checkout').disabled = state.cart.length === 0;
+    document.getElementById('go-to-checkout').disabled = items.length === 0;
   }
 
   // ---------- View switching ----------
   const views = {
+    home: document.getElementById('view-home'),
+    'location-picker': document.getElementById('view-location-picker'),
     menu: document.getElementById('view-menu'),
+    order: document.getElementById('view-order'),
     checkout: document.getElementById('view-checkout'),
     confirmation: document.getElementById('view-confirmation'),
+    shipping: document.getElementById('view-shipping'),
+    catering: document.getElementById('view-catering'),
+    'ship-checkout': document.getElementById('view-ship-checkout'),
+    'cater-checkout': document.getElementById('view-cater-checkout'),
   };
+  // Each cart checks out on its own page; all of them swap the site header for the checkout header.
+  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'cater-checkout'];
+  const CHECKOUT_VIEW_FOR = { pickup: 'checkout', shipping: 'ship-checkout', catering: 'cater-checkout' };
+  const PAGE_FOR_CART = { pickup: 'order', shipping: 'shipping', catering: 'catering' };
 
   function showView(name) {
+    // The pickup order page is the Pickup funnel's third step: without a chosen store, day and time, start the funnel
+    // instead. The products page (#menu) stays open to everyone.
+    if (name === 'order' && !pickupSessionValid()) { startFunnel('pickup'); return; }
     Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
-    document.body.classList.toggle('is-checkout', name === 'checkout');
+    if (name === 'order') showOrderTiles();
+    if (name === 'location-picker') syncPickerSaved();
+    document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
+    // The two top-level pages the header links to; checkout/confirmation
+    // aren't reachable from the nav so they leave it unmarked.
+    document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
+      if (link.dataset.view === name) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     updateCartBar();
+    syncHomeVideo();
+    updateBarReveal();
+    syncPageHash(name);
+    if (window.degLocationPicker && window.degLocationPicker.sync) window.degLocationPicker.sync();
   }
 
+  // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
+  // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering'];
+  function syncPageHash(name) {
+    if (!PAGE_VIEWS.includes(name)) return;
+    // #order/<group> is the order page too (see openOrderGroup).
+    if (name === 'order' && location.hash.startsWith('#order')) return;
+    const want = name === 'home' ? '' : '#' + name;
+    if (location.hash === want || (name === 'home' && (location.hash === '' || location.hash === '#home'))) return;
+    history.replaceState(null, '', location.pathname + location.search + want);
+  }
+
+  // ---------- Homepage hero ----------
+  // The hero's background video only plays while the Home view is showing (and
+  // not at all under reduced motion, where the first frame stays still).
+  const homeVideo = document.querySelector('.home-hero-video');
+  const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function syncHomeVideo() {
+    if (!views.home.hidden && !reduceMotionQuery.matches) homeVideo.play().catch(() => {});
+    else homeVideo.pause();
+  }
+  reduceMotionQuery.addEventListener('change', syncHomeVideo);
+
+  // The logo is the way home; the tiles are the front doors to each order path.
+  const goHome = () => {
+    history.replaceState(null, '', '#home');
+    showView('home');
+  };
+  const siteLogo = document.querySelector('.site-header .logo');
+  siteLogo.addEventListener('click', goHome);
+  siteLogo.addEventListener('keydown', (e) => { if (e.key === 'Enter') goHome(); });
+
+  // ---------- Order funnels ----------
+  // A funnel is one way of ordering, start to finish. Each one names the words the location picker uses while
+  // it serves that funnel, and what choosing a store does next. Only Pickup exists so far; Delivery, Shipping and
+  // Catering have their own entry points and do not use the picker yet.
+  const FUNNELS = {
+    pickup: {
+      title: 'Where will you pick up?',
+      pickLabel: 'Pick up here',
+      pickedLabel: 'Your pickup store',
+      savedTitle: 'Continue your pickup order',
+      continueLabel: 'Continue to menu',
+      changeLabel: 'Change time',
+      // Choosing a store opens its details (day and time); the order starts from there, not from the pick.
+      onPick: (store) => openLocationDetails(store),
+    },
+  };
+  let activeFunnel = null;
+
+  function startFunnel(name) {
+    const funnel = FUNNELS[name];
+    activeFunnel = name;
+    if (window.degLocationPicker && window.degLocationPicker.configure) window.degLocationPicker.configure(funnel);
+    history.replaceState(null, '', '#location-picker');
+    showView('location-picker');
+  }
+
+  // "Continue" on the picker's saved order: carry on with the store, day and time already chosen.
+  if (window.degLocationPicker) {
+    window.degLocationPicker.onContinue = () => {
+      history.replaceState(null, '', '#order');
+      showView('order');
+    };
+    window.degLocationPicker.onChangeTime = (store) => openLocationDetails(store, { edit: true, thenOrder: true });
+  }
+
+  // A store chosen in the picker goes to whichever funnel opened it. A picker opened by a link (#location-picker)
+  // with no funnel started belongs to Pickup, the only funnel there is.
+  if (window.degLocationPicker) {
+    window.degLocationPicker.onPick = (store) => FUNNELS[activeFunnel || 'pickup'].onPick(store);
+  }
+
+  function goFromHome(path) {
+    if (path === 'shipping' || path === 'catering') {
+      history.replaceState(null, '', '#' + path);
+      showView(path);
+      return;
+    }
+    // "Order pickup" is the Pickup funnel's first step. The Delivery tile has no data-home-go on purpose: it links nowhere for now.
+    startFunnel(path);
+  }
+
+  // The location picker's "Nationwide Shipping" link for searches with no store nearby.
+  if (window.degLocationPicker) {
+    window.degLocationPicker.onNavigate = (page) => {
+      history.replaceState(null, '', '#' + page);
+      showView(page);
+    };
+  }
+
+  document.getElementById('view-home').addEventListener('click', (e) => {
+    const go = e.target.closest('[data-home-go]');
+    if (!go) return;
+    e.preventDefault();
+    goFromHome(go.dataset.homeGo);
+  });
+
+  // ---------- Content pages (Nationwide Shipping, Catering) ----------
+  // Header links with a data-view switch pages; the hash (#shipping,
+  // #catering) makes each page deep-linkable and keeps the browser's back
+  // button honest.
+  // The page a bare URL opens is Home; the menu has its own address now.
+  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering' };
+  navLinksEl.addEventListener('click', (e) => {
+    // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
+    if (e.target.closest('.nav-link[data-inert]')) { e.preventDefault(); return; }
+    const link = e.target.closest('.nav-link[data-view]');
+    if (!link) return;
+    e.preventDefault();
+    const name = link.dataset.view;
+    history.replaceState(null, '', '#' + name);
+    showView(name);
+  });
+  // Refreshing always starts over at Home. A link opened fresh (a bookmark, a shared #shipping) still goes
+  // where it points, but a reload must not strand the customer on whichever page they last visited.
+  // The first page is chosen at the very end of the script, once the saved pickup choice has been read back
+  // (the pickup menu needs it), so that `#menu` links and refreshes behave.
+  function openFirstPage() {
+    const navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (navEntry && navEntry.type === 'reload' && location.hash) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    routeFromHash();
+  }
+  // "#order/deviled-eggs" is the order page opened on that group's screen.
+  function routeFromHash() {
+    const [base, group] = location.hash.split('/');
+    const view = PAGE_HASHES[base] || 'home';
+    showView(view);
+    if (view === 'order' && group) openOrderGroup(group, { push: false });
+  }
+  window.addEventListener('hashchange', () => {
+    if (CHECKOUT_VIEWS.some((v) => !views[v].hidden) || !views.confirmation.hidden) return;
+    routeFromHash();
+  });
+
+  // Kit cards open their in-app modal; the whole card is the target, as on the menu.
+  document.querySelector('.kit-grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.kit-card');
+    if (!card) return;
+    openMenuItem(SHIPPING_KITS.find((k) => k.id === card.dataset.kit));
+  });
+
+  document.querySelectorAll('[data-scroll]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(a.dataset.scroll);
+      target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+
+  // Email/SMS signup form shared by both pages. Front-end only: validates the
+  // email, then swaps the form for its confirmation line.
+  document.querySelectorAll('.page-form').forEach((form) => {
+    const email = form.querySelector('input[type="email"]');
+    const error = form.querySelector('.field-error');
+    email.addEventListener('input', () => {
+      error.hidden = true;
+      email.removeAttribute('aria-invalid');
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+      error.hidden = ok;
+      if (!ok) {
+        email.setAttribute('aria-invalid', 'true');
+        email.focus();
+        return;
+      }
+      form.querySelector('.page-success').hidden = false;
+      form.querySelectorAll('input, button').forEach((el) => { el.disabled = true; });
+    });
+  });
+
+  // Which cart the open checkout belongs to — its back link returns there.
+  let checkoutCart = 'pickup';
+
   document.getElementById('go-to-checkout').addEventListener('click', () => {
-    if (state.cart.length === 0) return;
+    const kind = state.drawerCart;
+    if (state.carts[kind].length === 0) return;
     closeCart();
-    renderCheckout();
-    showView('checkout');
+    checkoutCart = kind;
+    if (kind === 'pickup') renderCheckout();
+    else if (kind === 'shipping') renderShipCheckout();
+    else renderCaterCheckout();
+    showView(CHECKOUT_VIEW_FOR[kind]);
   });
 
   document.getElementById('back-to-cart').addEventListener('click', () => {
-    showView('menu');
-    openCart();
+    showView(PAGE_FOR_CART[checkoutCart]);
+    openCart(checkoutCart);
   });
 
   // ---------- Checkout view ----------
@@ -1765,7 +2788,16 @@
   let mapLoadTimer = null;
   const MAP_LOAD_TIMEOUT_MS = 6000;
 
+  // The menu page's store card and the pickup banner name the chosen store.
+  function renderStoreHeadings() {
+    const address = STORE_ADDRESSES[state.location];
+    document.querySelector('.store-name').textContent = state.location;
+    document.querySelector('.store-address').textContent = address;
+    renderOrderBanner();
+  }
+
   function renderStoreLocatorSummary() {
+    renderStoreHeadings();
     document.getElementById('store-locator-name').textContent = state.location;
     document.getElementById('store-locator-address').textContent = STORE_ADDRESSES[state.location];
   }
@@ -1845,7 +2877,7 @@
   storeLocatorBackdrop.addEventListener('click', closeStoreLocator);
   document.getElementById('confirm-store-locator').addEventListener('click', () => {
     state.location = pendingStoreLocation;
-    renderFullMenuGrid();
+    savePickupSession();
     renderStoreLocatorSummary();
     renderDrawer();
     closeStoreLocator();
@@ -1923,9 +2955,58 @@
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
-  document.getElementById('open-add-payment').addEventListener('click', openAddPayment);
   document.getElementById('close-add-payment').addEventListener('click', closeAddPayment);
   addPaymentBackdrop.addEventListener('click', closeAddPayment);
+
+  // ---------- Add payment method chooser ----------
+  // Step before the card form: pick a type. Card continues into the form
+  // above; the wallets just join the radio list and become the selection.
+  const paymentMethodsBackdrop = document.getElementById('payment-methods-backdrop');
+  const paymentMethodsModal = document.getElementById('payment-methods-modal');
+  const PAYMENT_CARD_ICON = '<svg width="24" height="24" viewBox="0 0 28 20" fill="none" aria-hidden="true"><rect x="1" y="2" width="26" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M1 7h26" stroke="currentColor" stroke-width="3"/><path d="M5 13.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  const PAYMENT_WALLET_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="8.5" width="18" height="11" rx="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor"/></svg>';
+  const PAYMENT_OPTIONS = [
+    { id: 'card', label: 'Credit or debit card', icon: PAYMENT_CARD_ICON },
+    { id: 'apple-pay', label: 'Apple Pay', icon: PAYMENT_WALLET_ICON },
+    { id: 'google-pay', label: 'Google Pay', icon: PAYMENT_WALLET_ICON },
+    { id: 'paypal', label: 'PayPal', icon: PAYMENT_WALLET_ICON },
+  ];
+  const PAYMENT_CHEVRON = '<svg class="payment-option-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function openPaymentMethods() {
+    lastFocusedEl = document.activeElement;
+    document.getElementById('payment-option-list').innerHTML = PAYMENT_OPTIONS.map((o) => `
+      <button class="payment-option" type="button" data-id="${o.id}">
+        <span class="payment-option-icon">${o.icon}</span>
+        <span class="payment-option-label">${escapeHTML(o.label)}</span>
+        ${PAYMENT_CHEVRON}
+      </button>`).join('');
+    paymentMethodsBackdrop.hidden = false;
+    paymentMethodsModal.hidden = false;
+    updateInert();
+    document.getElementById('close-payment-methods').focus();
+  }
+
+  function closePaymentMethods() {
+    paymentMethodsBackdrop.hidden = true;
+    paymentMethodsModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('payment-option-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('.payment-option');
+    if (!btn) return;
+    const option = PAYMENT_OPTIONS.find((o) => o.id === btn.dataset.id);
+    closePaymentMethods();
+    if (option.id === 'card') { openAddPayment(); return; }
+    if (!paymentMethods.includes(option.label)) paymentMethods.push(option.label);
+    state.payment = option.label;
+    renderPaymentPickers();
+  });
+  document.querySelectorAll('[data-add-payment]').forEach((btn) => btn.addEventListener('click', openPaymentMethods));
+  document.getElementById('close-payment-methods').addEventListener('click', closePaymentMethods);
+  paymentMethodsBackdrop.addEventListener('click', closePaymentMethods);
 
   addPaymentForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1935,15 +3016,9 @@
     const nickname = cardNicknameInput.value.trim();
     const label = `${cardBrand(digits)} •••• ${last4}${nickname ? ` (${nickname})` : ''}`;
 
-    const row = document.createElement('button');
-    row.className = 'radio-row active';
-    row.type = 'button';
-    row.dataset.value = label;
-    row.innerHTML = `<span class="radio-dot"></span>${label}`;
-    document.querySelectorAll('#payment-picker .radio-row').forEach((b) => b.classList.remove('active'));
-    document.getElementById('open-add-payment').before(row);
-
+    paymentMethods.push(label);
     state.payment = label;
+    renderPaymentPickers();
     closeAddPayment();
   });
 
@@ -1997,7 +3072,9 @@
       cursor = new Date(now);
       cursor.setHours(PICKUP_OPEN_HOUR, 0, 0, 0);
     }
-    const close = new Date(cursor);
+    // Closing is today's 8:00 PM, not 8:00 PM of whichever day the cursor landed on: after 11:30 PM the cursor
+    // rolls past midnight, and measuring from it offered a whole day of slots from 12:00 AM on.
+    const close = new Date(now);
     close.setHours(PICKUP_CLOSE_HOUR, 0, 0, 0);
     const slots = [];
     while (cursor.getTime() + 30 * 60000 <= close.getTime()) {
@@ -2032,6 +3109,31 @@
 
   function renderPickupSummary() {
     document.getElementById('pickup-time-summary').textContent = `${pickupDateLabel(state.pickupDateKey)} · ${state.pickupTimeLabel}`;
+    renderOrderBanner();
+  }
+
+  // The banner above the menu: the store, day and time chosen on the way here.
+  function renderOrderBanner() {
+    const banner = document.getElementById('order-banner');
+    if (!banner) return;
+    document.getElementById('banner-store').textContent = state.location;
+    document.getElementById('banner-address').textContent = STORE_ADDRESSES[state.location] || '';
+    document.getElementById('banner-when').textContent = state.pickupChosen ? pickupWhenText() : '';
+  }
+
+  // "Tomorrow · 12:00 – 12:30 PM": the chosen day and time in one line. "10:00 AM – 10:30 AM" is shortened to
+  // "10:00 – 10:30 AM" so it stays on one line on a phone.
+  function pickupWhenText() {
+    const time = (state.pickupTimeLabel || '').replace(/^(\d+:\d+) (AM|PM) – (\d+:\d+) \2$/, '$1 – $3 $2');
+    return `${pickupDateLabel(state.pickupDateKey)} · ${time}`;
+  }
+
+  // The location picker opens on the saved choice (with a Continue) only while it is still valid.
+  function syncPickerSaved() {
+    if (!window.degLocationPicker || !window.degLocationPicker.setSaved) return;
+    if (!pickupSessionValid()) { window.degLocationPicker.setSaved(null); return; }
+    const [city, st] = state.location.split(', ');
+    window.degLocationPicker.setSaved({ city, state: st, address: STORE_ADDRESSES[state.location], when: pickupWhenText() });
   }
 
   // Selections apply only to this staging object while the modal is open;
@@ -2069,18 +3171,19 @@
 
   function renderPickupTimeList() {
     const list = document.getElementById('pickup-time-list');
-    list.innerHTML = '';
-    buildTimeSlots(pendingPickup.dateKey).forEach((slot) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'radio-row' + (slot.id === pendingPickup.timeId ? ' active' : '');
-      btn.innerHTML = `<span class="radio-dot"></span>${slot.label}`;
-      btn.addEventListener('click', () => {
+    const slots = buildTimeSlots(pendingPickup.dateKey);
+    list.innerHTML = slots.map((slot) => radioChoiceHTML({
+      group: 'pickup-time', value: slot.id, label: slot.label, selected: slot.id === pendingPickup.timeId,
+    })).join('');
+    list.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        const slot = slots.find((sl) => String(sl.id) === input.value);
         pendingPickup.timeId = slot.id;
         pendingPickup.timeLabel = slot.label;
-        renderPickupTimeList();
+        list.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
       });
-      list.appendChild(btn);
     });
   }
 
@@ -2119,18 +3222,226 @@
     state.pickupDateKey = pendingPickup.dateKey;
     state.pickupTimeId = pendingPickup.timeId;
     state.pickupTimeLabel = pendingPickup.timeLabel;
+    savePickupSession();
     renderPickupSummary();
     renderDrawer();
     closePickupSettings();
   });
 
-  document.getElementById('payment-picker').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-value]');
-    if (!btn) return;
-    document.querySelectorAll('#payment-picker .radio-row').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.payment = btn.dataset.value;
+
+  // ---------- Pickup session + location details (the Pickup funnel's second step) ----------
+  // A pickup order starts when the customer has chosen a store, a day and a time on purpose. That choice is the
+  // "pickup session": it is kept for the visit, it lapses when the chosen slot passes, and placing an order ends it.
+  const PICKUP_SESSION_KEY = 'deg-pickup-session';
+  const ASAP_ID = 'asap';
+  const ASAP_LABEL = 'ASAP (20–30 min)';
+  state.pickupChosen = false;
+
+  function savePickupSession() {
+    state.pickupChosen = true;
+    try {
+      localStorage.setItem(PICKUP_SESSION_KEY, JSON.stringify({
+        location: state.location, dateKey: state.pickupDateKey, timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel,
+      }));
+    } catch (e) { /* storage unavailable: the choice lasts until reload */ }
+    syncPickerSaved();
+  }
+
+  function clearPickupSession() {
+    state.pickupChosen = false;
+    try { localStorage.removeItem(PICKUP_SESSION_KEY); } catch (e) { /* ignore */ }
+    syncPickerSaved();
+  }
+
+  // The chosen time has passed if it was an earlier day, or a window starting before now today. ASAP is good for its own day.
+  function pickupSlotPassed() {
+    const now = new Date();
+    const today = dateKey(now);
+    if (state.pickupDateKey < today) return true;
+    if (state.pickupDateKey > today || state.pickupTimeId === ASAP_ID) return false;
+    return Number(state.pickupTimeId) < now.getHours() * 100 + now.getMinutes();
+  }
+  const pickupSessionValid = () => state.pickupChosen && !pickupSlotPassed();
+
+  function restorePickupSession() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PICKUP_SESSION_KEY) || 'null');
+      if (!saved || !STORE_ADDRESSES[saved.location]) return;
+      Object.assign(state, { location: saved.location, pickupDateKey: saved.dateKey, pickupTimeId: saved.timeId, pickupTimeLabel: saved.timeLabel, pickupChosen: true });
+      if (pickupSlotPassed()) clearPickupSession();
+    } catch (e) { /* ignore a corrupt session */ }
+  }
+
+  const ldBackdrop = document.getElementById('ld-backdrop');
+  const ldModal = document.getElementById('ld-modal');
+  // What the customer has picked so far in this modal; nothing is saved until "Start my order".
+  let ld = null;
+
+  // ASAP is offered only for today, while the store is open with half an hour or more left before it closes.
+  function asapAvailable(key) {
+    const now = new Date();
+    if (key !== dateKey(now)) return false;
+    const mins = now.getHours() * 60 + now.getMinutes();
+    return mins >= PICKUP_OPEN_HOUR * 60 && mins <= PICKUP_CLOSE_HOUR * 60 - 30;
+  }
+
+  function ldTimeOptions(key) {
+    const slots = buildTimeSlots(key);
+    return asapAvailable(key) ? [{ id: ASAP_ID, label: ASAP_LABEL, note: 'Ready as soon as it is made' }, ...slots] : slots;
+  }
+
+  function renderLdFooter() {
+    const ready = !!(ld.dateKey && ld.timeId);
+    const start = document.getElementById('ld-start');
+    start.disabled = !ready;
+    start.textContent = ld.edit ? 'Update order' : 'Start my order';
+    document.getElementById('ld-hint').textContent = ready ? '' : ld.dateKey ? 'Pick a time to start.' : 'Pick a day and a time to start.';
+  }
+
+  function updateLdDateFade() {
+    const list = document.getElementById('ld-date-list');
+    const wrap = document.getElementById('ld-date-wrap');
+    const max = list.scrollWidth - list.clientWidth;
+    wrap.classList.toggle('can-scroll-left', list.scrollLeft > 1);
+    wrap.classList.toggle('can-scroll-right', list.scrollLeft < max - 1);
+  }
+
+  function renderLdDates() {
+    const list = document.getElementById('ld-date-list');
+    list.innerHTML = '';
+    pickupDatesCache.forEach((d) => {
+      const closed = ldTimeOptions(d.key).length === 0; // e.g. today after the store has closed
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pickup-date-tile' + (d.key === ld.dateKey ? ' active' : '') + (closed ? ' is-closed' : '');
+      btn.setAttribute('aria-pressed', String(d.key === ld.dateKey));
+      if (closed) btn.disabled = true;
+      btn.innerHTML = `${d.tileTop}<span class="pickup-date-sub">${closed ? 'Closed' : d.tileSub}</span>`;
+      btn.addEventListener('click', () => {
+        if (d.key === ld.dateKey) return;
+        ld.dateKey = d.key;
+        ld.timeId = null;
+        ld.timeLabel = null;
+        renderLdDates();
+        renderLdTimes();
+        renderLdFooter();
+      });
+      list.appendChild(btn);
+    });
+    updateLdDateFade();
+  }
+
+  function renderLdTimes() {
+    const list = document.getElementById('ld-time-list');
+    const empty = document.getElementById('ld-time-empty');
+    empty.hidden = !!ld.dateKey;
+    if (!ld.dateKey) { list.innerHTML = ''; return; }
+    const options = ldTimeOptions(ld.dateKey);
+    list.innerHTML = options.map((o) => radioChoiceHTML({
+      group: 'ld-time', value: o.id, label: o.label, note: o.note, selected: String(o.id) === String(ld.timeId),
+    })).join('');
+    list.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        const o = options.find((x) => String(x.id) === input.value);
+        ld.timeId = o.id;
+        ld.timeLabel = o.label;
+        list.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
+        renderLdFooter();
+      });
+    });
+  }
+
+  // From the picker, nothing is preselected. From the menu banner ({ edit: true }) the modal opens on the
+  // current day and time, as long as they are still on offer, and saving updates the order in place.
+  function openLocationDetails(store, { edit = false, thenOrder = false } = {}) {
+    const name = `${store.city}, ${store.state}`;
+    if (!STORE_ADDRESSES[name]) return;
+    lastFocusedEl = document.activeElement;
+    ld = { store: name, dateKey: null, timeId: null, timeLabel: null, edit, thenOrder };
+    if (edit && pickupSessionValid()) {
+      const options = ldTimeOptions(state.pickupDateKey);
+      if (options.length) ld.dateKey = state.pickupDateKey;
+      // The saved time can have gone (ASAP after the store's last half hour); then the day stays and the time is asked again.
+      if (options.some((o) => String(o.id) === String(state.pickupTimeId))) Object.assign(ld, { timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel });
+    }
+    document.getElementById('ld-title').textContent = name;
+    document.getElementById('ld-address').textContent = STORE_ADDRESSES[name];
+    renderLdDates();
+    renderLdTimes();
+    renderLdFooter();
+    document.querySelector('#ld-modal .ld-scroll').scrollTop = 0;
+    ldBackdrop.hidden = false;
+    ldModal.hidden = false;
+    updateInert();
+    updateLdDateFade();
+    document.getElementById('ld-close').focus();
+  }
+
+  // Closing keeps nothing from the modal and returns to the picker.
+  function closeLocationDetails() {
+    ldBackdrop.hidden = true;
+    ldModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('ld-close').addEventListener('click', closeLocationDetails);
+  // "Change store" goes back to the picker; from the menu banner that means leaving the menu for it.
+  document.getElementById('ld-change').addEventListener('click', () => {
+    // Only the order page's banner has to leave the page to change store; from the picker, closing is enough.
+    const fromOrder = ld && ld.edit && !ld.thenOrder;
+    closeLocationDetails();
+    if (fromOrder) startFunnel('pickup');
   });
+  document.getElementById('banner-change').addEventListener('click', () => {
+    const [city, st] = state.location.split(', ');
+    openLocationDetails({ city, state: st }, { edit: true });
+  });
+  ldBackdrop.addEventListener('click', closeLocationDetails);
+  document.getElementById('ld-date-next').addEventListener('click', () => {
+    const list = document.getElementById('ld-date-list');
+    list.scrollBy({ left: list.clientWidth, behavior: 'smooth' });
+  });
+  document.getElementById('ld-date-list').addEventListener('scroll', updateLdDateFade);
+
+  document.getElementById('ld-start').addEventListener('click', () => {
+    if (!ld || !ld.dateKey || !ld.timeId) return;
+    Object.assign(state, { location: ld.store, pickupDateKey: ld.dateKey, pickupTimeId: ld.timeId, pickupTimeLabel: ld.timeLabel });
+    savePickupSession();
+    closeLocationDetails();
+    renderPickupSummary();
+    renderStoreLocatorSummary();
+    renderDrawer();
+    // Updating from the order page's banner stays where it is; starting from the picker, or changing the time
+    // from its Continue block, opens the order page.
+    if (ld.edit && !ld.thenOrder) return;
+    history.replaceState(null, '', '#order');
+    showView('order');
+  });
+
+  // Payment methods are data: the two saved ones plus any card added in the
+  // modal. Rows update in place on change so keyboard focus survives.
+  const paymentMethods = ['Apple Pay', 'Visa •••• 4242'];
+  // Every checkout has a payment list; they all show the same methods and
+  // the same selection, so each re-renders together.
+  function renderPaymentPickers() {
+    document.querySelectorAll('.payment-picker').forEach((picker) => {
+      picker.innerHTML = paymentMethods.map((label, i) => radioChoiceHTML({
+        group: 'payment-' + picker.id, value: i, label, selected: label === state.payment,
+      })).join('');
+      picker.querySelectorAll('.radio-choice-input').forEach((input) => {
+        input.addEventListener('change', () => {
+          state.payment = paymentMethods[Number(input.value)];
+          picker.querySelectorAll('.radio-choice').forEach((row) => {
+            row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+          });
+        });
+      });
+    });
+  }
+  renderPaymentPickers();
 
   const tipCustomWrap = document.getElementById('tip-custom');
   const tipCustomInput = document.getElementById('tip-custom-input');
@@ -2162,10 +3473,10 @@
     tipCustomInput.value = lastValidTip;
   });
 
-  function renderCheckout() {
-    const list = document.getElementById('checkout-items');
+  // The order-summary list shared by all three checkouts.
+  function renderSummaryItems(list, countEl, items) {
     list.innerHTML = '';
-    state.cart.forEach((item) => {
+    items.forEach((item) => {
       const row = document.createElement('div');
       row.className = 'drawer-item';
       const thumb = productThumb(item);
@@ -2177,14 +3488,18 @@
       body.className = 'drawer-item-body';
       body.innerHTML = `
         <span class="drawer-item-name">${item.name} ×${item.qty}</span>
-        ${item.sub ? `<span class="drawer-item-sub">${item.sub}</span>` : ''}
-        <span class="drawer-item-price">${money(item.price * item.qty)}</span>
+        ${lineSub(item) ? `<span class="drawer-item-sub">${lineSub(item)}</span>` : ''}
+        <span class="drawer-item-price">${money(lineTotal(item))}</span>
       `;
       row.appendChild(body);
       list.appendChild(row);
     });
-    const totalQty = state.cart.reduce((sum, item) => sum + item.qty, 0);
-    document.getElementById('checkout-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
+    const totalQty = items === state.carts.catering ? items.length : items.reduce((sum, item) => sum + item.qty, 0);
+    countEl.textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
+  }
+
+  function renderCheckout() {
+    renderSummaryItems(document.getElementById('checkout-items'), document.getElementById('checkout-item-count'), state.carts.pickup);
     renderCheckoutTotals();
   }
 
@@ -2194,6 +3509,16 @@
     const expanded = orderSummaryToggle.getAttribute('aria-expanded') === 'true';
     orderSummaryToggle.setAttribute('aria-expanded', String(!expanded));
     orderSummaryCollapse.classList.toggle('collapsed', expanded);
+  });
+
+  // The shipping and catering checkouts collapse their summaries the same way.
+  ['sc', 'cc'].forEach((p) => {
+    const toggle = document.getElementById(p + '-toggle-summary');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.nextElementSibling.classList.toggle('collapsed', expanded);
+    });
   });
 
   function renderCheckoutTotals() {
@@ -2211,51 +3536,323 @@
 
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
 
+  // ---------- Confirmation (all three carts) ----------
+  // One confirmation page; each cart fills in its own sentence, progress
+  // labels, recap and where-to-next card. Nothing here is a real order: the
+  // number is made up on the spot, as the pickup one always was.
+  let confirmBack = 'order';
+  const orderNumber = () => '#DE-' + Math.floor(10000 + Math.random() * 89999);
+
+  function showConfirmation({ number, subHTML, steps, items, total, cardHTML, backLabel, backView }) {
+    document.getElementById('confirm-sub').innerHTML = subHTML.replace('{number}', `<strong>${number}</strong>`);
+    document.getElementById('progress-step2-label').textContent = steps[0];
+    document.getElementById('progress-step3-label').textContent = steps[1];
+    document.getElementById('fulfillment-card').innerHTML = cardHTML;
+    const confirmItems = document.getElementById('confirm-items');
+    confirmItems.innerHTML = '';
+    items.forEach((line) => {
+      const el = document.createElement('div');
+      el.className = 'summary-line';
+      el.innerHTML = `<span>${line.label}</span><span>${line.amount}</span>`;
+      confirmItems.appendChild(el);
+    });
+    document.getElementById('confirm-total').textContent = money(total);
+    document.getElementById('back-to-menu').textContent = backLabel;
+    confirmBack = backView;
+    showView('confirmation');
+  }
+
+  const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, amount: money(lineTotal(item)) }));
+
+  function clearCart(kind) {
+    state.carts[kind] = [];
+    persistCart();
+    renderCartBadge();
+    renderDrawer();
+  }
+
   document.getElementById('place-order').addEventListener('click', () => {
-    if (state.cart.length === 0) return;
+    if (state.carts.pickup.length === 0) return;
 
     const total = renderCheckoutTotals();
-    const orderNumber = '#DE-' + Math.floor(10000 + Math.random() * 89999);
-
-    const subEl = document.getElementById('confirm-sub');
-    const fulfillmentCard = document.getElementById('fulfillment-card');
-
     const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
     const dateLabel = pickupDateLabel(state.pickupDateKey);
     const readyBy = state.pickupTimeLabel.split(' – ')[1] || state.pickupTimeLabel;
-    const whenPhrase = dateLabel === 'Today' ? `by <strong>${readyBy}</strong>`
+    const whenPhrase = state.pickupTimeId === ASAP_ID ? 'in about <strong>20–30 minutes</strong>'
+      : dateLabel === 'Today' ? `by <strong>${readyBy}</strong>`
       : dateLabel === 'Tomorrow' ? `tomorrow at <strong>${readyBy}</strong>`
       : `on <strong>${dateLabel}</strong> at <strong>${readyBy}</strong>`;
+    const items = recapLines(state.carts.pickup);
 
-    subEl.innerHTML = `Order <strong>${orderNumber}</strong> · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`;
-    fulfillmentCard.innerHTML = `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`;
-
-    const confirmItems = document.getElementById('confirm-items');
-    confirmItems.innerHTML = '';
-    state.cart.forEach((item) => {
-      const line = document.createElement('div');
-      line.className = 'summary-line';
-      line.innerHTML = `<span>${item.name} ×${item.qty}</span><span>${money(item.price * item.qty)}</span>`;
-      confirmItems.appendChild(line);
+    clearCart('pickup');
+    clearPickupSession();
+    showConfirmation({
+      number: orderNumber(),
+      subHTML: `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
+      steps: ['Preparing', 'Ready'],
+      items, total,
+      cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
+      backLabel: '← Back to menu', backView: 'order',
     });
-    document.getElementById('confirm-total').textContent = money(total);
-
-    state.cart = [];
-    persistCart();
-    renderCartBadge();
-
-    showView('confirmation');
   });
 
   document.getElementById('back-to-menu').addEventListener('click', () => {
-    showView('menu');
+    showView(confirmBack);
+  });
+
+  // ---------- Shared checkout form helpers ----------
+  // An inline error sits at the end of its field group, like the signup forms';
+  // it clears as soon as the field is touched again.
+  function setFieldError(input, message) {
+    const group = input.closest('.field-group') || input.parentElement;
+    let el = group.querySelector('.field-error');
+    if (!message) {
+      if (el) el.remove();
+      input.removeAttribute('aria-invalid');
+      return;
+    }
+    if (!el) {
+      el = document.createElement('p');
+      el.className = 'field-error';
+      el.setAttribute('role', 'alert');
+      group.appendChild(el);
+      input.addEventListener('input', () => setFieldError(input, ''), { once: true });
+      input.addEventListener('change', () => setFieldError(input, ''), { once: true });
+    }
+    el.textContent = message;
+    input.setAttribute('aria-invalid', 'true');
+  }
+
+  // Runs [input, test, message] rows; marks every failure, focuses the first. True when all pass.
+  function validateFields(rows) {
+    let first = null;
+    rows.forEach(([input, ok, message]) => {
+      const pass = ok(input.value.trim());
+      setFieldError(input, pass ? '' : message);
+      if (!pass && !first) first = input;
+    });
+    if (first) first.focus();
+    return !first;
+  }
+  const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  const isPhone = (v) => v.replace(/\D/g, '').length >= 10;
+  const present = (v) => v.length > 0;
+  const isZip = (v) => /^\d{5}$/.test(v);
+
+  const todayISO = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  };
+  const addDaysISO = (iso, n) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    const date = new Date(y, m - 1, d + n);
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+  };
+  const longDate = (iso) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  };
+  const clockLabel = (hhmm) => {
+    const [h, m] = hhmm.split(':').map(Number);
+    return formatClock(h, m);
+  };
+
+  // ---------- Shipping checkout ----------
+  // Prototype rate only: the live site gives no shipping prices, so this one
+  // flat figure stands in (and says so on the page) until real pricing exists.
+  const SHIPPING_RATE_PLACEHOLDER = 19.99;
+
+  // Orders placed Mon–Wed arrive that week; Thu–Sun go out the following Monday.
+  function shipWindow(now = new Date()) {
+    const day = now.getDay(); // 0 Sun … 6 Sat
+    if (day >= 1 && day <= 3) {
+      return { title: 'Arrives this week', body: 'We hand-pack every order in our Texas kitchen the morning we ship. Orders placed Monday through Wednesday arrive within the same week.', arrive: 'this week' };
+    }
+    const daysToMonday = (8 - day) % 7 || 7;
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday);
+    const label = monday.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return { title: `Ships ${label}`, body: 'Orders placed Thursday through Sunday go out the following Monday and arrive that week.', arrive: `the week of ${label}` };
+  }
+
+  function renderShipCheckout() {
+    renderSummaryItems(document.getElementById('sc-items'), document.getElementById('sc-item-count'), state.carts.shipping);
+    const when = shipWindow();
+    document.getElementById('sc-when').innerHTML = `<strong>${when.title}</strong><p>${when.body}</p>`;
+    renderShipTotals();
+    renderPaymentPickers();
+  }
+
+  function renderShipTotals() {
+    const subtotal = cartSubtotal('shipping');
+    document.getElementById('sc-subtotal').textContent = money(subtotal);
+    document.getElementById('sc-shipping').textContent = money(SHIPPING_RATE_PLACEHOLDER);
+    document.getElementById('sc-total').textContent = money(subtotal + SHIPPING_RATE_PLACEHOLDER);
+    return subtotal + SHIPPING_RATE_PLACEHOLDER;
+  }
+
+  document.getElementById('sc-place-order').addEventListener('click', () => {
+    if (state.carts.shipping.length === 0) return;
+    const f = (id) => document.getElementById('sc-' + id);
+    const ok = validateFields([
+      [f('name'), present, 'Enter the name for this order.'],
+      [f('phone'), isPhone, 'Enter a phone number with area code.'],
+      [f('email'), isEmail, 'Enter a valid email so we can send your tracking link.'],
+      [f('street'), present, 'Enter the street address to ship to.'],
+      [f('city'), present, 'Enter the city.'],
+      [f('state'), present, 'Choose a state. We ship to the 48 contiguous states.'],
+      [f('zip'), isZip, 'Enter a 5-digit ZIP code.'],
+    ]);
+    if (!ok) return;
+
+    const total = renderShipTotals();
+    const when = shipWindow();
+    const items = recapLines(state.carts.shipping);
+    items.push({ label: 'Shipping', amount: money(SHIPPING_RATE_PLACEHOLDER) });
+    const apt = f('street2').value.trim();
+    const addressLines = `${escapeHTML(f('name').value.trim())}<br>${escapeHTML(f('street').value.trim())}${apt ? ', ' + escapeHTML(apt) : ''}<br>${escapeHTML(f('city').value.trim())}, ${f('state').value} ${f('zip').value.trim()}`;
+
+    clearCart('shipping');
+    showConfirmation({
+      number: orderNumber(),
+      subHTML: `Order {number} · We'll email your tracking link the morning we ship. Your kit arrives <strong>${when.arrive}</strong>.`,
+      steps: ['Packing', 'Shipped'],
+      items, total,
+      cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
+      backLabel: '← Back to Nationwide Shipping', backView: 'shipping',
+    });
+  });
+
+  // ---------- Catering checkout ----------
+  // Rules and figures are the live catering order form's own: pickup is free
+  // and can be same-day (2 hours' notice); delivery is a $20 flat fee, free at
+  // $200, and needs a day's notice; tax is 8.25%.
+  const CATERING_DELIVERY_FEE = 20;
+  const CATERING_FREE_DELIVERY_AT = 200;
+  const CATERING_LOCATIONS = [
+    { id: 'denison', name: 'Denison', address: '231 W Main St, Denison, TX 75020', desc: 'Historic Downtown · Full-service dine-in' },
+    { id: 'mckinney', name: 'McKinney', address: '111 W Virginia St, McKinney, TX 75069', desc: 'Downtown on the Square · Carry-out' },
+    { id: 'rockwall', name: 'Rockwall', address: '2065 Summer Lee Drive, Rockwall, TX 75032', desc: 'At The Harbor' },
+    { id: 'coppell', name: 'Coppell', address: '3001 Olympus Blvd, Suite 100, Coppell, TX 75019', desc: 'Cypress Waters · Carry-out & catering' },
+  ];
+  const cater = { fulfilment: 'pickup', location: 'mckinney' };
+
+  function caterTotals() {
+    const subtotal = cartSubtotal('catering');
+    const fee = cater.fulfilment === 'delivery' && subtotal < CATERING_FREE_DELIVERY_AT ? CATERING_DELIVERY_FEE : 0;
+    const tax = subtotal * TAX_RATE;
+    return { subtotal, fee, tax, total: subtotal + fee + tax };
+  }
+
+  function renderCaterTotals() {
+    const { subtotal, fee, tax, total } = caterTotals();
+    const delivery = cater.fulfilment === 'delivery';
+    document.getElementById('cc-subtotal').textContent = money(subtotal);
+    document.getElementById('cc-delivery-fee').textContent = !delivery ? 'Pickup · Free' : fee ? money(fee) : 'Free';
+    document.getElementById('cc-tax').textContent = money(tax);
+    document.getElementById('cc-total').textContent = money(total);
+    return total;
+  }
+
+  // Pickup can be today; delivery needs a day's notice. Both live in the date
+  // field's min, so an impossible date can't be picked.
+  function syncCaterDate() {
+    const delivery = cater.fulfilment === 'delivery';
+    const input = document.getElementById('cc-date');
+    input.min = delivery ? addDaysISO(todayISO(), 1) : todayISO();
+    if (input.value && input.value < input.min) input.value = '';
+    document.getElementById('cc-date-help').textContent = delivery
+      ? 'Delivery: 24–48 hours lead time required.'
+      : 'Pickup: same-day OK · please give us at least 2 hours.';
+  }
+
+  function renderCaterLocations() {
+    const list = document.getElementById('cc-locations');
+    list.innerHTML = CATERING_LOCATIONS.map((loc) => radioChoiceHTML({
+      group: 'cc-location', value: loc.id, label: loc.name, note: `${loc.address} · ${loc.desc}`, selected: loc.id === cater.location,
+    })).join('');
+    list.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        cater.location = input.value;
+        list.querySelectorAll('.radio-choice').forEach((row) => {
+          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
+        });
+      });
+    });
+  }
+
+  function setCaterFulfilment(kind) {
+    cater.fulfilment = kind;
+    document.querySelectorAll('#cc-fulfilment .chip').forEach((chip) => {
+      const on = chip.dataset.value === kind;
+      chip.classList.toggle('active', on);
+      chip.setAttribute('aria-checked', String(on));
+    });
+    document.getElementById('cc-pickup').hidden = kind !== 'pickup';
+    document.getElementById('cc-delivery').hidden = kind !== 'delivery';
+    syncCaterDate();
+    renderCaterTotals();
+  }
+
+  document.getElementById('cc-fulfilment').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip) setCaterFulfilment(chip.dataset.value);
+  });
+
+  function renderCaterCheckout() {
+    renderSummaryItems(document.getElementById('cc-items'), document.getElementById('cc-item-count'), state.carts.catering);
+    renderCaterLocations();
+    setCaterFulfilment(cater.fulfilment);
+    renderPaymentPickers();
+  }
+
+  document.getElementById('cc-place-order').addEventListener('click', () => {
+    if (state.carts.catering.length === 0) return;
+    const f = (id) => document.getElementById('cc-' + id);
+    const delivery = cater.fulfilment === 'delivery';
+    const rows = [
+      [f('date'), (v) => v !== '' && v >= f('date').min, delivery ? 'Pick a date at least a day from now.' : 'Pick the date of your event.'],
+    ];
+    if (delivery) {
+      rows.push([f('address'), present, 'Enter the address to deliver to.'], [f('zip'), isZip, 'Enter a 5-digit ZIP code.'], [f('delivery-time'), present, 'Choose a delivery time.']);
+    } else {
+      rows.push([f('pickup-time'), present, 'Choose a pickup time.']);
+    }
+    rows.push(
+      [f('name'), present, 'Enter your name.'],
+      [f('phone'), isPhone, 'Enter a phone number with area code.'],
+      [f('email'), isEmail, 'Enter a valid email so we can confirm your order.'],
+    );
+    if (!validateFields(rows)) return;
+
+    const { fee } = caterTotals();
+    const total = renderCaterTotals();
+    const items = recapLines(state.carts.catering);
+    if (delivery) items.push({ label: 'Delivery', amount: fee ? money(fee) : 'Free' });
+    items.push({ label: 'Tax', amount: money(caterTotals().tax) });
+    const when = `${longDate(f('date').value)} at <strong>${clockLabel(delivery ? f('delivery-time').value : f('pickup-time').value)}</strong>`;
+    const loc = CATERING_LOCATIONS.find((l) => l.id === cater.location);
+    const where = delivery ? escapeHTML(f('address').value.trim()) : `${loc.name} · ${loc.address}`;
+
+    clearCart('catering');
+    showConfirmation({
+      number: orderNumber(),
+      subHTML: `Order {number} · We'll confirm by phone within an hour. ${delivery ? 'Delivery' : 'Pickup'} on ${when}.`,
+      steps: ['Confirming', delivery ? 'Delivered' : 'Ready'],
+      items, total,
+      cardHTML: `${PIN_ICON}<span>${where}</span>`,
+      backLabel: '← Back to Catering', backView: 'catering',
+    });
   });
 
   // ---------- Init ----------
   initPickupDefaults();
   renderPickupSummary();
   renderStoreLocatorSummary();
+  restorePickupSession();
+  renderPickupSummary();
+  renderStoreLocatorSummary();
   renderGrids();
   renderCartBadge();
   renderDrawer();
+  openFirstPage();
 })();

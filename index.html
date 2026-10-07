@@ -9,13 +9,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <link rel="stylesheet" href="design-system.css">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="location-picker.css">
 </head>
 <body>
 
 <div id="page-root">
 <header class="site-header">
   <div class="nav-inner">
-    <img class="logo" src="assets/logo.svg" alt="Deviled Egg Co.">
+    <img class="logo" src="assets/logo.svg" alt="Deviled Egg Co. home" role="link" tabindex="0">
     <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
     <nav class="nav-links" id="nav-links" aria-label="Primary">
       <div class="nav-panel-head">
@@ -25,9 +26,9 @@
         </button>
       </div>
       <div class="nav-links-inner">
-        <a class="nav-link" href="#">Pickup &amp; Delivery</a>
-        <a class="nav-link" href="#">Nationwide Shipping</a>
-        <a class="nav-link" href="#">Catering</a>
+        <a class="nav-link" href="#" data-inert>Pickup &amp; Delivery</a>
+        <a class="nav-link" href="#shipping" data-view="shipping">Nationwide Shipping</a>
+        <a class="nav-link" href="#catering" data-view="catering">Catering</a>
         <a class="nav-link" href="#">Gift Cards</a>
         <a class="nav-link" href="#">Corporate Gifting</a>
         <a class="nav-link" href="#">About</a>
@@ -46,7 +47,142 @@
   </div>
 </header>
 
-<main id="view-menu" class="view">
+<main id="view-home" class="view home-view">
+  <section class="home-hero" aria-labelledby="home-title">
+    <video class="home-hero-video" src="assets/hero-collage.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <div class="home-hero-scrim" aria-hidden="true"></div>
+    <div class="home-hero-inner">
+      <div class="home-hero-copy">
+        <h1 id="home-title">Deviled Eggs, <span>Made Daily. Loved Instantly.</span></h1>
+        <p class="home-hero-lead">Now serving protein bowls, signature sandwiches, bundles, and 20 deviled egg &amp; bagel spread flavors. From boardrooms to backyards, we bring the wow.</p>
+      </div>
+      <div class="home-hero-actions">
+        <ul class="home-tiles">
+          <li>
+            <button class="home-tile is-primary" type="button" data-home-go="pickup">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span>Order pickup</span>
+            </button>
+          </li>
+          <li>
+            <button class="home-tile" type="button">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h11v9H3V7ZM14 10h4l3 3v3h-7" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="7" cy="17.5" r="1.8" fill="var(--deg-white)" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="17.5" r="1.8" fill="var(--deg-white)" stroke="currentColor" stroke-width="1.7"/></svg>
+              <span>Order delivery</span>
+            </button>
+          </li>
+          <li>
+            <button class="home-tile" type="button" data-home-go="catering">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 17a8 8 0 0 1 16 0H4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9V7M10.5 7h3M3 20.5h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span>Order catering</span>
+            </button>
+          </li>
+        </ul>
+        <p class="home-hero-ship">Sending a gift? <a href="#shipping" data-home-go="shipping">Nationwide Shipping
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+        <p class="home-hero-proof">As Seen on Shark Tank</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main id="view-location-picker" class="location-picker-view" hidden>
+<a class="skip-link" href="#directory">Skip to the store list</a>
+  <section class="finder" aria-labelledby="finder-title">
+    <div class="finder-copy">
+      <h1 id="finder-title">Where will you pick up?</h1>
+      <p class="finder-lede">Search by ZIP code <span class="lede-map">or tap a state on the map</span><span class="lede-phone">or use your location</span> to find a store for pickup.</p>
+
+      <!-- Shown only while a pickup choice (store, day, time) is still valid: carry on with it without picking again. -->
+      <section class="saved-order" id="saved-order" aria-labelledby="saved-title" hidden>
+        <h2 id="saved-title"></h2>
+        <p class="saved-store" id="saved-store"></p>
+        <p class="saved-address" id="saved-address"></p>
+        <p class="saved-when" id="saved-when"></p>
+        <div class="saved-actions">
+          <button class="deg-btn deg-btn-dark" id="saved-continue" type="button"></button>
+          <button class="deg-btn deg-btn-text" id="saved-change" type="button"></button>
+        </div>
+      </section>
+
+      <form class="zip-form" id="zip-form" novalidate>
+        <label class="visually-hidden" for="zip-input">ZIP code</label>
+        <input class="deg-input zip-input" id="zip-input" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="Enter your ZIP code" aria-describedby="zip-message">
+        <button class="zip-submit" type="submit" id="zip-submit" aria-label="Search by ZIP code">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        </button>
+      </form>
+      <p class="form-message" id="zip-message" aria-live="polite"></p>
+
+      <button class="locate-link" type="button" id="locate-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>
+        Use my location
+      </button>
+    </div>
+
+    <div class="map-wrap">
+      <div class="map-legend">
+        <ul aria-label="Map legend">
+          <li><span class="key key-real"></span>Open for pickup</li>
+          <li><span class="key key-demo"></span>Demo store</li>
+          <li><span class="key key-soon"></span>Coming soon</li>
+        </ul>
+        <button class="deg-btn deg-btn-compact" type="button" id="map-reset" hidden>Show all states</button>
+      </div>
+      <div class="map-stage" id="map-stage">
+        <svg class="us-map" id="us-map" viewBox="0 0 975 610" role="img" aria-labelledby="map-desc">
+          <desc id="map-desc">Map of the United States showing Deviled Egg Co. stores. Use the arrow keys to move between states with stores, and Enter to see a state's stores. The same stores are listed by state below the map.</desc>
+          <g id="map-states"></g>
+          <g id="map-borders"></g>
+          <g id="map-dots"></g>
+          <g id="map-you"></g>
+        </svg>
+        <div class="map-loading" id="map-loading">Loading map…</div>
+        <div class="map-tooltip" id="map-tooltip" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Phones: the four stores that take orders sit right under the search, before anything else. -->
+  <section class="quick-stores" id="quick-stores" aria-labelledby="quick-title">
+    <h2 id="quick-title">Our stores</h2>
+    <ul class="quick-list" id="quick-list"></ul>
+  </section>
+
+  <section class="results" id="results" aria-labelledby="results-title" hidden>
+    <div class="results-head">
+      <h2 id="results-title">Stores near you</h2>
+      <button class="deg-btn deg-btn-text" type="button" id="results-clear">Clear search</button>
+    </div>
+    <ol class="result-list" id="result-list"></ol>
+  </section>
+
+  <details class="other-locations" id="other-locations" open>
+    <summary>
+      <span class="other-open">See other locations</span>
+      <span class="other-close">Hide other locations</span>
+      <svg class="state-chevron" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5.5 7.5 10 12l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </summary>
+    <section class="directory" id="directory" aria-labelledby="directory-title" tabindex="-1">
+      <div class="directory-head">
+        <h2 id="directory-title">Every store, by state</h2>
+        <p id="directory-summary"></p>
+      </div>
+      <div class="state-columns" id="state-columns"></div>
+    </section>
+  </details>
+
+  <p class="location-picker-fine">Pickup only on this site; delivery is through our partner apps. This page is a prototype: demo stores are placeholders, and choosing a pickup store does not place an order.</p>
+
+  <!-- Bottom dock: holds the floating Search button once the ZIP field has scrolled away. -->
+  <div class="dock" id="dock">
+    <button class="search-fab is-away" id="search-fab" type="button" inert>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+      Search
+    </button>
+  </div>
+</main>
+
+<main id="view-menu" class="view" hidden>
 
   <div class="store-hero">
     <video class="hero-media" src="assets/hero-collage.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
@@ -59,7 +195,6 @@
 
     <aside class="store-sidebar" aria-label="Store details and menu categories">
       <div class="store-card">
-        <img class="store-carry-out-badge" src="assets/carry-out-badge.png" alt="Carry-out only" width="99" height="25">
         <h1 class="store-name">McKinney, TX</h1>
         <p class="store-address">111 W Virginia St, McKinney, TX 75069</p>
         <button class="pill-btn dark store-info-btn" type="button">Store info</button>
@@ -82,30 +217,10 @@
 
     <div class="menu-content" id="menu-top">
 
-      <div class="order-mode-row">
-        <div class="segmented order-mode-toggle" id="order-mode">
-          <span class="order-mode-pill" aria-hidden="true"></span>
-          <button class="order-mode-option active" data-mode="pickup" type="button">Pickup</button>
-          <button class="order-mode-option" data-mode="delivery" type="button">Delivery</button>
-          <button class="order-mode-option" data-mode="menu" type="button">Full Menu</button>
-        </div>
-        <div class="delivery-info">
-          <img class="delivery-info-icon" src="assets/delivery-scooter.png" width="36" height="36" alt="">
-
-          <div class="delivery-info-divider"></div>
-          <div class="delivery-info-text">
-            <span class="delivery-info-location">McKinney, TX</span>
-            <span class="delivery-info-address">111 W Virginia St, McKinney, TX 75069</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Mobile-only twin of .drawer-nav in .store-sidebar above: lives
-           here (after .order-mode-row, not as a .menu-layout-level
-           sibling) so the Pickup/Delivery toggle reads before the
-           category tabs once the layout stacks — outside
-           #pickup-menu-content specifically, since categories stay
-           navigable in Delivery mode too. Still spans the full
+           here (at the top of .menu-content, not as a .menu-layout-level
+           sibling) so it reads before the menu once the layout
+           stacks. Still spans the full
            scrollable page for its own sticky positioning: this container
            is a plain, unconstrained block, not the short stacked card
            .store-sidebar is. Same buttons/data-target/JS wiring as
@@ -171,18 +286,396 @@
         </section>
       </div>
 
-      <section class="menu-section" id="delivery-apps" hidden>
-        <h2>We deliver through</h2>
-        <div class="shop-grid" id="delivery-grid"></div>
-      </section>
-
-      <section class="menu-section" id="full-menu" hidden>
-        <h2>Full menu</h2>
-        <div class="shop-grid" id="full-menu-grid"></div>
-      </section>
-
     </div>
   </div>
+</main>
+
+<main id="view-order" class="view order-view" hidden>
+
+  <!-- The pickup settings chosen on the way here (store, day, time), kept on screen above the menu with a way to change them. -->
+  <section class="order-banner" id="order-banner" aria-label="Your pickup order">
+    <span class="order-banner-icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+    </span>
+    <div class="order-banner-text">
+      <p class="order-banner-where">Pickup at <strong id="banner-store">McKinney, TX</strong><span class="order-banner-address" id="banner-address"></span></p>
+      <p class="order-banner-when" id="banner-when"></p>
+    </div>
+    <button class="pill-btn outline order-banner-change" id="banner-change" type="button" aria-label="Change pickup store, day or time">Change</button>
+  </section>
+
+  <!-- Step 3 of the Pickup funnel: category tiles first (Chipotle's layout), and a tile that stands for several
+       products opens its own screen of rows. Both screens are filled from ORDER_GROUPS in app.js. -->
+  <div class="order-screen" id="order-tiles-screen">
+    <h1 class="order-title">What are you craving?</h1>
+    <ul class="order-tiles" id="order-tiles"></ul>
+  </div>
+
+  <div class="order-screen" id="order-group-screen" hidden>
+    <div class="order-group-head">
+      <button class="order-back" id="order-back" type="button" aria-label="Back to the menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h1 class="order-title" id="order-group-title" tabindex="-1"></h1>
+    </div>
+    <ul class="order-rows" id="order-rows"></ul>
+  </div>
+
+</main>
+
+<main id="view-shipping" class="view page-view" hidden>
+
+  <section class="ship-hero" aria-labelledby="ship-title">
+    <div class="ship-hero-copy">
+      <h1 id="ship-title">Send Deviled Eggs anywhere in the US for the Holidays!</h1>
+      <p class="ship-lead">Three crowd-pleasers, hand-packed in our Texas kitchen and cold-shipped overnight nationwide. Pick a size, choose your flavors, send the wow.</p>
+      <a class="pill-btn dark ship-cta" href="#ship-kits" data-scroll="ship-kits">Shop Now</a>
+      <ul class="ship-badges">
+        <li class="ship-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M19.8 7 4.2 17M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Cold-shipped overnight
+        </li>
+        <li class="ship-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Order Mon–Wed for week-of arrival
+        </li>
+      </ul>
+    </div>
+    <img class="ship-hero-map" src="assets/shipping/shipping-map.png" width="1182" height="837" alt="Map of the United States: boxes of deviled eggs leave Texas and land across the country, with an egg riding a paper plane. Caption: We ship nationwide.">
+  </section>
+
+  <section class="page-section" id="ship-kits" aria-labelledby="ship-kits-title">
+    <div class="page-section-head">
+      <h2 id="ship-kits-title">Make the Holidays Egg-ceptional!</h2>
+      <p>Three ways to send our signature deviled eggs nationwide. Cold-shipped overnight.</p>
+    </div>
+    <ul class="kit-grid">
+      <li class="kit-card" data-kit="kit-sampler">
+        <div class="kit-media">
+          <img src="assets/shipping/kit-sampler.png" width="662" height="662" alt="Nine mini deviled egg salad cups in an orange gift box" loading="lazy">
+          <span class="kit-tag">Try them all</span>
+        </div>
+        <div class="kit-body">
+          <h3 class="kit-name">Mini Deviled Egg Salad Sampler</h3>
+          <p class="kit-sub">18 Count</p>
+          <p class="kit-price"><strong>$74.99</strong> <span>per kit</span></p>
+          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: Mini Deviled Egg Salad Sampler, 18 Count</span></button>
+        </div>
+      </li>
+      <li class="kit-card" data-kit="kit-24">
+        <div class="kit-media">
+          <img src="assets/shipping/kit-24.png" width="662" height="662" alt="Six deviled egg flavors on black trays: Buffalo Chicken Ranch, Everything Seasoning, Traditional, Jalapeño Popper, Buffalo Blue, South of the Border, Sriracha Bacon" loading="lazy">
+        </div>
+        <div class="kit-body">
+          <h3 class="kit-name">24 Count Kit</h3>
+          <p class="kit-sub">Deviled Eggs · Choose 2 Flavors</p>
+          <p class="kit-price"><strong>$64.99</strong> <span>per kit</span></p>
+          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: 24 Count Kit, choose 2 flavors</span></button>
+        </div>
+      </li>
+      <li class="kit-card" data-kit="kit-36">
+        <div class="kit-media">
+          <img src="assets/shipping/kit-24.png" width="662" height="662" alt="Deviled eggs in several flavors on black trays" loading="lazy">
+        </div>
+        <div class="kit-body">
+          <h3 class="kit-name">36 Count Kit</h3>
+          <p class="kit-sub">Deviled Eggs · Choose 3 Flavors</p>
+          <p class="kit-price"><strong>$99.99</strong> <span>per kit</span></p>
+          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: 36 Count Kit, choose 3 flavors</span></button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="page-section" aria-labelledby="ship-how-title">
+    <div class="page-section-head">
+      <h2 id="ship-how-title">From our kitchen to your door.</h2>
+      <p>Cold-shipped overnight to all 48 contiguous states. Order Monday through Wednesday for week-of arrival.</p>
+    </div>
+    <ol class="ship-steps">
+      <li class="ship-step">
+        <span class="ship-step-num" aria-hidden="true">1</span>
+        <h3>Order Mon–Wed</h3>
+        <p>We hand-pack every order in our Texas kitchen the morning we ship. Mon–Wed orders arrive within the same week.</p>
+      </li>
+      <li class="ship-step">
+        <span class="ship-step-num" aria-hidden="true">2</span>
+        <h3>Cold-shipped overnight</h3>
+        <p>Insulated boxes with gel packs ship via overnight refrigerated freight. Available to all 48 contiguous states.</p>
+      </li>
+      <li class="ship-step">
+        <span class="ship-step-num" aria-hidden="true">3</span>
+        <h3>Fresh on arrival</h3>
+        <p>You'll get a tracking link the morning we ship. Eggs are best within 5 days of arrival, keep refrigerated.</p>
+      </li>
+    </ol>
+    <a class="ship-policy-link" href="https://deviledeggco.com/shipping-policy/" target="_blank" rel="noopener">Shipping &amp; Returns</a>
+  </section>
+
+  <section class="page-section" aria-labelledby="ship-holiday-title">
+    <div class="page-section-head">
+      <h2 id="ship-holiday-title">Pre-order your Holiday Kit</h2>
+      <p>Themed flavors, festive packaging, and seasonal touches. Hand packed in our Texas Kitchen and shipped to land before the holiday.</p>
+    </div>
+    <ul class="shop-grid holiday-grid">
+      <li class="shop-card holiday-card">
+        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-halloween.png" alt="Happy Halloween, Trick or Treat" loading="lazy"></div>
+        <div class="shop-card-body">
+          <h3 class="shop-card-name">Halloween</h3>
+          <p class="holiday-status is-open">Open</p>
+          <p class="shop-card-desc">Order by Oct 27</p>
+        </div>
+      </li>
+      <li class="shop-card holiday-card">
+        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-thanksgiving.png" alt="Happy Thanksgiving" loading="lazy"></div>
+        <div class="shop-card-body">
+          <h3 class="shop-card-name">Thanksgiving</h3>
+          <p class="holiday-status">Early</p>
+          <p class="shop-card-desc">Order by Nov 23</p>
+        </div>
+      </li>
+      <li class="shop-card holiday-card">
+        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-christmas.png" alt="Merry Christmas" loading="lazy"></div>
+        <div class="shop-card-body">
+          <h3 class="shop-card-name">Christmas</h3>
+          <p class="holiday-status">Soon</p>
+          <p class="shop-card-desc">Order by Dec 21</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="page-signup" aria-labelledby="ship-signup-title">
+    <div class="page-signup-copy">
+      <h2 id="ship-signup-title">Don't miss the next drop.</h2>
+      <p>We send one email when each holiday kit opens, that's it. No spam, no daily noise.</p>
+    </div>
+    <form class="page-form" novalidate>
+      <label class="field-group" for="ship-email">
+        <span>Email <span class="muted">(Required)</span></span>
+        <input type="email" id="ship-email" name="email" autocomplete="email" inputmode="email" required>
+      </label>
+      <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send the heads-up.</p>
+      <label class="field-group" for="ship-phone">
+        <span>Phone <span class="muted">(optional)</span></span>
+        <input type="tel" id="ship-phone" name="phone" autocomplete="tel" inputmode="tel">
+      </label>
+      <label class="page-consent">
+        <input type="checkbox" id="ship-sms" name="sms">
+        <span class="page-consent-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>Yes, text me specials, new flavor drops &amp; ordering deadlines (about 4–6 msgs/month)</span>
+      </label>
+      <p class="page-legal">By checking the box you agree to receive recurring automated marketing texts from Deviled Egg Co. at the number provided. Consent is not a condition of purchase. Msg &amp; data rates may apply. Msg frequency varies. Reply STOP to cancel, HELP for help. View our <a href="https://deviledeggco.com/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://deviledeggco.com/terms-and-conditions/" target="_blank" rel="noopener">Mobile Messaging Terms</a>.</p>
+      <button class="pill-btn primary full" type="submit">Subscribe</button>
+      <p class="page-success" role="status" hidden>You're on the list. We'll email you when each holiday kit opens.</p>
+    </form>
+  </section>
+
+</main>
+
+<main id="view-catering" class="view page-view" hidden>
+
+  <section class="cater-hero" aria-labelledby="cater-title">
+    <div class="cater-hero-copy">
+      <h1 id="cater-title">Make <span>Protein</span> the Star of Your Event</h1>
+      <p class="cater-lead">Now serving protein bowls, signature sandwiches, bundles, and 20 deviled egg &amp; bagel spread flavors. From boardrooms to backyards, we bring the wow.</p>
+      <a class="pill-btn primary cater-cta" href="#boxed-lunches" data-scroll="boxed-lunches">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+    <div class="cater-hero-art" aria-hidden="true">
+      <img src="assets/catering/classic.png" width="216" height="244" alt="">
+      <img src="assets/catering/allin.png" width="216" height="244" alt="">
+      <img src="assets/catering/bagel-brew.png" width="216" height="244" alt="">
+    </div>
+  </section>
+
+  <section class="page-section" id="boxed-lunches" aria-labelledby="cater-boxes-title">
+    <div class="page-section-head">
+      <h2 id="cater-boxes-title">Protein Box Meals</h2>
+      <p>Each box serves 1 · minimum 10 boxes per order.</p>
+    </div>
+    <ul class="cater-grid">
+      <li class="cater-card">
+        <div class="cater-media"><img src="assets/catering/classic.png" width="216" height="244" alt="Bowls of chicken salad, greens and buffalo chicken on a black tray" loading="lazy">
+          <p class="cater-tag">Everyday delicious</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">The Classic Choice</h3>
+          <p class="cater-price"><strong>$10</strong> <span>/ box</span></p>
+          <p class="cater-min">Minimum 10 boxes · from $100</p>
+          <p class="cater-list-label">What's Included:</p>
+          <ul class="cater-list">
+            <li>Lunch Bowl or Sandwich</li>
+            <li>Kettle Cooked Chips</li>
+          </ul>
+          <p class="cater-list-label">Add Additional Side:</p>
+          <ul class="cater-list">
+            <li>Chocolate Chip Cookie (+$2.00)</li>
+            <li>Kosher Dill Pickle (+$1.00)</li>
+            <li>2-Pack of Gourmet Deviled Eggs (+$4.00)</li>
+            <li>4oz Side of House-Made Egg Salad (+$2.00)</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="classic" data-cater-label="The Classic Choice">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+      <li class="cater-card is-featured">
+        <div class="cater-media"><img src="assets/catering/allin.png" width="216" height="244" alt="A grilled wrap cut in half beside two deviled eggs and chips" loading="lazy">
+          <p class="cater-tag">Fuel the whole team</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">The "All In" Power Lunch</h3>
+          <p class="cater-price"><strong>$12.50</strong> <span>/ box</span></p>
+          <p class="cater-min">Minimum 10 boxes · from $125</p>
+          <p class="cater-list-label">What's Included:</p>
+          <ul class="cater-list">
+            <li>Signature Full Sandwich or Lunch Size Bowl</li>
+            <li>Kettle Cooked Chips</li>
+            <li>Cookie</li>
+          </ul>
+          <p class="cater-list-label">Add Additional Side:</p>
+          <ul class="cater-list">
+            <li>Gourmet 2-Pack of Deviled Eggs (+$4.00)</li>
+            <li>Kosher Dill Pickle (+$1.00)</li>
+            <li>4oz Side of House-Made Egg Salad (+$2.00)</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="allin" data-cater-label="The “All In” Power Lunch">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+    </ul>
+
+    <div class="cater-addons">
+      <div class="cater-addons-list">
+        <h3>Egg-Stra Add Ons</h3>
+        <ul>
+          <li><span>Cookie</span><strong>$2.00</strong></li>
+          <li><span>Bottled drink (soda, water, tea)</span><strong>$3.00</strong></li>
+          <li><span>Side pickle</span><strong>$0.50</strong></li>
+          <li><span>Bag of chips</span><strong>$2.00</strong></li>
+          <li><span>Smoked salmon upgrade</span><strong>$2.99</strong></li>
+        </ul>
+        <p class="cater-note"><strong>Drinks:</strong> Fiji Water, Coke, Coke Zero, Dr Pepper, Sweet Tea, Unsweet Tea, RedBull +$1.00</p>
+      </div>
+      <div class="cater-coffee">
+        <div class="cater-coffee-head">
+          <h3 class="cater-name">Catering Coffee Bar</h3>
+          <p class="cater-tag">Add-on station</p>
+        </div>
+        <p class="cater-price"><strong>$24.99</strong> <span>/ service</span></p>
+        <p class="cater-list-label">Serves 10-12 People:</p>
+        <ul class="cater-list">
+          <li>96oz Hardy Coffee</li>
+          <li>Cream, Sugar &amp; Sweeteners</li>
+          <li>Setup: Cups, Lids &amp; Stirrers</li>
+        </ul>
+        <button class="pill-btn dark full cater-order" type="button" data-cater-order="coffee-bar" data-cater-label="Catering Coffee Bar">Add Coffee Bar<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section" aria-labelledby="cater-morning-title">
+    <div class="page-section-head">
+      <h2 id="cater-morning-title">Mornings &amp; Meetings</h2>
+      <p>Each bundle serves 10. Perfect for breakfast meetings or midday energy boosts. Coffee Bar included.</p>
+    </div>
+    <ul class="cater-grid">
+      <li class="cater-card">
+        <div class="cater-media"><img src="assets/catering/power-pair.png" width="216" height="244" alt="Two deviled eggs topped with seasoning in a clear tray" loading="lazy">
+          <p class="cater-tag">Serves 10</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">Power Pair Bundle</h3>
+          <p class="cater-price"><strong>$59.99</strong> <span>/ bundle</span></p>
+          <p class="cater-list-label">Serves 10 People</p>
+          <ul class="cater-list">
+            <li>10 Signature 2-Pack Gourmet Deviled Eggs</li>
+            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="power-pair" data-cater-label="Power Pair Bundle">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+      <li class="cater-card is-featured">
+        <div class="cater-media"><img src="assets/catering/bagel-brew.png" width="216" height="244" alt="A bagel piled with smoked salmon egg spread" loading="lazy">
+          <p class="cater-tag">Serves 10 • Fan favorite</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">Bagel &amp; Brew Bundle</h3>
+          <p class="cater-price"><strong>$69.99</strong> <span>/ bundle</span></p>
+          <p class="cater-list-label">Serves 10 People</p>
+          <ul class="cater-list">
+            <li>Bagel Box: 5 Plain Bagels | 5 Everything Bagels</li>
+            <li>Choice of 2 Signature Egg Spreads, Toppings, or Cream Cheese</li>
+            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="bagel-brew" data-cater-label="Bagel &amp; Brew Bundle">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="page-section" aria-labelledby="cater-brunch-title">
+    <div class="page-section-head">
+      <h2 id="cater-brunch-title">Executive Brunch Bundles</h2>
+      <p>Each bundle serves 10. A crowd-pleasing brunch spread, ready to serve and enjoy. Coffee Bar included.</p>
+    </div>
+    <ul class="cater-grid">
+      <li class="cater-card is-featured">
+        <div class="cater-media"><img src="assets/catering/light-lunch.png" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
+          <p class="cater-tag">Serves 10 • Top pick</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">The "Hungry Team"</h3>
+          <p class="cater-price"><strong>$99.99</strong> <span>/ bundle</span></p>
+          <p class="cater-list-label">Serves 10 People: Best Value For a Full Meal</p>
+          <ul class="cater-list">
+            <li>10 Signature Full-Sandwiches | Choose Up To 2 Flavors</li>
+            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="hungry-team" data-cater-label="The “Hungry Team”">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+      <li class="cater-card">
+        <div class="cater-media"><img src="assets/catering/light-lunch.png" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
+          <p class="cater-tag">Serves 10</p>
+        </div>
+        <div class="cater-body">
+          <h3 class="cater-name">The "Light Lunch"</h3>
+          <p class="cater-price"><strong>$69.99</strong> <span>/ bundle</span></p>
+          <p class="cater-list-label">Serves 10 People</p>
+          <ul class="cater-list">
+            <li>10 Signature Half-Sandwiches | Choose Up To 2 Flavors</li>
+            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
+          </ul>
+          <button class="pill-btn dark full cater-order" type="button" data-cater-order="light-lunch" data-cater-label="The “Light Lunch”">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="page-signup" aria-labelledby="cater-signup-title">
+    <div class="page-signup-copy">
+      <h2 id="cater-signup-title">Save 10% on your first catering order.</h2>
+      <p>New drops, limited flavors, and an occasional egg pun, delivered to your inbox.</p>
+    </div>
+    <form class="page-form" novalidate>
+      <label class="field-group" for="cater-email">
+        <span>Email <span class="muted">(Required)</span></span>
+        <input type="email" id="cater-email" name="email" autocomplete="email" inputmode="email" required>
+      </label>
+      <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send your 10% off.</p>
+      <label class="field-group" for="cater-phone">
+        <span>Phone <span class="muted">(optional)</span></span>
+        <input type="tel" id="cater-phone" name="phone" autocomplete="tel" inputmode="tel">
+      </label>
+      <label class="page-consent">
+        <input type="checkbox" name="sms">
+        <span class="page-consent-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span>Yes, text me specials, new flavor drops &amp; ordering deadlines (about 4–6 msgs/month)</span>
+      </label>
+      <p class="page-legal">By checking the box you agree to receive recurring automated marketing texts from Deviled Egg Co. at the number provided. Consent is not a condition of purchase. Msg &amp; data rates may apply. Msg frequency varies. Reply STOP to cancel, HELP for help. View our <a href="https://deviledeggco.com/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://deviledeggco.com/terms-and-conditions/" target="_blank" rel="noopener">Mobile Messaging Terms</a>.</p>
+      <button class="pill-btn primary full" type="submit">Subscribe</button>
+      <p class="page-success" role="status" hidden>You're on the list. Look for your 10% off in your inbox.</p>
+    </form>
+  </section>
+
 </main>
 
 <header class="checkout-header">
@@ -237,14 +730,11 @@
 
       <section class="checkout-card">
         <h2>Payment method</h2>
-        <div id="payment-picker" class="radio-list">
-          <button class="radio-row active" data-value="Apple Pay" type="button"><span class="radio-dot"></span>Apple Pay</button>
-          <button class="radio-row" data-value="Visa •••• 4242" type="button"><span class="radio-dot"></span>Visa •••• 4242</button>
-          <button class="payment-add-row" id="open-add-payment" type="button">
-            <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
-            Add payment method
-          </button>
-        </div>
+        <div id="payment-picker" class="radio-list payment-picker" role="radiogroup" aria-label="Payment method"></div>
+        <button class="payment-add-row" id="open-add-payment" data-add-payment type="button">
+          <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+          Add payment method
+        </button>
       </section>
     </div>
 
@@ -290,6 +780,204 @@
   </div>
 </main>
 
+<main id="view-ship-checkout" class="view" hidden>
+  <div class="checkout-layout">
+    <div class="checkout-main">
+
+      <section class="checkout-card">
+        <h2>Contact info</h2>
+        <div class="input-row">
+          <label class="field-group">
+            <span class="field-label">Full name</span>
+            <input type="text" id="sc-name" autocomplete="name" placeholder="Jordan Rivera">
+          </label>
+          <label class="field-group">
+            <span class="field-label">Phone number</span>
+            <input type="tel" id="sc-phone" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0100">
+          </label>
+        </div>
+        <label class="field-group">
+          <span class="field-label">Email</span>
+          <input type="email" id="sc-email" autocomplete="email" inputmode="email" placeholder="jordan@example.com">
+          <span class="field-note">We'll email your tracking link the morning we ship.</span>
+        </label>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Shipping address</h2>
+        <label class="field-group">
+          <span class="field-label">Street address</span>
+          <input type="text" id="sc-street" autocomplete="address-line1" placeholder="123 Main St">
+        </label>
+        <label class="field-group">
+          <span class="field-label">Apt, suite (optional)</span>
+          <input type="text" id="sc-street2" autocomplete="address-line2">
+        </label>
+        <div class="input-row">
+          <label class="field-group">
+            <span class="field-label">City</span>
+            <input type="text" id="sc-city" autocomplete="address-level2">
+          </label>
+          <label class="field-group">
+            <span class="field-label">State</span>
+            <select id="sc-state" autocomplete="address-level1"><option value="">Select</option><option value="AL">Alabama</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select>
+          </label>
+          <label class="field-group">
+            <span class="field-label">ZIP code</span>
+            <input type="text" id="sc-zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="75069">
+          </label>
+        </div>
+        <p class="field-note">Cold-shipped overnight to all 48 contiguous states.</p>
+        <label class="field-group">
+          <span class="field-label">Delivery notes (optional)</span>
+          <input type="text" id="sc-notes" placeholder="e.g. leave with the front desk">
+        </label>
+      </section>
+
+      <section class="checkout-card">
+        <h2>When it ships</h2>
+        <div class="ship-when" id="sc-when"></div>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Payment method</h2>
+        <div id="sc-payment-picker" class="radio-list payment-picker" role="radiogroup" aria-label="Payment method"></div>
+        <button class="payment-add-row" data-add-payment type="button">
+          <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+          Add payment method
+        </button>
+      </section>
+    </div>
+
+    <aside class="summary-col">
+      <section class="summary-panel">
+        <button class="order-summary-toggle" id="sc-toggle-summary" type="button" aria-expanded="true" aria-controls="sc-items">
+          <span class="order-summary-toggle-title">Order summary <span class="order-summary-count" id="sc-item-count"></span></span>
+          <svg class="order-summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="order-summary-collapse">
+          <div id="sc-items" class="drawer-items"></div>
+        </div>
+      </section>
+
+      <section class="summary-panel">
+        <h2>Order total</h2>
+        <div class="summary-line"><span>Subtotal</span><span id="sc-subtotal">$0.00</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-line"><span>Shipping</span><span id="sc-shipping">$0.00</span></div>
+        <p class="summary-note">Prototype rate. Final shipping pricing isn't set yet.</p>
+        <div class="summary-divider"></div>
+        <div class="summary-line total"><span>Total</span><span id="sc-total">$0.00</span></div>
+        <button class="pill-btn dark full" id="sc-place-order" type="button">Place order</button>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<main id="view-cater-checkout" class="view" hidden>
+  <div class="checkout-layout">
+    <div class="checkout-main">
+
+      <section class="checkout-card">
+        <h2>Your event</h2>
+        <p class="checkout-lead">We'll confirm by phone within an hour of your order.</p>
+        <label class="field-group">
+          <span class="field-label">Event date</span>
+          <input type="date" id="cc-date">
+          <span class="field-note" id="cc-date-help"></span>
+        </label>
+        <div class="field-group">
+          <span class="field-label">Pickup or delivery</span>
+          <div class="segmented cc-fulfilment" id="cc-fulfilment" role="radiogroup" aria-label="Fulfillment">
+            <button class="chip active" type="button" role="radio" aria-checked="true" data-value="pickup">Pickup <span class="cc-fulfilment-sub">Free · 4 locations</span></button>
+            <button class="chip" type="button" role="radio" aria-checked="false" data-value="delivery">Delivery <span class="cc-fulfilment-sub">$20 flat · Free over $200</span></button>
+          </div>
+        </div>
+
+        <div id="cc-pickup" class="cc-panel">
+          <div class="field-group">
+            <span class="field-label">Pickup location</span>
+            <div class="radio-list" id="cc-locations" role="radiogroup" aria-label="Pickup location"></div>
+          </div>
+          <label class="field-group">
+            <span class="field-label">Pickup time</span>
+            <input type="time" id="cc-pickup-time">
+          </label>
+        </div>
+
+        <div id="cc-delivery" class="cc-panel" hidden>
+          <label class="field-group">
+            <span class="field-label">Delivery address</span>
+            <input type="text" id="cc-address" autocomplete="street-address" placeholder="123 Main St, McKinney TX">
+          </label>
+          <div class="input-row">
+            <label class="field-group">
+              <span class="field-label">ZIP code</span>
+              <input type="text" id="cc-zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="75069">
+            </label>
+            <label class="field-group">
+              <span class="field-label">Delivery time</span>
+              <input type="time" id="cc-delivery-time">
+            </label>
+          </div>
+          <p class="field-note">Delivery is within 5 miles of a location.</p>
+        </div>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Contact info</h2>
+        <div class="input-row">
+          <label class="field-group">
+            <span class="field-label">Full name</span>
+            <input type="text" id="cc-name" autocomplete="name" placeholder="Jane Smith">
+          </label>
+          <label class="field-group">
+            <span class="field-label">Phone number</span>
+            <input type="tel" id="cc-phone" autocomplete="tel" inputmode="tel" placeholder="(903) 555-1234">
+          </label>
+        </div>
+        <label class="field-group">
+          <span class="field-label">Email</span>
+          <input type="email" id="cc-email" autocomplete="email" inputmode="email" placeholder="jane@company.com">
+        </label>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Payment method</h2>
+        <div id="cc-payment-picker" class="radio-list payment-picker" role="radiogroup" aria-label="Payment method"></div>
+        <button class="payment-add-row" data-add-payment type="button">
+          <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+          Add payment method
+        </button>
+      </section>
+    </div>
+
+    <aside class="summary-col">
+      <section class="summary-panel">
+        <button class="order-summary-toggle" id="cc-toggle-summary" type="button" aria-expanded="true" aria-controls="cc-items">
+          <span class="order-summary-toggle-title">Order summary <span class="order-summary-count" id="cc-item-count"></span></span>
+          <svg class="order-summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="order-summary-collapse">
+          <div id="cc-items" class="drawer-items"></div>
+        </div>
+      </section>
+
+      <section class="summary-panel">
+        <h2>Order total</h2>
+        <div class="summary-line"><span>Subtotal</span><span id="cc-subtotal">$0.00</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-line"><span>Delivery</span><span id="cc-delivery-fee">Free</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-line"><span>Tax</span><span id="cc-tax">$0.00</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-line total"><span>Total</span><span id="cc-total">$0.00</span></div>
+        <button class="pill-btn dark full" id="cc-place-order" type="button">Place order</button>
+      </section>
+    </aside>
+  </div>
+</main>
+
 <main id="view-confirmation" class="view" hidden>
   <div class="confirmation-wrap">
     <div class="confirmation-card">
@@ -307,7 +995,7 @@
         <div class="progress-line done"></div>
         <div class="progress-step done">
           <span class="progress-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="#261A00"><circle cx="12" cy="12" r="8"/></svg></span>
-          <span>Preparing</span>
+          <span id="progress-step2-label">Preparing</span>
         </div>
         <div class="progress-line"></div>
         <div class="progress-step">
@@ -350,15 +1038,37 @@
             <h1 id="dozen-modal-title">12 Pack Deviled Egg</h1>
             <span class="modal-price" id="dozen-modal-price">$24.99</span>
           </div>
-          <p class="modal-desc" id="dozen-modal-desc">12 deviled eggs, hand piped fresh daily. Choose up to 4 flavors — use +/− to allocate all 12 eggs.</p>
+          <p class="modal-desc" id="dozen-modal-desc"></p>
+          <div class="modal-info" id="dozen-modal-info" hidden>
+            <p class="modal-info-label" id="dozen-modal-info-label"></p>
+            <ul class="modal-list" id="dozen-modal-details"></ul>
+          </div>
           <div class="divider thick"></div>
-          <div>
+          <div id="bagel-preset-block" hidden>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Bagels</span>
+              <span class="modal-section-sub">10 bagels in every bundle.</span>
+            </div>
+            <div class="addon-list" id="bagel-preset-grid" role="radiogroup" aria-label="Bagels"></div>
+          </div>
+          <div id="flavor-block">
             <div class="modal-section-head">
               <span class="modal-section-title" id="flavor-section-title">Choose your flavors</span>
-              <span class="modal-section-sub" id="flavor-count">Allocated: 0/12</span>
+              <span class="modal-section-sub" id="flavor-hint"></span>
+            </div>
+            <div class="flavor-meter" id="flavor-meter">
+              <span class="flavor-meter-count" id="flavor-count" aria-live="polite"></span>
+              <div class="flavor-meter-bar" id="flavor-meter-bar" aria-hidden="true"></div>
             </div>
             <div class="flavor-grid" id="flavor-grid"></div>
           </div>
+          <div id="fixed-flavors" hidden>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Flavors</span>
+            </div>
+            <ul class="modal-tags" id="fixed-flavors-list"></ul>
+          </div>
+          <p class="modal-notice" id="dozen-modal-notice" hidden></p>
           <label class="field-group">
             Add a note for the kitchen
             <input type="text" id="item-note" placeholder="e.g. extra paprika, no chives">
@@ -419,9 +1129,9 @@
           <div>
             <div class="modal-section-head">
               <span class="modal-section-title">Yolk Spread Flavor</span>
-              <span class="modal-section-sub" id="bagel-spread-count">0 added</span>
+              <span class="modal-section-sub">Pick 1 flavor.</span>
             </div>
-            <div id="bagel-flavor-steppers" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <div class="addon-list" id="bagel-flavor-grid" role="radiogroup" aria-label="Yolk spread flavor"></div>
           </div>
 
           <div class="divider"></div>
@@ -545,9 +1255,9 @@
           <div>
             <div class="modal-section-head">
               <span class="modal-section-title">Sandwich Flavor</span>
-              <span class="modal-section-sub" id="wrap-flavor-count">Allocated: 0/1</span>
+              <span class="modal-section-sub">Pick 1 flavor.</span>
             </div>
-            <div class="flavor-grid" id="wrap-flavor-grid"></div>
+            <div class="addon-list" id="wrap-flavor-grid" role="radiogroup" aria-label="Sandwich flavor"></div>
           </div>
 
           <div class="divider"></div>
@@ -568,6 +1278,101 @@
     </div>
     <div class="item-modal-footer">
       <button class="pill-btn dark full" id="add-wrap-to-order" type="button">Add 1 to order · $9.99</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="box-modal-backdrop" hidden></div>
+<div class="item-modal" id="box-modal" role="dialog" aria-modal="true" aria-labelledby="box-modal-title" hidden>
+  <div class="item-modal-inner">
+    <div class="item-modal-header">
+      <button class="close-btn" id="close-box-modal" type="button" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <span class="item-modal-header-title" id="box-modal-header-title"></span>
+      <span class="item-modal-header-spacer" aria-hidden="true"></span>
+    </div>
+    <div class="item-modal-scroll">
+      <div class="item-modal-row">
+        <div class="item-modal-media item-modal-media-cutout">
+          <img class="shop-card-photo" id="box-modal-image" src="assets/catering/classic.png" alt="">
+          <div class="box-summary" id="box-summary"></div>
+        </div>
+        <div class="item-modal-content">
+          <div class="item-modal-title-block">
+            <h1 id="box-modal-title"></h1>
+            <span class="modal-price" id="box-modal-price"></span>
+          </div>
+          <p class="modal-desc" id="box-modal-desc"></p>
+
+          <div class="box-count">
+            <div class="modal-section-head">
+              <span class="modal-section-title">How many boxes?</span>
+              <span class="modal-section-sub" id="box-qty-help"></span>
+            </div>
+            <div class="box-count-row">
+              <div class="segmented" id="box-qty-presets" role="radiogroup" aria-label="Quick box count">
+                <button class="chip" type="button" role="radio" aria-checked="false" data-qty="10">10</button>
+                <button class="chip" type="button" role="radio" aria-checked="false" data-qty="25">25</button>
+                <button class="chip" type="button" role="radio" aria-checked="false" data-qty="50">50</button>
+              </div>
+              <label class="box-count-other">
+                <span>Any number</span>
+                <select id="box-qty-select" class="qty-select"></select>
+              </label>
+              <span class="box-count-total" id="box-count-total"></span>
+            </div>
+          </div>
+
+          <div class="divider thick"></div>
+
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Pick your protein</span>
+              <span class="modal-section-sub">Sandwich or bowl, for every box.</span>
+            </div>
+            <div class="addon-list" id="box-protein-grid" role="radiogroup" aria-label="Protein"></div>
+          </div>
+
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Pick your flavor</span>
+              <span class="modal-section-sub" id="box-flavor-hint"></span>
+            </div>
+            <div class="addon-list is-quiet" id="box-flavor-grid" role="group" aria-label="Flavor"></div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="modal-info">
+            <p class="modal-info-label">Included with every box</p>
+            <ul class="modal-list" id="box-included"></ul>
+          </div>
+
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Add additional side</span>
+              <span class="modal-section-sub">Optional, priced per box.</span>
+            </div>
+            <div class="addon-list is-quiet" id="box-sides-grid" role="group" aria-label="Additional sides"></div>
+          </div>
+
+          <div id="box-drinks-block" hidden>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Bottled drink</span>
+              <span class="modal-section-sub" id="box-drinks-sub"></span>
+            </div>
+            <div class="flavor-grid" id="box-drinks-grid"></div>
+          </div>
+
+          <label class="field-group">
+            Add a note for the kitchen
+            <input type="text" id="box-note" placeholder="e.g. nut allergy at the table">
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="item-modal-footer">
+      <button class="pill-btn dark full" id="add-box-to-order" type="button">Choose a protein to continue</button>
     </div>
   </div>
 </div>
@@ -617,16 +1422,22 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
     </div>
+    <div class="segmented cart-tabs" id="cart-tabs" role="tablist" aria-label="Your carts" hidden></div>
     <div class="pickup-chip" id="fulfillment-chip"></div>
   </div>
 
   <div class="drawer-scroll">
+    <div class="drawer-undo" id="drawer-undo" role="status" hidden>
+      <span id="drawer-undo-text"></span>
+      <button class="text-btn" id="drawer-undo-btn" type="button">Undo</button>
+    </div>
     <div class="drawer-items" id="drawer-items"></div>
   </div>
 
   <div class="drawer-footer">
     <div class="drawer-totals">
-      <div class="summary-line total"><span>Total</span><span id="drawer-total">$0.00</span></div>
+      <div class="summary-line total"><span id="drawer-total-label">Total</span><span id="drawer-total">$0.00</span></div>
+      <p class="drawer-totals-note" id="drawer-total-note" hidden></p>
     </div>
 
     <button class="pill-btn dark full" id="go-to-checkout" type="button">Go to checkout</button>
@@ -653,11 +1464,46 @@
       </button>
     </div>
     <div class="pickup-time-scroll">
-      <div class="radio-list" id="pickup-time-list"></div>
+      <div class="radio-list" id="pickup-time-list" role="radiogroup" aria-label="Pickup time"></div>
     </div>
     <div class="pickup-settings-actions">
       <button class="pill-btn dark full" id="confirm-pickup-settings" type="button">Confirm</button>
       <button class="pill-btn outline full" id="cancel-pickup-settings" type="button">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ld-backdrop" hidden></div>
+<div class="pickup-settings-modal" id="ld-modal" role="dialog" aria-modal="true" aria-labelledby="ld-title" hidden>
+  <div class="pickup-settings-inner ld-inner">
+    <button class="close-btn" id="ld-close" type="button" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="ld-store">
+      <h1 id="ld-title"></h1>
+      <p class="ld-address" id="ld-address"></p>
+      <p class="ld-hours">Pickup hours: 10:00 AM – 8:00 PM</p>
+      <button class="text-btn ld-change" id="ld-change" type="button">Change store</button>
+    </div>
+    <div class="ld-scroll">
+      <section class="ld-section" aria-labelledby="ld-day-title">
+        <h2 id="ld-day-title">Pick a day</h2>
+        <div class="pickup-date-row-wrap" id="ld-date-wrap">
+          <div class="pickup-date-row" id="ld-date-list" role="group" aria-labelledby="ld-day-title"></div>
+          <button class="pickup-date-nav" id="ld-date-next" type="button" aria-label="Show more days">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </section>
+      <section class="ld-section" aria-labelledby="ld-time-title">
+        <h2 id="ld-time-title">Pick a time</h2>
+        <p class="ld-empty" id="ld-time-empty">Pick a day to see times.</p>
+        <div class="radio-list" id="ld-time-list" role="radiogroup" aria-labelledby="ld-time-title"></div>
+      </section>
+    </div>
+    <div class="pickup-settings-actions">
+      <p class="ld-hint" id="ld-hint" role="status"></p>
+      <button class="pill-btn dark full" id="ld-start" type="button" disabled>Start my order</button>
     </div>
   </div>
 </div>
@@ -738,6 +1584,21 @@
   </div>
 </div>
 
+<div class="overlay" id="payment-methods-backdrop" hidden></div>
+<div class="pickup-settings-modal" id="payment-methods-modal" role="dialog" aria-modal="true" aria-labelledby="payment-methods-title" hidden>
+  <div class="add-payment-inner">
+    <button class="close-btn" id="close-payment-methods" type="button" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h1 id="payment-methods-title">Add payment method</h1>
+    <div class="payment-option-list" id="payment-option-list"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="location-picker-stores.js"></script>
+<script src="location-picker.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

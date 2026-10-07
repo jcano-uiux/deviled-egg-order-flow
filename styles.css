@@ -37,6 +37,24 @@ body.is-checkout .site-header { display: none; }
   display: flex; align-items: center; justify-content: center;
 }
 
+/* The add-to-order moment (see celebrateAdd in app.js): the token that flies from
+   the product to the cart, then the cart button and count react when it lands. */
+.fly-thumb { position: fixed; z-index: 90; border-radius: 50%; background-color: var(--deg-gold); background-size: cover; background-position: center; box-shadow: 0 8px 20px rgba(19,13,0,.28); pointer-events: none; will-change: transform; }
+.cart-btn.is-pop { animation: cart-pop .6s cubic-bezier(.22,1,.36,1); }
+.cart-badge.is-bump { animation: badge-bump .5s cubic-bezier(.22,1,.36,1); }
+@keyframes cart-pop {
+  0% { transform: scale(1) rotate(0); }
+  22% { transform: scale(1.22) rotate(-9deg); }
+  48% { transform: scale(.94) rotate(6deg); }
+  74% { transform: scale(1.05) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes badge-bump { 0% { transform: scale(1); } 35% { transform: scale(1.6); } 100% { transform: scale(1); } }
+@keyframes cart-calm { 0% { opacity: .45; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .cart-btn.is-pop, .cart-badge.is-bump { animation: cart-calm .5s ease; }
+}
+
 /* Off-screen, unfocusable (aria-hidden + inert, set in app.js) clone of
    the link list, forced onto one line — its scrollWidth is how app.js
    measures whether the real, visible links would wrap to a second line
@@ -149,15 +167,11 @@ body.is-checkout .site-header { display: none; }
    stretch covers the width in column mode without disturbing flex-grow's
    handling of it in row mode, where width is main-axis instead. */
 .menu-content { flex: 1 1 0%; align-self: stretch; min-width: 0; }
-/* position:relative anchors .store-carry-out-badge (mobile-only, see its
-   own rule) — harmless at every other width since nothing else inside
-   this card is positioned against it. */
-.store-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
+.store-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
 /* Figma annotation (node 231:6791, mobile frame): "in mobile the shop
    title and the badge is centered." Centers the whole card's text, not
    just the title — tagline/address directly under a centered heading in
    this narrow a column read unfinished left-aligned on their own. */
-.store-carry-out-badge { display: none; }
 .store-name { font-size: 32px; line-height: 40px; font-weight: 700; }
 .store-address { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
 .store-info-btn { margin-top: 16px; padding: 8px 16px; font-size: 14px; }
@@ -185,46 +199,81 @@ body.is-checkout .site-header { display: none; }
    same left/right edges as .menu-layout, both simply inset by .view's own
    padding, so the banner reads as the top of one aligned column instead
    of a wider strip sitting above it. */
+/* The pickup settings banner: where, and when, sits above the menu the way a delivery app keeps the
+   chosen restaurant on screen. Quiet surface (white card, no gold); Change is the one action. */
+/* 100vw includes a classic scrollbar, so the full-bleed banner below can overshoot by its width; clip, not scroll. */
+body { overflow-x: clip; }
+.order-banner {
+  display: flex; align-items: center; gap: 12px; min-height: 56px;
+  /* Full-bleed: out of the view's centered column to both screen edges and up against the header; the content
+     inside still lines up with the page gutter. No padding above or below, so the row sets its own height. */
+  margin: -24px calc(50% - 50vw) 24px; padding: 0 max(var(--deg-view-pad-x), calc((100vw - 1280px) / 2 + var(--deg-view-pad-x)));
+  background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card);
+}
+.order-banner-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-gold-tint); color: var(--deg-ink-deep); }
+.order-banner-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.order-banner-text p { margin: 0; }
+.order-banner-where { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.order-banner-where strong { font-weight: 600; color: var(--deg-ink-heading); }
+.order-banner-address { display: none; }
+.order-banner-when { font-size: 13px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.order-banner-change { flex: none; padding: 8px 16px; }
+@media (max-width: 640px) {
+  /* Phones: the pin loses its disc so the day and time line fits on one row beside Change. */
+  .order-banner { gap: 8px; margin-bottom: 0; }
+  .order-banner-icon { width: 20px; height: 20px; background: none; }
+}
+@media (min-width: 641px) {
+  .order-banner-address { display: inline; }
+  .order-banner-address::before { content: ' · '; }
+}
+
+/* ---------- Pickup order page (#order) ----------
+   Chipotle's mobile ordering structure in our own system: a list of wide category tiles, and a screen of rows for a
+   tile that stands for several products. Quiet white cards, one dark Add circle, no gold. */
+.order-screen { padding-top: 20px; }
+.order-title { margin: 0 0 16px; font-size: 28px; line-height: 36px; }
+.order-tiles, .order-rows { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.order-tile, .order-row { display: flex; align-items: center; width: 100%; padding: 0; text-align: left; color: inherit; background: var(--deg-white); border: 1px solid var(--deg-border-card); box-shadow: var(--deg-shadow-card); }
+.order-tile { gap: 16px; min-height: 112px; padding-right: 16px; border-radius: var(--deg-radius-media); overflow: hidden; }
+.order-tile:hover, .order-row:hover { border-color: var(--deg-border-chip); }
+.order-tile-media { position: relative; flex: none; align-self: stretch; width: 128px; background: var(--deg-cream-cool); }
+.order-tile-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.order-tile-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.order-tile-name { font-family: var(--deg-font-display); font-weight: 800; font-size: 22px; line-height: 28px; color: var(--deg-ink-heading); }
+.order-tile-sub { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.order-tile-chevron { flex: none; color: var(--deg-ink-muted); }
+.order-group-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.order-group-head .order-title { margin: 0; }
+.order-back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.order-back:hover { background: var(--deg-border-chip); }
+.order-row { gap: 16px; padding: 12px; border-radius: var(--deg-radius-card); }
+.order-row-media { position: relative; flex: none; width: 96px; height: 96px; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); }
+.order-row-media > .shop-card-photo, .order-row-media > .thumb { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
+.order-row-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.order-row-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--deg-ink-heading); }
+.order-row-meta { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.order-row-price { font-weight: 600; color: var(--deg-ink-heading); }
+.order-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.order-row-add { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; transition: background-color .15s ease; }
+.order-row:hover .order-row-add { background: var(--deg-ink-deep-hover); }
+.order-view { padding-bottom: 112px; } /* clears the pinned View cart pill */
+@media (min-width: 900px) {
+  .order-screen { padding-top: 0; }
+  .order-title { font-size: 32px; line-height: 40px; }
+  .order-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .order-tile { flex-direction: column; align-items: stretch; gap: 0; min-height: 0; padding: 0; }
+  .order-tile-media { width: auto; aspect-ratio: 4 / 3; }
+  .order-tile-text { padding: 16px 20px 0; }
+  .order-tile-chevron { display: none; }
+  .order-tile-sub { padding-bottom: 20px; }
+  .order-rows { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
+
 .store-hero { position: relative; margin: 0 0 24px; border-radius: var(--deg-radius-media); aspect-ratio: 1200 / 250; background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); overflow: hidden; }
 .hero-media { display: block; width: 100%; height: 100%; object-fit: cover; }
 .hero-more-btn { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-.order-mode-row {
-  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-  min-height: 62px; padding: 12px 16px;
-  background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media);
-}
-/* Figma annotation (DECo_Order_260920, node 231:8360): "update toggle bar
-   color" — gold-wash track instead of the neutral gray this inherited
-   from the generic segmented-toggle base, matching the Pickup/Delivery
-   control's own real spec rather than the shared default. */
-.order-mode-toggle { position: relative; background: var(--deg-gold-tint); padding: 2px; gap: 0; }
-/* A shared, absolutely-positioned pill instead of each button drawing its
-   own background — app.js measures the active button's real offsetLeft/
-   offsetWidth (Pickup and Delivery aren't equal width) and transitions
-   this element's transform+width to match, so the pill visibly slides
-   and reflows to the new label instead of the old instant per-button
-   background swap. position:relative + z-index:1 on the buttons keeps
-   their label text painting above it. */
-.order-mode-pill {
-  position: absolute; top: 2px; left: 0; bottom: 2px; width: 0;
-  /* Cream (not white) per the same Figma spec — reads correctly against
-     the new gold-wash track, where plain white would look stark. */
-  border-radius: var(--deg-radius-pill); background: var(--deg-cream); box-shadow: 0 0 5px rgba(0,0,0,.14);
-  transition: transform .25s cubic-bezier(.4,0,.2,1), width .25s cubic-bezier(.4,0,.2,1);
-  pointer-events: none; z-index: 0;
-}
-/* Figma annotation (node 231:8364): "update pill text sizes and weights,
-   and update colors" — 12px (Body XS), not the generic 14px default;
-   weight/color already matched the spec (500/--deg-ink-body) as-is. */
-.order-mode-option { position: relative; z-index: 1; background: transparent; border: none; border-radius: var(--deg-radius-pill); padding: 6px 10px; font-size: 12px; font-weight: 500; color: var(--deg-ink-body); }
-
-.delivery-info { display: flex; align-items: center; gap: 12px; }
-.delivery-info-icon { width: 36px; height: 36px; object-fit: contain; flex: none; }
-.delivery-info-divider { width: 1px; height: 36px; background: var(--deg-border-card); }
-.delivery-info-text { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; }
-.delivery-info-location { font-size: 12px; font-weight: 600; color: var(--deg-ink-heading); }
-.delivery-info-address { font-size: 12px; line-height: 20px; color: var(--deg-ink-muted); }
 
 .thumb { border-radius: var(--deg-radius-card); background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); display: flex; align-items: center; justify-content: center; flex: none; }
 .price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 26px; color: var(--deg-ink-deep); }
@@ -321,12 +370,6 @@ body.is-checkout .site-header { display: none; }
    the photo out of flow makes card height depend only on the text and the
    shared min-height. */
 .shop-card-media > .shop-card-photo, .shop-card-media > .thumb { position: absolute; inset: 0; }
-.delivery-logo { width: 100%; height: 100%; object-fit: contain; padding: 24px; box-sizing: border-box; display: block; filter: brightness(0) invert(1); }
-/* Full Menu card: same shape as a delivery-app card, brand gold panel with a
-   drawn menu glyph in place of an app logo. The glyph is out of flow so it
-   can't affect the card's height (see .shop-card-media > .shop-card-photo). */
-.menu-card-media { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
-.menu-card-icon { position: absolute; inset: 0; margin: auto; }
 .add-btn { position: absolute; right: 8px; bottom: 8px; width: 36px; height: 36px; background: var(--deg-ink-deep); color: #fff; border: 2px solid var(--deg-white); box-shadow: var(--deg-shadow-float); transition: background-color .15s ease; }
 /* The Figma shop_list_item component's hover state is defined on the whole
    card, not the button alone — hovering (or focusing) anywhere on the card
@@ -387,6 +430,13 @@ body.is-checkout .site-header { display: none; }
 .modal-section-title { font-weight: 600; font-size: 16px; line-height: 24px; color: var(--deg-ink-body); }
 .modal-section-sub { font-weight: 400; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
 
+/* Progress through the pack: a count line over one slot per flavor the pack
+   allows, each slot filling as one step of eggs is added. */
+.flavor-meter { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
+.flavor-meter-count { font-size: 13px; font-weight: 600; line-height: 16px; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.flavor-meter-bar { display: flex; gap: 4px; }
+.flavor-meter-seg { flex: 1 1 0; height: 6px; border-radius: var(--deg-radius-pill); background: var(--deg-border-secondary); transition: background-color .2s ease; }
+.flavor-meter-seg.filled { background: var(--deg-gold); }
 .flavor-grid { display: flex; flex-direction: column; gap: 10px; }
 /* The dozen picker's flavor card can hold a second section (ingredient
    exclusions) below its name+stepper header, so it overrides the shared
@@ -394,16 +444,32 @@ body.is-checkout .site-header { display: none; }
    plain rows (no second section) are untouched. */
 .flavor-row.dozen-flavor-row { flex-direction: column; align-items: stretch; gap: 12px; }
 .flavor-row-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dozen-flavor-row { padding: 12px 16px 12px 12px; scroll-margin-block: 72px 104px; }
+.dozen-flavor-row .flavor-row-name { flex: 1 1 0; }
+
+/* Each flavor's clip. The poster in the row's head is the way in; it opens the
+   clip and its live description inline, in the same card as the stepper, so a
+   customer can watch and add without leaving the row. */
+.flavor-thumb { position: relative; flex: none; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.flavor-thumb-badge { position: absolute; right: 4px; bottom: 4px; display: grid; place-items: center; width: 22px; height: 22px; padding-left: 1px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; }
+.flavor-thumb.open { box-shadow: 0 0 0 2px var(--deg-ink-deep); }
+.flavor-thumb:focus-visible, .flavor-watch-media:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-watch { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 16px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-watch-media { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-watch-media video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 44px; height: 44px; padding-left: 2px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; opacity: 0; transition: opacity .15s ease; }
+.flavor-watch-play svg { width: 18px; height: 18px; }
+.flavor-watch-media.is-paused .flavor-watch-play { opacity: 1; }
+.flavor-watch-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.flavor-watch-copy p { margin: 0; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--deg-ink-body); }
+.flavor-watch-hide { min-height: 44px; margin: -8px 0 -8px; padding: 8px 0; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 /* Reuses the .chip shape, but a checked exclusion isn't a positive pick —
    it means "leave this out" — so it takes the dark pressed treatment
    (same fill/text pairing as .pill-btn.dark) instead of the gold "yes"
    accent, keeping gold reserved for actual selections. */
 .flavor-exclusions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
 .flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
-/* Reuses .flavor-exclusions' own border-top/label pairing for the wrap
-   modal's per-flavor ingredient line — same "reveal once selected" slot,
-   just a plain sentence instead of a row of NO: chips. */
-.flavor-ingredients-text { font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
 .exclude-chip { padding: 8px 16px; font-size: 13px; }
 .exclude-chip.active { background: var(--deg-ink-deep); color: #FBF3E3; }
 
@@ -430,6 +496,11 @@ body.is-checkout .site-header { display: none; }
 }
 .addon-row.selected .addon-row-box { background: var(--deg-ink-deep); }
 
+/* Single-choice rows (.radio-choice, defined in design-system.css): inside the
+   gold selected card the usual muted label would fall under 4.5:1. */
+.radio-choice .flavor-exclusions { border-top-color: rgba(38,26,0,.18); }
+.radio-choice .flavor-exclusions-label { color: var(--deg-ink-heading); }
+
 /* The bowl's intro (title block + description) is its own wrapper with an 8px
    gap, so the shared pull-up above must not apply a second time inside it. */
 .bowl-modal-intro { display: flex; flex-direction: column; gap: 8px; }
@@ -449,6 +520,8 @@ body.is-checkout .site-header { display: none; }
    system already uses. */
 .item-modal-footer { flex: none; padding: 16px 24px; background: var(--deg-cream); box-shadow: 0 -4px 8px rgba(0,0,0,.12); }
 .item-modal-footer .pill-btn { width: 100%; }
+.item-modal-footer .pill-btn { transition: transform .12s cubic-bezier(.22,1,.36,1), background-color .15s ease; }
+.item-modal-footer .pill-btn:active:not(:disabled) { transform: scale(.975); }
 
 /* ---------- Cart drawer ----------
    The panel starts translated fully off-screen and the backdrop starts
@@ -481,7 +554,6 @@ body.is-checkout .site-header { display: none; }
   .cart-drawer { transform: none; opacity: 0; }
   .cart-drawer.is-open { transform: none; opacity: 1; }
   .order-summary-collapse, .order-summary-chevron, .item-modal-header-title { transition-duration: .01ms; }
-  .order-mode-pill { transition-duration: .01ms; }
   .drawer-nav-mobile { transition-duration: .01ms; }
   .cart-bar { transition-duration: .01ms; }
 }
@@ -600,7 +672,6 @@ body.is-checkout .checkout-header { display: block; }
 .pickup-time-btn:hover { border-color: var(--deg-border-primary); }
 /* Same hover vocabulary as .pickup-time-btn above, so every tappable row in
    the checkout reads as interactive before the pointer commits to it. */
-.checkout-card .radio-row:not(.active):hover { border-color: var(--deg-border-primary); }
 .payment-add-row:hover { color: var(--deg-ink-deep); }
 .payment-add-row:hover .payment-add-icon { border-color: var(--deg-border-primary); color: var(--deg-ink-deep); }
 .tip-group .chip:not(.active):hover { background: var(--deg-border-chip); }
@@ -680,10 +751,6 @@ body.is-checkout .checkout-header { display: block; }
 .pickup-date-nav { flex: none; width: 36px; height: 36px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); }
 
 .pickup-time-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-/* .radio-row's own active fill (--deg-cream) is tuned for a white card
-   context (Payment method); on this modal's cream surface it would
-   disappear, so it gets the same gold-wash pop as the date tiles here. */
-.pickup-time-scroll .radio-row.active { background: var(--deg-gold-tint); }
 
 /* The same raised white footer bar as .item-modal-footer, bled to the
    dialog's own edges — every popup's primary action sits on this bar. */
@@ -747,7 +814,7 @@ body.is-checkout .checkout-header { display: block; }
 .store-locator-map-status-address { display: block; font-weight: 700; font-size: 14px; color: var(--deg-ink-heading); }
 
 /* ---------- Add payment method modal ---------- */
-/* A plain, unbordered row (vs. the bordered .radio-row selectable options
+/* A plain, unbordered row (vs. the filled .radio-choice selectable options
    above it) — the dashed-circle "+" reads as an action, not a choice. */
 .payment-add-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; background: transparent; border: none; width: 100%; text-align: left; font-size: 15px; font-weight: 600; color: var(--deg-ink-heading); }
 .payment-add-icon { width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed var(--deg-border-input); color: var(--deg-ink-muted); display: flex; align-items: center; justify-content: center; flex: none; }
@@ -759,6 +826,16 @@ body.is-checkout .checkout-header { display: block; }
 }
 .add-payment-inner > .close-btn { align-self: flex-start; }
 .add-payment-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+/* "Add payment method" chooser: one tappable row per payment type (icon, name,
+   chevron), hairline-separated, no footer. Padding + equal negative margin gives
+   the focus halo room inside the scroll box, as on .add-payment-form. */
+.payment-option-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 6px; margin: -6px; }
+.payment-option { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 12px; background: none; border: none; border-radius: var(--deg-radius-card); text-align: left; font-size: 16px; font-weight: 600; color: var(--deg-ink-body); transition: background-color .15s ease; }
+.payment-option:hover { background: var(--deg-cream-cool); }
+.payment-option-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.payment-option:hover .payment-option-icon { background: var(--deg-white); }
+.payment-option-label { flex: 1 1 auto; min-width: 0; }
+.payment-option-chevron { flex: none; color: var(--deg-ink-muted); }
 /* Card-number field carries a generic card glyph at its right edge, and the
    Security code label carries a "?" that reveals where to find it. */
 .field-with-icon { position: relative; display: block; }
@@ -856,7 +933,7 @@ body.is-checkout .checkout-header { display: block; }
        without it this row simply grows to fit all 8 pills (measured:
        1092px) instead of being clipped/scrolled at the viewport edge. */
     width: calc(100% + var(--deg-view-pad-x) * 2); margin: 0 calc(var(--deg-view-pad-x) * -1); padding: 0 var(--deg-view-pad-x);
-    /* Now nested right after .order-mode-row (not a bare .menu-layout
+    /* Now nested at the top of .menu-content (not a bare .menu-layout
        sibling), so its own top spacing needs an explicit margin instead
        of relying on .menu-layout's inter-sibling gap. */
     margin-top: 16px;
@@ -901,31 +978,12 @@ body.is-checkout .checkout-header { display: block; }
   /* Figma annotation (node 231:6791): "in mobile the shop title and the
      badge is centered." */
   .store-card { align-items: center; text-align: center; }
-  /* Address hidden under the shop title on mobile — the title and Carry Out
-     badge alone carry this card now. The base 24px bottom padding was sized
+  /* Address hidden under the shop title on mobile — the title alone carries this card now. The base 24px bottom padding was sized
      to balance that hidden copy; left alone, it now stacks with
      .menu-layout's own 24px gap below and reads as ~48px of dead air between
      the title and the Pickup/Delivery toggle. */
   .store-address { display: none; }
   .store-card { padding-bottom: 8px; }
-
-  /* Figma annotation (node 231:9009): "add a badge that is added to
-     highlight that the shop is for carry out/pickup only — it touches
-     the hero banner." Real exported asset (assets/carry-out-badge.png),
-     not a redrawn/CSS approximation, per that same Figma frame. Centered
-     on the hero's real bottom edge (translateY(-50%) off a point
-     --hero-gap above .store-card's own top, since .store-hero's own
-     margin-bottom opens a gap between the two) so it straddles the
-     hero-to-card boundary itself, not .store-card's top edge — those
-     aren't the same line once that gap exists. Mobile-only: this
-     stacked hero-then-card relationship doesn't exist in the desktop/
-     tablet two-column layout. */
-  .store-carry-out-badge {
-    display: block;
-    position: absolute; top: calc(-1 * var(--hero-gap)); left: 50%; transform: translate(-50%, -50%);
-    width: 99px; height: auto; z-index: 2;
-    pointer-events: none;
-  }
 
   /* 40px is the desktop sidebar-to-content gutter; stacked, with the
      sidebar down to just the store card (the rest hidden above), that
@@ -971,11 +1029,6 @@ body.is-checkout .checkout-header { display: block; }
      full-width edge-to-edge band rather than an inset card. */
   /* Figma annotation (node 231:6789, "Video"): "banner hero is only 18%
      the viewport height." */
-  /* Shared with .store-carry-out-badge below: its anchor point has to
-     move in lockstep with this margin, or the badge drifts off the
-     hero's real bottom edge the moment this number changes. Declared on
-     .view (a common ancestor of the hero and the card) so both sides
-     read the same value instead of two hand-synced magic numbers. */
   .view { --hero-gap: 12px; }
   .store-hero {
     margin: -24px -16px var(--hero-gap); border-radius: 0;
@@ -991,27 +1044,6 @@ body.is-checkout .checkout-header { display: block; }
   .tip-group .chip { min-height: 44px; }
   .checkout-header-logo { height: 24px; }
   .order-summary-toggle-title { font-size: 18px; line-height: 24px; }
-  /* Figma annotation (node 231:6796, mobile toggle variant): "only the
-     toggle buttons appear in mobile" — the store-address repeat (already
-     shown above in the store card) drops out here, leaving just Pickup/
-     Delivery. Same mobile node also renders the pill labels SemiBold,
-     not the desktop Medium. */
-  .delivery-info { display: none; }
-  .order-mode-option { font-weight: 600; }
-  /* Sized to Uber Eats' own mobile Pickup/Delivery toggle, measured off
-     their live store page at 375px: 36px track (2px inset around a 32px
-     pill), 14px/16px labels, 10px of horizontal padding per option. The
-     12px Figma size above is the desktop spec; at phone scale it read
-     undersized next to the 44px-class controls around it. */
-  .order-mode-option { font-size: 14px; line-height: 16px; padding: 8px 10px; }
-  /* With delivery-info gone, .order-mode-row's own white card now just
-     boxes in the toggle for no reason — drop that bounding box and
-     center the toggle in the space it leaves (align-items, not
-     justify-content: flex-direction is column here, so align-items is
-     the cross/horizontal axis). The gold toggle track itself (.order-
-     mode-toggle) stays — that's the real component chrome, not excess
-     wrapping, per the Figma spec already matched above. */
-  .order-mode-row { flex-direction: column; align-items: center; background: transparent; border: none; padding: 0; min-height: 0; }
   .featured { margin-top: 24px; }
   /* Phones swipe the row instead of using arrows; ~2.3 cards hint at more. */
   .featured-nav { display: none; }
@@ -1139,3 +1171,361 @@ body.is-checkout .checkout-header { display: block; }
     .nav-compact .nav-links.open { opacity: 1; transition: opacity .15s ease, visibility 0s; }
   }
 }
+
+/* =========================================================================
+   Nationwide Shipping page (#view-shipping)
+   Built from the existing primitives: gold is the one saturated surface
+   (the hero panel), everything else is cream/white cards, .pill-btn
+   actions, .field-group fields and the .shop-card used for the holiday
+   lineup. Section rhythm matches the menu: 56px between sections.
+   ========================================================================= */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.nav-link[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--deg-gold); text-decoration-thickness: 3px; text-underline-offset: 6px; }
+
+.page-view { --page-gap: 56px; }
+:where(.page-view) :where(ul, ol) { list-style: none; margin: 0; padding: 0; }
+:where(.page-view) p { margin: 0; }
+
+.ship-hero {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 48px;
+  padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-gold); color: var(--deg-ink-on-gold);
+}
+.ship-hero h1 { font-size: 48px; line-height: 52px; letter-spacing: -.01em; text-wrap: balance; }
+.ship-lead { margin-top: 16px; max-width: 52ch; font-size: 18px; line-height: 28px; font-weight: 500; }
+.ship-cta { margin-top: 28px; padding: 16px 32px; font-size: 16px; font-weight: 700; }
+.ship-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.ship-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-white); font-size: 13px; line-height: 18px; font-weight: 700; color: var(--deg-ink-deep); }
+.ship-badge svg { flex: none; }
+.ship-hero-map { display: block; width: 100%; height: auto; border-radius: var(--deg-radius-media); }
+
+.page-section { margin-top: var(--page-gap); scroll-margin-top: 93px; } /* clears the sticky header, like .menu-section */
+.page-section-head { margin-bottom: 24px; }
+.page-section-head h2 { font-size: 32px; line-height: 40px; font-weight: 700; color: var(--deg-ink-deep); text-wrap: balance; }
+.page-section-head p { margin-top: 8px; max-width: 62ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-muted); }
+
+/* Kits: three vertical product cards, same surface language as .shop-card. */
+.kit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.kit-card { cursor: pointer; display: flex; flex-direction: column; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; }
+.kit-media { position: relative; aspect-ratio: 1 / 1; background: var(--deg-cream-cool); }
+.kit-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.kit-tag { position: absolute; top: 12px; left: 12px; padding: 6px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; box-shadow: var(--deg-shadow-float); }
+.kit-body { display: flex; flex: 1 1 auto; flex-direction: column; padding: 20px; }
+.kit-name { font-size: 20px; line-height: 28px; font-weight: 800; color: var(--deg-ink-heading); }
+.kit-sub { margin-top: 2px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.kit-price { margin-top: 12px; margin-bottom: 20px; font-size: 14px; color: var(--deg-ink-muted); }
+.kit-price strong { font-family: var(--deg-font-body); font-size: 24px; line-height: 32px; font-weight: 700; color: var(--deg-ink-deep); }
+.kit-add { margin-top: auto; }
+
+/* How it works: a sequence, so the numbers carry information; one rule
+   threads the markers together instead of boxing each step in a card. */
+.ship-steps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.ship-step { position: relative; }
+.ship-step::before { content: ''; position: absolute; top: 20px; left: 52px; right: -32px; height: 2px; background: var(--deg-border-secondary); }
+.ship-step:last-child::before { display: none; }
+.ship-step-num { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--deg-gold); color: var(--deg-ink-on-gold); font-family: var(--deg-font-body); font-size: 18px; font-weight: 700; }
+.ship-step h3 { margin-top: 16px; font-size: 20px; line-height: 28px; color: var(--deg-ink-heading); }
+.ship-step p { margin-top: 6px; max-width: 36ch; font-size: 15px; line-height: 24px; color: var(--deg-ink-muted); }
+.ship-policy-link { display: inline-block; margin-top: 24px; font-size: 14px; font-weight: 700; color: var(--deg-link); text-underline-offset: 3px; }
+
+/* Holiday lineup reuses .shop-card; it's informational, not a link. */
+.holiday-grid { grid-template-columns: minmax(0, 1fr); }
+/* Three across only once each card can keep the 202px image plus a readable body; in between, a single column beats a lone orphan card. */
+@media (min-width: 1160px) { .holiday-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.holiday-card { cursor: default; }
+/* The holiday art is 5:4 with lettering near the edges; the menu card's square 161px crop would cut it, so the media runs 202x162 to show it whole. */
+.holiday-card .shop-card-media { width: 202px; }
+.holiday-card .shop-card-body { padding-bottom: 16px; }
+.holiday-status { align-self: flex-start; margin-top: 8px; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--deg-ink-heading); }
+.holiday-status.is-open { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+.holiday-card .shop-card-desc { margin-top: auto; padding-top: 12px; font-size: 15px; font-weight: 600; color: var(--deg-ink-body); }
+
+/* Signup */
+.page-signup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; margin-top: var(--page-gap); padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-deep); }
+.page-signup-copy h2 { font-size: 32px; line-height: 40px; font-weight: 700; color: var(--deg-ink-deep); text-wrap: balance; }
+.page-signup-copy p { margin-top: 8px; max-width: 40ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+.page-form { display: flex; flex-direction: column; gap: 16px; }
+.page-form .field-error { margin: -8px 0 0; }
+.page-form input[aria-invalid="true"] { border-color: var(--deg-error); }
+.page-consent { position: relative; display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer; }
+.page-consent input { position: absolute; width: 24px; height: 24px; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.page-consent-box { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--deg-border-primary); border-radius: 4px; background: var(--deg-white); transition: background-color .15s ease, border-color .15s ease; }
+.page-consent-box svg { opacity: 0; }
+.page-consent input:checked + .page-consent-box { background: var(--deg-ink-deep); border-color: var(--deg-ink-deep); }
+.page-consent input:checked + .page-consent-box svg { opacity: 1; }
+.page-consent:has(input:focus-visible) .page-consent-box { box-shadow: 0 0 0 2px var(--deg-cream-deep), 0 0 0 4px var(--deg-ink-deep); }
+.page-consent span:last-child { padding-top: 2px; }
+.page-legal { font-size: 12px; line-height: 18px; color: var(--deg-ink-heading); }
+.page-legal a { color: inherit; text-underline-offset: 2px; }
+.page-success { padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-white); font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
+.page-form input:disabled { opacity: 1; }
+
+@media (max-width: 900px) {
+  .ship-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 32px; }
+  .ship-hero h1 { font-size: 40px; line-height: 44px; }
+  .ship-hero-map { max-width: 560px; justify-self: center; }
+  .kit-grid { grid-template-columns: minmax(0, 1fr); }
+  .kit-card { flex-direction: row; }
+  .kit-media { flex: none; width: 220px; aspect-ratio: auto; }
+  .page-signup { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 32px; }
+}
+
+@media (max-width: 640px) {
+  .page-view { --page-gap: 40px; padding-bottom: 0; }
+  /* 16px keeps iOS Safari from zooming in when a field takes focus. */
+  .page-form input[type="email"], .page-form input[type="tel"] { font-size: 16px; }
+  .ship-hero { margin: -24px -16px 0; border-radius: 0; padding: 32px 16px 24px; }
+  .ship-hero h1 { font-size: 32px; line-height: 38px; }
+  .ship-lead { font-size: 16px; line-height: 24px; }
+  .ship-cta { width: 100%; justify-content: center; }
+  .ship-hero-map { max-width: none; }
+  .page-section-head h2, .page-signup-copy h2 { font-size: 26px; line-height: 34px; }
+  .kit-card { flex-direction: column; }
+  .kit-media { width: auto; aspect-ratio: 16 / 11; }
+  /* Beside a 202px image the date wraps mid-phrase at phone width, so the holiday card stacks instead. */
+  .holiday-card { flex-direction: column; }
+  .holiday-card .shop-card-media { width: auto; aspect-ratio: 316 / 228; }
+  .holiday-card .shop-card-body { padding: 16px; }
+  .holiday-card .shop-card-desc { padding-top: 8px; }
+  .ship-steps { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ship-step { padding: 0 0 28px 56px; }
+  .ship-step:last-child { padding-bottom: 0; }
+  .ship-step-num { position: absolute; left: 0; top: 0; }
+  .ship-step h3 { margin-top: 0; padding-top: 6px; }
+  .ship-step::before { top: 48px; bottom: 8px; left: 19px; right: auto; width: 2px; height: auto; }
+  .ship-step p { max-width: none; }
+  .page-signup { margin-left: -16px; margin-right: -16px; border-radius: 0; padding: 32px 16px; }
+}
+
+/* =========================================================================
+   Catering page (#view-catering)
+   Shares the content-page scaffolding above (.page-view, .page-section,
+   .page-signup). The hero is the one dark surface: the menu's cutout
+   photography reads best against ink, and gold stays the single accent.
+   ========================================================================= */
+.cater-hero {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 48px;
+  padding: 56px 48px; border-radius: var(--deg-radius-panel); background: var(--deg-dark); color: var(--deg-cream);
+  overflow: hidden;
+}
+.cater-hero h1 { font-size: 48px; line-height: 52px; letter-spacing: -.01em; text-wrap: balance; }
+.cater-hero h1 span { color: var(--deg-gold-on-dark); }
+.cater-lead { margin-top: 16px; max-width: 52ch; font-size: 18px; line-height: 28px; font-weight: 500; color: rgba(255,247,234,.86); }
+.pill-btn.cater-cta { margin-top: 28px; padding: 16px 32px; font-size: 16px; box-shadow: none; } /* the brand glow reads as a halo on ink; the gold fill is enough */
+.cater-hero-art { display: flex; align-items: center; justify-content: center; }
+.cater-hero-art img { flex: 0 1 216px; min-width: 0; height: auto; margin-left: -28px; filter: drop-shadow(0 12px 16px rgba(0,0,0,.4)); }
+.cater-hero-art img:first-child { margin-left: 0; transform: rotate(-6deg) translateY(14px); }
+.cater-hero-art img:nth-child(2) { position: relative; z-index: 1; transform: translateY(-14px); }
+.cater-hero-art img:last-child { transform: rotate(6deg) translateY(14px); }
+
+.cater-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+:where(.page-view) .cater-grid { list-style: none; margin: 0; padding: 0; }
+.cater-card { display: grid; grid-template-columns: 224px minmax(0, 1fr); background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; }
+.cater-media { position: relative; display: grid; place-items: center; padding: 16px; background: var(--deg-cream-cool); }
+.cater-media img { display: block; width: 100%; max-width: 156px; height: auto; }
+.cater-body { display: flex; flex-direction: column; min-width: 0; padding: 24px; }
+.cater-media .cater-tag { position: absolute; top: 12px; left: 12px; right: 12px; width: max-content; max-width: calc(100% - 24px); white-space: nowrap; background: var(--deg-white); box-shadow: var(--deg-shadow-float); }
+.cater-tag { align-self: flex-start; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--deg-ink-heading); }
+.cater-card.is-featured .cater-tag, .cater-coffee .cater-tag { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+.cater-name { margin-top: 0; font-size: 22px; line-height: 30px; font-weight: 800; color: var(--deg-ink-heading); text-wrap: balance; }
+.cater-price { margin-top: 4px; margin-bottom: 16px; font-size: 14px; color: var(--deg-ink-muted); }
+.cater-price strong { font-family: var(--deg-font-body); font-size: 26px; line-height: 32px; font-weight: 700; color: var(--deg-ink-deep); }
+.cater-list-label { margin-bottom: 6px; font-size: 13px; line-height: 18px; font-weight: 700; color: var(--deg-ink-heading); }
+.cater-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+:where(.page-view) .cater-list { list-style: none; padding: 0; }
+.cater-list li { position: relative; padding-left: 16px; }
+.cater-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--deg-gold); }
+.cater-order { margin-top: auto; justify-content: center; }
+.cater-order svg { flex: none; }
+
+.cater-addons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.cater-addons-list { padding: 24px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); }
+.cater-addons-list h3 { font-size: 22px; line-height: 30px; color: var(--deg-ink-heading); }
+:where(.page-view) .cater-addons-list ul { list-style: none; margin: 12px 0 0; padding: 0; }
+.cater-addons-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deg-border-chip); font-size: 15px; line-height: 22px; }
+.cater-addons-list li strong { flex: none; font-family: var(--deg-font-body); font-size: 17px; font-weight: 700; color: var(--deg-ink-deep); }
+.cater-note { margin-top: 16px; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
+.cater-note strong { color: var(--deg-ink-heading); }
+.cater-coffee-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.cater-coffee { display: flex; flex-direction: column; padding: 24px; background: var(--deg-cream-deep); border-radius: var(--deg-radius-card); }
+
+@media (max-width: 900px) {
+  .cater-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 40px 32px 32px; }
+  .cater-hero h1 { font-size: 40px; line-height: 44px; }
+  .cater-hero-art { max-width: 520px; justify-self: center; width: 100%; }
+  .cater-grid, .cater-addons { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .cater-hero { margin: -24px -16px 0; border-radius: 0; padding: 32px 16px 28px; }
+  .cater-hero h1 { font-size: 32px; line-height: 38px; }
+  .cater-lead { font-size: 16px; line-height: 24px; }
+  .cater-cta { width: 100%; justify-content: center; }
+  .cater-hero-art img { margin-left: -16px; }
+  .cater-card { grid-template-columns: minmax(0, 1fr); }
+  .cater-media { padding: 48px 16px 12px; } /* clears the tag pinned to the top-left */
+  .cater-media img { max-width: 150px; }
+  .cater-body, .cater-addons-list, .cater-coffee { padding: 20px; }
+}
+
+/* Kit modal extras (the dozen-style modal also serves the shipping kits):
+   what's in the box, the fixed flavor lineup, and the shipping/storage note. */
+.modal-info { display: flex; flex-direction: column; gap: 8px; }
+.modal-info-label { margin: 0; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--deg-ink-heading); }
+.modal-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+.modal-list li { position: relative; padding-left: 16px; }
+.modal-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--deg-gold); }
+.modal-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.modal-tags li { padding: 7px 14px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-body); }
+.modal-notice { margin: 0; padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); font-size: 13px; line-height: 20px; color: var(--deg-ink-heading); }
+
+/* =========================================================================
+   Multi-cart drawer, the shipping and catering checkouts, catering modals
+   ========================================================================= */
+
+/* Cart tabs: the existing segmented track, full width, one chip per cart. */
+.cart-tabs { display: flex; margin-top: 12px; }
+.cart-tabs .chip { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 8px; font-size: 14px; white-space: nowrap; }
+.cart-tab-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--deg-radius-pill); background: var(--deg-white); font-size: 12px; line-height: 1; font-weight: 700; color: var(--deg-ink-deep); }
+.cart-tabs:not([hidden]) + .pickup-chip { margin-top: 12px; }
+.drawer-totals-note { margin: 0; font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+
+/* Form notes under a field (distinct from the "?" .field-help button above). */
+.field-note { margin: 0; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--deg-ink-muted); }
+.checkout-lead { margin: 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.summary-note { margin: 0; font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+.field-group select { width: 100%; }
+.checkout-card input[type="date"], .checkout-card input[type="time"] { width: 100%; }
+
+.ship-when { padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); color: var(--deg-ink-body); }
+.ship-when strong { font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+.ship-when p { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-heading); }
+
+.cc-fulfilment { display: flex; }
+.cc-fulfilment .chip { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 12px; }
+.cc-fulfilment-sub { font-size: 12px; line-height: 16px; font-weight: 500; opacity: .8; }
+.cc-panel { display: flex; flex-direction: column; gap: 16px; }
+
+/* Catering modals */
+.item-modal-media-cutout { background: var(--deg-cream-cool); display: grid; place-items: center; }
+.item-modal-media-cutout .shop-card-photo { width: 70%; height: auto; max-height: 90%; object-fit: contain; border-radius: 0; }
+.flavor-row-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.flavor-row-desc { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--deg-ink-muted); }
+.addon-row.at-limit { opacity: .5; cursor: not-allowed; }
+.addon-row.at-limit:hover { background: var(--deg-cream-cool); }
+.side-option { display: flex; flex-direction: column; gap: 8px; }
+.side-flavor { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; font-size: 13px; font-weight: 600; }
+.side-flavor-label { color: var(--deg-ink-heading); }
+
+@media (max-width: 640px) {
+  .cart-tabs .chip { padding: 9px 6px; font-size: 13px; }
+}
+
+input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--deg-error); }
+
+/* =========================================================================
+   Catering order fixes: minimum on the card, compact modal media, quiet
+   selection, line editing in the drawer
+   ========================================================================= */
+.cater-price { margin-bottom: 8px; }
+.cater-min { display: inline-flex; align-self: flex-start; margin: 0 0 16px; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-heading); }
+:where(.page-view) .cater-min { margin: 0 0 16px; }
+
+/* Catering modals: the cutout sits in a compact panel (not a 420px square it
+   can't fill), and the box modal uses the room under it for a live summary. */
+@media (min-width: 901px) {
+  .item-modal-media-cutout { width: 300px; aspect-ratio: auto; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 20px; padding: 24px 20px; }
+  .item-modal-media-cutout .shop-card-photo { width: 150px; max-height: none; align-self: center; }
+}
+.box-summary-title { margin: 0 0 8px; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--deg-ink-heading); }
+.box-summary-list { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.box-summary-list dt { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--deg-ink-muted); }
+.box-summary-list dd { margin: 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-body); }
+.box-summary-total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--deg-border-secondary); font-size: 13px; color: var(--deg-ink-heading); }
+.box-summary-total strong { font-size: 18px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); }
+.box-summary { display: block; }
+@media (max-width: 900px) { .box-summary { display: none; } }
+
+.box-count-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.box-count-other { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--deg-ink-heading); }
+.box-count-other .qty-select { padding: 10px 40px 10px 16px; }
+.box-count-total { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--deg-ink-deep); }
+
+/* Many rows can be selected at once here, so selection is a ring and a check,
+   not a gold slab per row. */
+.addon-list.is-quiet .addon-row.selected { background: var(--deg-white); box-shadow: inset 0 0 0 2px var(--deg-ink-deep); }
+.addon-list.is-quiet .addon-row.selected .addon-row-box { background: var(--deg-ink-deep); }
+.addon-list.is-quiet .addon-row-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.addon-row.at-limit .addon-row-note { color: var(--deg-ink-body); }
+.thumb-coffee { aspect-ratio: 1; }
+
+/* Cart drawer: box lines edit in the modal and remove with an undo. */
+.drawer-item-qty { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.drawer-item-buttons { display: flex; align-items: center; gap: 8px; }
+.drawer-edit-btn { padding: 8px 4px; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.drawer-trash-btn { width: 36px; height: 36px; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.drawer-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--deg-radius-card); background: var(--deg-ink-deep); color: #FBF3E3; font-size: 14px; line-height: 20px; }
+.drawer-undo .text-btn { color: var(--deg-gold-on-dark); font-weight: 700; padding: 6px 4px; }
+
+.cater-price:not(:has(+ .cater-min)) { margin-bottom: 16px; }
+
+/* =========================================================================
+   Homepage hero (#view-home), mobile first
+   Layout after Chick-fil-A's phone hero: the visual owns the middle of the
+   screen, a large display headline sits above it, and a row of three equal
+   order tiles sits where the thumb is. The visual here is the live homepage's
+   own hero video, full bleed, under a scrim that keeps the cream type legible.
+   ========================================================================= */
+.home-view { padding-top: 0; padding-bottom: 0; }
+.home-hero { position: relative; isolation: isolate; display: flex; min-height: calc(100svh - 69px); margin: 0 calc(-1 * var(--deg-view-pad-x)); background: var(--deg-dark); color: var(--deg-cream); overflow: hidden; }
+.home-hero-video { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.home-hero-scrim { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(19,13,0,.76) 0%, rgba(19,13,0,.64) 42%, rgba(19,13,0,.28) 56%, rgba(19,13,0,.34) 70%, rgba(19,13,0,.8) 86%, rgba(19,13,0,.88) 100%); } /* dark where there is type (cream on the video's brightest frames measured under 4.5:1 with a lighter scrim), open in the middle where the video is the picture */
+.home-hero-inner { width: 100%; max-width: 560px; margin: 0 auto; padding: 40px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: space-between; gap: 32px; }
+.home-hero-copy { text-align: center; }
+.home-hero h1 { font-size: 44px; line-height: 46px; letter-spacing: -.01em; text-wrap: balance; color: var(--deg-cream); }
+.home-hero h1 span { display: block; margin-top: 4px; color: var(--deg-gold-on-dark); }
+.home-hero-lead { margin: 16px auto 0; max-width: 34ch; font-size: 16px; line-height: 24px; font-weight: 500; color: rgba(255,247,234,.9); }
+
+.home-hero-actions { display: flex; flex-direction: column; gap: 16px; }
+:where(.home-view) ul, :where(.home-view) p { margin: 0; padding: 0; list-style: none; }
+.home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.home-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 96px; padding: 14px 6px; border: none; border-radius: var(--deg-radius-card); background: var(--deg-white); color: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); font-size: 14px; line-height: 18px; font-weight: 700; text-align: center; transition: background-color .15s ease, transform .15s ease; }
+.home-tile:hover { background: var(--deg-cream-cool); }
+.home-tile:active { transform: translateY(1px); }
+.home-tile.is-primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+.home-tile.is-primary:hover { background: var(--deg-gold-on-dark); }
+.home-tile svg { flex: none; }
+.home-hero-ship { text-align: center; font-size: 14px; line-height: 20px; color: rgba(255,247,234,.9); }
+.home-hero-ship a { display: inline-flex; align-items: center; gap: 4px; padding: 10px 2px; font-weight: 700; color: var(--deg-cream); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--deg-gold-on-dark); }
+.home-hero-proof { text-align: center; font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,247,234,.72); }
+.home-hero a:focus-visible, .home-hero button:focus-visible { box-shadow: 0 0 0 2px var(--deg-dark), 0 0 0 4px var(--deg-cream); }
+
+@media (min-width: 641px) {
+  .home-view { padding-top: 24px; }
+  .home-hero { min-height: 640px; margin: 0; border-radius: var(--deg-radius-panel); }
+  .home-hero-inner { max-width: 640px; padding: 56px 32px 40px; }
+  .home-hero h1 { font-size: 56px; line-height: 58px; }
+}
+
+/* Two short lines per tile ("Order / catering"), as the reference does, so the label never crowds the tile edge. */
+.home-tile span { max-width: 8ch; text-wrap: balance; }
+
+/* =========================================================================
+   Location details modal (#ld-modal): the store, then a day and a time.
+   Built on the pickup scheduler's own rows; "Start my order" stays disabled
+   until both are chosen.
+   ========================================================================= */
+.ld-store h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+.ld-address { margin: 4px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-heading); }
+.ld-hours { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ld-change { margin-top: 6px; padding: 10px 0; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.ld-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; padding: 6px; margin: -6px; }
+.ld-section { display: flex; flex-direction: column; gap: 12px; }
+.ld-section h2 { font-size: 20px; line-height: 28px; font-weight: 700; color: var(--deg-ink-deep); }
+.ld-empty { margin: 0; padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ld-hint { margin: 0; font-size: 14px; line-height: 20px; text-align: center; color: var(--deg-ink-muted); }
+.ld-hint:empty { display: none; }
+.pickup-date-tile.is-closed { opacity: .5; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .ld-store h1 { font-size: 24px; line-height: 30px; }
+}
+
