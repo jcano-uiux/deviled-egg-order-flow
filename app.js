@@ -1,6 +1,42 @@
 (() => {
   const TAX_RATE = 0.0825;
 
+  // ---------- Location picker, loaded on demand ----------
+  // d3, topojson, the US map data and location-picker.js are only needed on the picker, so they load the first time
+  // it opens (or when the Home "Order pickup" tile is pointed at). Until then this stub holds what app.js tells the
+  // picker (the funnel's words, the saved order) and the callbacks it assigns; location-picker.js picks them all up.
+  window.degLocationPicker = {
+    onPick: null, onContinue: null, onChangeTime: null, onNavigate: null, ready: false, pending: {},
+    configure(cfg) { this.pending.configure = cfg; },
+    setSaved(info) { this.pending.saved = info; },
+    sync() {},
+  };
+  const PICKER_SCRIPTS = [
+    'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js',
+    'https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js',
+    'location-picker-stores.js',
+    'location-picker.js',
+  ];
+  let pickerLoad = null;
+  function loadLocationPicker() {
+    if (pickerLoad) return pickerLoad;
+    pickerLoad = PICKER_SCRIPTS.reduce((chain, src) => chain.then(() => new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error('Could not load ' + src));
+      document.head.appendChild(el);
+    })), Promise.resolve()).catch((err) => {
+      pickerLoad = null;
+      console.error(err);
+      const msg = document.getElementById('zip-message');
+      if (msg) msg.textContent = 'The store search could not load. Check your connection and try again.';
+    });
+    return pickerLoad;
+  }
+  // A ZIP search sent before the picker has loaded must not reload the page.
+  document.getElementById('zip-form').addEventListener('submit', (e) => { if (!window.degLocationPicker.ready) e.preventDefault(); });
+
   const ADD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.8333 8.75H11.25V4.16667H8.75V8.75H4.16667V11.25H8.75V15.8333H11.25V11.25H15.8333V8.75Z" fill="currentColor"/></svg>';
   // Shared source for every quantity-stepper .mini-step-btn (dozen flavor
   // allocation, bagel spread flavors, cart-drawer qty) — any future +/-
@@ -33,9 +69,11 @@
     if (!item.image) return eggThumb();
     const img = document.createElement('img');
     img.className = 'shop-card-photo';
-    img.src = item.image;
-    img.alt = item.name;
+    // `loading` goes on before `src`: set after it, the browser has already started the download.
     img.loading = 'lazy';
+    img.decoding = 'async';
+    img.alt = item.name;
+    img.src = item.image;
     return img;
   };
 
@@ -300,7 +338,7 @@
 
   // Three carts, one per fulfillment path, never merged: Pickup (the location
   // menus), Shipping (Nationwide Shipping kits) and Catering. Each checks out
-  // on its own page. Delivery is not a cart: it hands off to the partner apps.
+  // on its own page. Delivery has no cart yet.
   const CART_KINDS = ['pickup', 'shipping', 'catering'];
   const CART_LABELS = { pickup: 'Pickup', shipping: 'Shipping', catering: 'Catering' };
 
@@ -382,6 +420,25 @@
   // Which cart an entry belongs to travels with it (`entry.cart`); pickup is the default.
   // How much the last add moved the badge, so the add flight can hold the old count until it lands.
   let lastAddDelta = 0;
+  // A cart line can be reopened in the modal that built it. `editingLine` is the line that modal is
+  // changing (null while it is adding a new one) and `editingKind` the cart to go back to afterwards.
+  let editingLine = null;
+  let editingKind = null;
+  // Closing a modal ends the edit. A line that had no saved choices (it predates Edit) was given a blank spec
+  // just to open the modal; if the customer cancels, it goes back to how it was.
+  function endLineEdit() {
+    if (editingLine && editingLine.edit && editingLine.edit.blank) delete editingLine.edit;
+    editingLine = null;
+  }
+  // Saving an edit replaces the line where it sits, closes the modal and returns to the drawer.
+  function commitLineEdit(fields, closeModal) {
+    Object.assign(editingLine, fields);
+    persistCart();
+    renderCartBadge();
+    closeModal();
+    openCart(editingKind);
+  }
+
   function addToCart(entry) {
     const cart = state.carts[entry.cart || 'pickup'];
     const before = cartCount();
@@ -713,7 +770,29 @@
   function showOrderTiles() {
     orderTilesScreen.hidden = false;
     orderGroupScreen.hidden = true;
+    document.title = PAGE_TITLES.order;
   }
+
+  // TEMP: card-style switcher for comparing the three product-card variants. Remove once one is chosen.
+  const CARD_VARIANTS = [['0', 'Current'], ['1', 'Photo grid'], ['2', 'Tile'], ['3', 'Menu list']];
+  function setCardVariant(v) {
+    document.getElementById('order-rows').dataset.cards = v;
+    try { localStorage.setItem('deg-card-variant', v); } catch (e) { /* storage unavailable */ }
+    document.querySelectorAll('#card-variant-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+  }
+  (function initCardSwitch() {
+    let v = '1';
+    try { v = localStorage.getItem('deg-card-variant') || '1'; } catch (e) { /* storage unavailable */ }
+    const bar = document.createElement('div');
+    bar.id = 'card-variant-switch';
+    bar.className = 'card-variant-switch';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Product card style');
+    bar.innerHTML = CARD_VARIANTS.map(([k, label]) => `<button type="button" data-v="${k}">${label}</button>`).join('');
+    bar.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setCardVariant(b.dataset.v); });
+    document.getElementById('order-rows').before(bar);
+    setCardVariant(v);
+  })();
 
   function renderOrderRows(g) {
     const list = document.getElementById('order-rows');
@@ -731,7 +810,8 @@
           <span class="order-row-meta"><span class="order-row-price">${money(item.price)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>
           ${item.desc ? `<span class="order-row-desc">${item.desc}</span>` : ''}
         </span>
-        <span class="order-row-add" aria-hidden="true">${ADD_ICON}</span>`;
+        <span class="order-row-add" aria-hidden="true">${ADD_ICON}</span>
+        <span class="order-row-cta" aria-hidden="true">${(item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'}</span>`;
       row.querySelector('.order-row-media').appendChild(productThumb(item));
       row.addEventListener('click', () => openMenuItem(item, g.keyPrefix, g.cartCategory));
       li.appendChild(row);
@@ -749,6 +829,7 @@
     renderOrderRows(g);
     orderTilesScreen.hidden = true;
     orderGroupScreen.hidden = false;
+    document.title = `${g.name} — Order pickup — ${SITE_NAME}`;
     if (push) history.pushState({ orderGroup: id }, '', '#order/' + id);
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     document.getElementById('order-group-title').focus({ preventScroll: true });
@@ -1028,7 +1109,7 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !pickupSettingsModal.hidden || !storeLocatorModal.hidden || !addPaymentModal.hidden || !paymentMethodsModal.hidden || !boxModal.hidden || !ldModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !addPaymentModal.hidden || !paymentMethodsModal.hidden || !boxModal.hidden || !ldModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
@@ -1042,8 +1123,6 @@
     else if (!wrapModal.hidden) closeWrapModal();
     else if (!quickviewModal.hidden) closeQuickviewModal();
     else if (!cartDrawer.hidden) closeCart();
-    else if (!pickupSettingsModal.hidden) closePickupSettings();
-    else if (!storeLocatorModal.hidden) closeStoreLocator();
     else if (!addPaymentModal.hidden) closeAddPayment();
     else if (!paymentMethodsModal.hidden) closePaymentMethods();
     else if (!boxModal.hidden) closeBoxModal();
@@ -1335,13 +1414,13 @@
     // through the "Choose N eggs" copy every multi-piece pack uses;
     // singular products get their own natural phrasing instead.
     btn.textContent = complete
-      ? `Add ${state.modalQty} to order · ${money(total)}`
+      ? `${editingLine ? 'Update order' : `Add ${state.modalQty} to order`} · ${money(total)}`
       : activeProduct.total === 1
         ? 'Choose a flavor to continue'
         : `Choose ${activeProduct.total - allocated} ${allocated === 0 ? '' : 'more '}${eggWord(activeProduct.total - allocated)} to continue`;
   }
 
-  function openDozenModal(product) {
+  function openDozenModal(product, line = null) {
     lastFocusedEl = document.activeElement;
     // A fixed-flavor kit (the sampler) has nothing to allocate: no picker config.
     const picker = product.pickerConfig || { total: 0, maxFlavors: 1 };
@@ -1357,6 +1436,15 @@
     state.modalQty = 1;
     document.getElementById('item-note').value = '';
     populateQtySelect(document.getElementById('qty-select'));
+    editingLine = line;
+    if (line) {
+      // Editing: every choice comes back filled in from the line.
+      const e = line.edit;
+      state.modalFlavorQty = { ...e.flavorQty };
+      state.modalExclusions = Object.fromEntries(Object.entries(e.exclusions || {}).map(([id, list]) => [id, new Set(list)]));
+      state.modalQty = line.qty;
+      document.getElementById('item-note').value = e.note || '';
+    }
 
     document.getElementById('dozen-modal-title').textContent = activeProduct.name;
     document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
@@ -1384,7 +1472,7 @@
     notice.hidden = !activeProduct.notice;
     notice.textContent = activeProduct.notice || '';
 
-    state.bagelPreset = 'mixed';
+    state.bagelPreset = (line && line.edit.bagelPreset) || 'mixed';
     document.getElementById('bagel-preset-block').hidden = !activeProduct.bagelPresets;
     if (activeProduct.bagelPresets) renderBagelPresets();
 
@@ -1401,6 +1489,7 @@
   }
 
   function closeDozenModal() {
+    endLineEdit();
     stopFlavorWatch();
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
@@ -1427,14 +1516,26 @@
     const parts = [activeProduct.fixedFlavors ? '18 mini egg salads' : flavorLabels.join(', ')];
     if (activeProduct.bagelPresets) parts.unshift(activeProduct.bagelPresets.find((p) => p.id === state.bagelPreset).label);
     if (activeProduct.ships) parts.push('Ships nationwide');
-    addToCart({
-      cart: activeProduct.cart || 'pickup',
-      key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
+    const entry = {
       name: activeProduct.name,
       sub: parts.join(' · ') + (note ? ' · Note: ' + note : ''),
       price: activeProduct.price,
       qty: state.modalQty,
       image: activeProduct.image,
+    };
+    // What Edit needs to reopen this line: the choices themselves, not the sentence above. A fixed-kit has none.
+    if (!activeProduct.fixedFlavors) {
+      entry.edit = {
+        type: 'dozen', productId: activeProduct.id, flavorQty: { ...state.modalFlavorQty },
+        exclusions: Object.fromEntries(Object.entries(state.modalExclusions).map(([id, set]) => [id, [...set]])),
+        note, bagelPreset: activeProduct.bagelPresets ? state.bagelPreset : undefined,
+      };
+    }
+    if (editingLine) { commitLineEdit(entry, closeDozenModal); return; }
+    addToCart({
+      ...entry,
+      cart: activeProduct.cart || 'pickup',
+      key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
     });
     celebrateAdd(itemModal, closeDozenModal, activeProduct.image, state.modalQty);
   });
@@ -1482,11 +1583,12 @@
     const total = BAGEL_PRICE * state.bagelQty;
     const btn = document.getElementById('add-bagel-to-order');
     btn.disabled = !state.bagelFlavor;
-    btn.textContent = state.bagelFlavor ? `Add ${state.bagelQty} to order · ${money(total)}` : 'Choose a flavor to continue';
+    btn.textContent = state.bagelFlavor ? `${editingLine ? 'Update order' : `Add ${state.bagelQty} to order`} · ${money(total)}` : 'Choose a flavor to continue';
   }
 
-  function openBagelModal() {
+  function openBagelModal(line = null) {
     lastFocusedEl = document.activeElement;
+    editingLine = line;
     document.getElementById('bagel-modal-image').src = BAGEL_IMAGE;
     document.getElementById('bagel-modal-price').textContent = money(BAGEL_PRICE);
     document.getElementById('bagel-modal-desc').textContent = BAGEL_DESC;
@@ -1495,10 +1597,14 @@
     state.bagelFlavor = null;
     state.bagelOptions = new Set();
     state.bagelQty = 1;
+    if (line) {
+      const e = line.edit;
+      Object.assign(state, { bagelToast: e.toast, bagelType: e.bagelType, bagelFlavor: e.flavor, bagelOptions: new Set(e.options), bagelQty: line.qty });
+    }
     populateQtySelect(document.getElementById('bagel-qty-select'));
     document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelToast));
     document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelType));
-    document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.toggle('active', state.bagelOptions.has(b.dataset.value)));
     renderBagelFlavorRadios();
     renderBagelModalFooter();
     bagelModal.querySelector('.item-modal-scroll').scrollTop = 0;
@@ -1510,6 +1616,7 @@
   }
 
   function closeBagelModal() {
+    endLineEdit();
     bagelModalBackdrop.hidden = true;
     bagelModal.hidden = true;
     updateInert();
@@ -1557,13 +1664,18 @@
     if (!state.bagelFlavor) return;
     const parts = [state.bagelType, state.bagelToast, state.bagelFlavor];
     if (state.bagelOptions.size) parts.push(Array.from(state.bagelOptions).join(', '));
-    addToCart({
-      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavor, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
+    const entry = {
       name: 'Full Size Bagel',
       sub: parts.join(' · '),
       price: BAGEL_PRICE,
       qty: state.bagelQty,
       image: BAGEL_IMAGE,
+      edit: { type: 'bagel', toast: state.bagelToast, bagelType: state.bagelType, flavor: state.bagelFlavor, options: Array.from(state.bagelOptions) },
+    };
+    if (editingLine) { commitLineEdit(entry, closeBagelModal); return; }
+    addToCart({
+      ...entry,
+      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavor, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
     });
     celebrateAdd(bagelModal, closeBagelModal, BAGEL_IMAGE, state.bagelQty);
   });
@@ -1651,17 +1763,18 @@
     document.getElementById('bowl-qty-select').value = String(state.bowlQty);
     const unitPrice = activeBowl.price + bowlAddOnsTotal();
     const total = unitPrice * state.bowlQty;
-    document.getElementById('add-bowl-to-order').textContent = `Add ${state.bowlQty} to order · ${money(total)}`;
+    document.getElementById('add-bowl-to-order').textContent = `${editingLine ? 'Update order' : `Add ${state.bowlQty} to order`} · ${money(total)}`;
   }
 
-  function openBowlModal(bowl) {
+  function openBowlModal(bowl, line = null) {
     lastFocusedEl = document.activeElement;
     activeBowl = bowl;
-    state.bowlAddOns = new Set();
-    state.bowlEggstras = new Set();
-    state.bowlExclusions = new Set();
-    state.bowlOptions = new Set();
-    state.bowlQty = 1;
+    editingLine = line;
+    state.bowlAddOns = new Set(line ? line.edit.addOns : []);
+    state.bowlEggstras = new Set(line ? line.edit.eggstras : []);
+    state.bowlExclusions = new Set(line ? line.edit.exclusions : []);
+    state.bowlOptions = new Set(line ? line.edit.options : []);
+    state.bowlQty = line ? line.qty : 1;
     populateQtySelect(document.getElementById('bowl-qty-select'));
 
     document.getElementById('bowl-modal-title').textContent = bowl.name;
@@ -1669,7 +1782,7 @@
     document.getElementById('bowl-modal-image').src = bowl.image;
     document.getElementById('bowl-modal-desc').textContent = bowl.desc;
     document.getElementById('bowl-modal-header-title').textContent = bowl.name;
-    document.querySelectorAll('#bowl-options-picker .chip').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('#bowl-options-picker .chip').forEach((b) => b.classList.toggle('active', state.bowlOptions.has(b.dataset.value)));
 
     renderBowlAddOns();
     renderBowlEggstras();
@@ -1684,6 +1797,7 @@
   }
 
   function closeBowlModal() {
+    endLineEdit();
     bowlModalBackdrop.hidden = true;
     bowlModal.hidden = true;
     updateInert();
@@ -1719,16 +1833,24 @@
     if (state.bowlExclusions.size) parts.push('No ' + Array.from(state.bowlExclusions).join(', ').toLowerCase());
     if (state.bowlOptions.size) parts.push(Array.from(state.bowlOptions).join(', '));
     const unitPrice = activeBowl.price + bowlAddOnsTotal();
-    addToCart({
-      key: 'bowl-' + activeBowl.id + '-' + JSON.stringify({
-        a: Array.from(state.bowlAddOns), e: Array.from(state.bowlEggstras),
-        x: Array.from(state.bowlExclusions), o: Array.from(state.bowlOptions),
-      }) + '-' + Date.now(),
+    const entry = {
       name: activeBowl.name,
       sub: parts.length ? parts.join(' · ') : activeBowl.note || '',
       price: unitPrice,
       qty: state.bowlQty,
       image: activeBowl.image,
+      edit: {
+        type: 'bowl', productId: activeBowl.id, addOns: Array.from(state.bowlAddOns), eggstras: Array.from(state.bowlEggstras),
+        exclusions: Array.from(state.bowlExclusions), options: Array.from(state.bowlOptions),
+      },
+    };
+    if (editingLine) { commitLineEdit(entry, closeBowlModal); return; }
+    addToCart({
+      ...entry,
+      key: 'bowl-' + activeBowl.id + '-' + JSON.stringify({
+        a: Array.from(state.bowlAddOns), e: Array.from(state.bowlEggstras),
+        x: Array.from(state.bowlExclusions), o: Array.from(state.bowlOptions),
+      }) + '-' + Date.now(),
     });
     celebrateAdd(bowlModal, closeBowlModal, activeBowl.image, state.bowlQty);
   });
@@ -1779,15 +1901,16 @@
     const btn = document.getElementById('add-wrap-to-order');
     const complete = Boolean(state.wrapFlavor);
     btn.disabled = !complete;
-    btn.textContent = complete ? `Add ${state.wrapQty} to order · ${money(total)}` : 'Choose a flavor to continue';
+    btn.textContent = complete ? `${editingLine ? 'Update order' : `Add ${state.wrapQty} to order`} · ${money(total)}` : 'Choose a flavor to continue';
   }
 
-  function openWrapModal(item) {
+  function openWrapModal(item, line = null) {
     lastFocusedEl = document.activeElement;
     activeWrap = item;
-    state.wrapFlavor = null;
-    state.wrapAddOns = new Set();
-    state.wrapQty = 1;
+    editingLine = line;
+    state.wrapFlavor = line ? line.edit.flavor : null;
+    state.wrapAddOns = new Set(line ? line.edit.addOns : []);
+    state.wrapQty = line ? line.qty : 1;
     populateQtySelect(document.getElementById('wrap-qty-select'));
 
     document.getElementById('wrap-modal-title').textContent = item.name;
@@ -1808,6 +1931,7 @@
   }
 
   function closeWrapModal() {
+    endLineEdit();
     wrapModalBackdrop.hidden = true;
     wrapModal.hidden = true;
     updateInert();
@@ -1829,13 +1953,18 @@
     const parts = [flavor.label];
     if (addOnLabels.length) parts.push(addOnLabels.join(', '));
     const unitPrice = activeWrap.price + wrapAddOnsTotal();
-    addToCart({
-      key: 'wrap-' + activeWrap.id + '-' + flavor.id + '-' + JSON.stringify(Array.from(state.wrapAddOns)) + '-' + Date.now(),
+    const entry = {
       name: activeWrap.name,
       sub: parts.join(' · '),
       price: unitPrice,
       qty: state.wrapQty,
       image: activeWrap.image,
+      edit: { type: 'wrap', productId: activeWrap.id, flavor: flavor.id, addOns: Array.from(state.wrapAddOns) },
+    };
+    if (editingLine) { commitLineEdit(entry, closeWrapModal); return; }
+    addToCart({
+      ...entry,
+      key: 'wrap-' + activeWrap.id + '-' + flavor.id + '-' + JSON.stringify(Array.from(state.wrapAddOns)) + '-' + Date.now(),
     });
     celebrateAdd(wrapModal, closeWrapModal, activeWrap.image, state.wrapQty);
   });
@@ -1974,15 +2103,19 @@
     const item = CATERING_ITEMS[id];
     if (item.kind === 'box') { openBoxModal(item); return; }
     if (item.kind === 'simple') { openQuickviewModal(item, { keyPrefix: 'catering', cartCategory: 'Catering · Add-on station · Serves 10-12', cart: 'catering' }); return; }
-    // A bundle is one dozen-style picker: its 10 pieces go out in steps of 5
-    // across up to 2 flavors, and every bundle ordered gets the same mix.
-    openDozenModal({
+    openDozenModal(cateringBundleProduct(item));
+  }
+
+  // A bundle is one dozen-style picker: its 10 pieces go out in steps of 5
+  // across up to 2 flavors, and every bundle ordered gets the same mix.
+  function cateringBundleProduct(item) {
+    return {
       ...item,
       cart: 'catering',
       cutout: true,
       pickerConfig: { total: 10, maxFlavors: 2 },
       hintTail: ' Every bundle gets the same mix.',
-    });
+    };
   }
 
   document.querySelectorAll('[data-cater-order]').forEach((btn) => {
@@ -2278,8 +2411,56 @@
   }
 
   function editCateringLine(line) {
-    closeCart();
     openBoxModal(CATERING_ITEMS[line.config.itemId], line);
+  }
+
+  // Edit reopens the modal that built the line, filled in from what the line saved.
+  function findDozenProduct(id) {
+    const bundle = CATERING_ITEMS[id];
+    if (bundle && bundle.kind === 'bundle') return cateringBundleProduct(bundle);
+    return [...DEVILED_EGGS, ...EGG_SALADS, ...PLATTERS, ...SHIPPING_KITS].find((p) => p.id === id);
+  }
+  // A line added before Edit existed saved only a sentence. If its product can be customized, Edit still
+  // reopens that product's modal, starting blank, and saving replaces the line.
+  function blankEditSpec(line) {
+    const dozen = [...DEVILED_EGGS, ...EGG_SALADS, ...PLATTERS, ...SHIPPING_KITS, ...Object.values(CATERING_ITEMS).filter((i) => i.kind === 'bundle')]
+      .find((p) => p.name === line.name && !p.fixedFlavors && (p.pickerConfig || p.kind === 'bundle'));
+    if (dozen) return { type: 'dozen', productId: dozen.id, flavorQty: {}, exclusions: {}, note: '', blank: true };
+    const bowl = PROTEIN_BOWLS.find((b) => b.name === line.name);
+    if (bowl) return { type: 'bowl', productId: bowl.id, addOns: [], eggstras: [], exclusions: [], options: [], blank: true };
+    if (line.name === 'Full Size Bagel') return { type: 'bagel', toast: 'Not Toasted', bagelType: 'Plain', flavor: null, options: [], blank: true };
+    const wrap = SANDWICH_WRAP.find((w) => w.name === line.name);
+    if (wrap) return { type: 'wrap', productId: wrap.id, flavor: null, addOns: [], blank: true };
+    return null;
+  }
+  const canEditLine = (line) => !!(line.config || line.edit || blankEditSpec(line));
+  function editCartLine(kind, line) {
+    if (!canEditLine(line)) return;
+    closeCart();
+    editingKind = kind;
+    if (line.config) { editCateringLine(line); return; }
+    if (!line.edit) line.edit = blankEditSpec(line);
+    const e = line.edit;
+    if (e.type === 'dozen') openDozenModal(findDozenProduct(e.productId), line);
+    else if (e.type === 'bowl') openBowlModal(PROTEIN_BOWLS.find((b) => b.id === e.productId), line);
+    else if (e.type === 'bagel') openBagelModal(line);
+    else if (e.type === 'wrap') openWrapModal(SANDWICH_WRAP.find((w) => w.id === e.productId), line);
+  }
+
+  // Duplicate puts a copy right under the original, same choices, as its own line so one copy can be changed.
+  // A box meal keeps its box count (there is a ten-box minimum); everything else starts at one.
+  let freshLineKey = null;
+  function duplicateCartLine(kind, index) {
+    const copy = JSON.parse(JSON.stringify(state.carts[kind][index]));
+    copy.key = `${copy.key}-copy-${Date.now()}`;
+    if (!copy.config) copy.qty = 1;
+    state.carts[kind].splice(index + 1, 0, copy);
+    freshLineKey = copy.key;
+    persistCart();
+    renderCartBadge();
+    renderDrawer();
+    const row = document.querySelector(`#drawer-items .drawer-line[data-key="${CSS.escape(copy.key)}"]`);
+    if (row) { row.scrollIntoView({ block: 'nearest' }); row.querySelector('.drawer-link').focus({ preventScroll: true }); }
   }
 
   document.getElementById('add-box-to-order').addEventListener('click', () => {
@@ -2412,7 +2593,6 @@
     next.click();
   });
 
-  const TRASH_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M10 3h4M6 7l1 13h10l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   // Removing a line is undoable for a few seconds: the drawer says so, and puts the line back where it was.
   let drawerUndo = null;
@@ -2445,6 +2625,8 @@
     renderDrawer();
   });
 
+  const MAX_LINE_QTY = 100;
+
   function renderDrawer() {
     // Emptying the cart being viewed moves on to the next one that has items.
     if (!state.carts[state.drawerCart].length) {
@@ -2468,61 +2650,56 @@
 
     items.forEach((item, index) => {
       const row = document.createElement('div');
-      row.className = 'drawer-item';
+      row.className = 'drawer-item drawer-line' + (item.key === freshLineKey ? ' is-fresh' : '');
+      row.dataset.key = item.key;
       const thumb = productThumb(item);
       thumb.style.width = '56px';
       thumb.style.height = '56px';
       row.appendChild(thumb);
 
-      const body = document.createElement('div');
-      body.className = 'drawer-item-body';
-      body.innerHTML = `<span class="drawer-item-name">${escapeHTML(item.name)}</span><span class="drawer-item-sub">${lineSub(item)}</span>`;
-      row.appendChild(body);
-
-      const actions = document.createElement('div');
-      actions.className = 'drawer-item-actions';
-      if (item.config) {
-        // A box meal's flavor split depends on its box count, so its count can't
-        // be nudged here: Edit reopens the modal with every choice filled in.
-        actions.innerHTML = `
-          <span class="item-price">${money(lineTotal(item))}</span>
-          <span class="drawer-item-qty">${item.qty} ${item.qty === 1 ? 'box' : 'boxes'}</span>
-          <div class="drawer-item-buttons">
-            <button class="text-btn drawer-edit-btn" type="button" aria-label="Edit ${escapeHTML(item.name)}">Edit</button>
-            <button class="icon-btn drawer-trash-btn" type="button" aria-label="Remove ${escapeHTML(item.name)}">${TRASH_ICON}</button>
-          </div>`;
-        actions.querySelector('.drawer-edit-btn').addEventListener('click', () => editCateringLine(item));
-        actions.querySelector('.drawer-trash-btn').addEventListener('click', () => removeCartLine(kind, index));
-      } else {
-        actions.innerHTML = `
-          <span class="item-price">${money(lineTotal(item))}</span>
-          <div class="mini-stepper">
-            <button class="mini-step-btn" type="button" aria-label="${item.qty <= 1 ? 'Remove ' + escapeHTML(item.name) : 'Decrease quantity of ' + escapeHTML(item.name)}">${STEP_MINUS_ICON}</button>
-            <span>${item.qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="Increase quantity of ${escapeHTML(item.name)}">${STEP_PLUS_ICON}</button>
+      const name = escapeHTML(item.name);
+      const main = document.createElement('div');
+      main.className = 'drawer-line-main';
+      // Quantity is a dropdown from 1 to 100. Box meals keep a plain count instead (their flavor split depends on
+      // the box count, so it changes in Edit, with the ten-box minimum).
+      const qtyControl = item.config
+        ? `<span class="drawer-item-qty">${item.qty} ${item.qty === 1 ? 'box' : 'boxes'}</span>`
+        : `<label class="drawer-qty"><span>Qty</span><select class="drawer-qty-select" aria-label="Quantity of ${name}">${
+            Array.from({ length: MAX_LINE_QTY }, (_, i) => `<option value="${i + 1}"${i + 1 === item.qty ? ' selected' : ''}>${i + 1}</option>`).join('')
+          }</select></label>`;
+      main.innerHTML = `
+        <div class="drawer-line-top"><span class="drawer-item-name">${name}</span><span class="item-price">${money(lineTotal(item))}</span></div>
+        ${lineSub(item) ? `<span class="drawer-item-sub">${lineSub(item)}</span>` : ''}
+        <div class="drawer-line-qty">${qtyControl}</div>
+        <div class="drawer-line-foot">
+          <div class="drawer-line-links">
+            ${canEditLine(item) ? `<button class="drawer-link" type="button" data-act="edit" aria-label="Edit ${name}">Edit</button>` : ''}
+            <button class="drawer-link" type="button" data-act="duplicate" aria-label="Duplicate ${name}">Duplicate</button>
+            <button class="drawer-link" type="button" data-act="remove" aria-label="Remove ${name}">Remove</button>
           </div>
-        `;
-        const [decBtn, incBtn] = actions.querySelectorAll('.mini-step-btn');
-        decBtn.addEventListener('click', () => {
-          if (item.qty <= 1) {
-            removeCartLine(kind, index);
-          } else {
-            item.qty -= 1;
-            persistCart();
-            renderCartBadge();
-            renderDrawer();
-          }
-        });
-        incBtn.addEventListener('click', () => {
-          item.qty += 1;
-          persistCart();
-          renderCartBadge();
-          renderDrawer();
-        });
-      }
-      row.appendChild(actions);
+        </div>`;
+      main.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        if (btn.dataset.act === 'edit') editCartLine(kind, item);
+        else if (btn.dataset.act === 'duplicate') duplicateCartLine(kind, index);
+        else if (btn.dataset.act === 'remove') removeCartLine(kind, index);
+      });
+      main.addEventListener('change', (e) => {
+        const select = e.target.closest('.drawer-qty-select');
+        if (!select) return;
+        item.qty = Number(select.value);
+        persistCart();
+        renderCartBadge();
+        renderDrawer();
+        // The drawer redraws on every change; keep the customer on the control they just used.
+        const again = document.querySelector(`#drawer-items .drawer-line[data-key="${CSS.escape(item.key)}"] .drawer-qty-select`);
+        if (again) again.focus({ preventScroll: true });
+      });
+      row.appendChild(main);
       list.appendChild(row);
     });
+    freshLineKey = null;
 
     // Pickup shows its total with tax, as it always has; the other two carts
     // owe fees that only checkout knows, so they show a subtotal and say so.
@@ -2559,14 +2736,32 @@
   const CHECKOUT_VIEW_FOR = { pickup: 'checkout', shipping: 'ship-checkout', catering: 'cater-checkout' };
   const PAGE_FOR_CART = { pickup: 'order', shipping: 'shipping', catering: 'catering' };
 
+  // Each page names itself in the browser tab (and to screen readers when the page changes).
+  const SITE_NAME = 'Deviled Egg Co.';
+  const PAGE_TITLES = {
+    home: 'Deviled Egg Co. — Order Online',
+    'location-picker': `Choose a pickup store — ${SITE_NAME}`,
+    menu: `Menu — ${SITE_NAME}`,
+    order: `Order pickup — ${SITE_NAME}`,
+    shipping: `Nationwide Shipping — ${SITE_NAME}`,
+    catering: `Catering — ${SITE_NAME}`,
+    checkout: `Secure Checkout — ${SITE_NAME}`,
+    'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
+    'cater-checkout': `Secure Checkout, Catering — ${SITE_NAME}`,
+    confirmation: `Order confirmed — ${SITE_NAME}`,
+  };
+
   function showView(name) {
     // The pickup order page is the Pickup funnel's third step: without a chosen store, day and time, start the funnel
     // instead. The products page (#menu) stays open to everyone.
     if (name === 'order' && !pickupSessionValid()) { startFunnel('pickup'); return; }
     Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
+    document.title = PAGE_TITLES[name] || PAGE_TITLES.home;
     if (name === 'order') showOrderTiles();
-    if (name === 'location-picker') syncPickerSaved();
     document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
+    // The order summary opens expanded at every width; the customer can fold it.
+    if (name === 'checkout') setOrderSummaryOpen(true);
+    if (name === 'location-picker') { syncPickerSaved(); loadLocationPicker(); }
     // The two top-level pages the header links to; checkout/confirmation
     // aren't reachable from the nav so they leave it unmarked.
     document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
@@ -2575,7 +2770,7 @@
     });
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     updateCartBar();
-    syncHomeVideo();
+    syncHeroVideos();
     updateBarReveal();
     syncPageHash(name);
     if (window.degLocationPicker && window.degLocationPicker.sync) window.degLocationPicker.sync();
@@ -2583,26 +2778,38 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'cater-checkout', 'confirmation'];
+  // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
+  // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
+  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'cater-checkout': '#checkout/catering', confirmation: '#confirmation' };
   function syncPageHash(name) {
     if (!PAGE_VIEWS.includes(name)) return;
     // #order/<group> is the order page too (see openOrderGroup).
     if (name === 'order' && location.hash.startsWith('#order')) return;
-    const want = name === 'home' ? '' : '#' + name;
+    const want = name === 'home' ? '' : (PAGE_HASH_OF[name] || '#' + name);
     if (location.hash === want || (name === 'home' && (location.hash === '' || location.hash === '#home'))) return;
-    history.replaceState(null, '', location.pathname + location.search + want);
+    const url = location.pathname + location.search + want;
+    if (CHECKOUT_VIEWS.includes(name)) history.pushState(null, '', url);
+    else history.replaceState(null, '', url);
   }
 
-  // ---------- Homepage hero ----------
-  // The hero's background video only plays while the Home view is showing (and
-  // not at all under reduced motion, where the first frame stays still).
-  const homeVideo = document.querySelector('.home-hero-video');
+  // ---------- Hero videos ----------
+  // Each hero video (Home's, and the products page's) downloads and plays only while its own page is showing,
+  // and not at all under reduced motion, where the first frame stays still.
+  const heroVideos = [...document.querySelectorAll('video[data-hero-src]')];
   const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  function syncHomeVideo() {
-    if (!views.home.hidden && !reduceMotionQuery.matches) homeVideo.play().catch(() => {});
-    else homeVideo.pause();
+  function syncHeroVideos() {
+    heroVideos.forEach((video) => {
+      const shown = !views[video.dataset.view].hidden;
+      if (shown && !video.getAttribute('src')) video.src = video.dataset.heroSrc;
+      if (shown && !reduceMotionQuery.matches) video.play().catch(() => {});
+      else video.pause();
+    });
   }
-  reduceMotionQuery.addEventListener('change', syncHomeVideo);
+  reduceMotionQuery.addEventListener('change', syncHeroVideos);
+  // Pointing at "Order pickup" starts loading the picker before the page it opens is shown.
+  const pickupTile = document.querySelector('[data-home-go="pickup"]');
+  ['pointerenter', 'touchstart', 'focus'].forEach((type) => pickupTile.addEventListener(type, loadLocationPicker, { once: true, passive: true }));
 
   // The logo is the way home; the tiles are the front doors to each order path.
   const goHome = () => {
@@ -2631,20 +2838,30 @@
   };
   let activeFunnel = null;
 
-  function startFunnel(name) {
+  // `returnTo` is the page to go back to once the funnel finishes (checkout, when it was opened from there);
+  // without it the funnel ends on the pickup order page.
+  let funnelReturn = null;
+  function startFunnel(name, { returnTo = null } = {}) {
     const funnel = FUNNELS[name];
     activeFunnel = name;
+    funnelReturn = returnTo;
     if (window.degLocationPicker && window.degLocationPicker.configure) window.degLocationPicker.configure(funnel);
     history.replaceState(null, '', '#location-picker');
     showView('location-picker');
   }
 
+  // The picker's work is done: back to checkout if the customer came from there, otherwise on to the order page.
+  function finishPickerFunnel() {
+    const back = funnelReturn;
+    funnelReturn = null;
+    if (back === 'checkout') { renderCheckout(); showView('checkout'); return; }
+    history.replaceState(null, '', '#order');
+    showView('order');
+  }
+
   // "Continue" on the picker's saved order: carry on with the store, day and time already chosen.
   if (window.degLocationPicker) {
-    window.degLocationPicker.onContinue = () => {
-      history.replaceState(null, '', '#order');
-      showView('order');
-    };
+    window.degLocationPicker.onContinue = finishPickerFunnel;
     window.degLocationPicker.onChangeTime = (store) => openLocationDetails(store, { edit: true, thenOrder: true });
   }
 
@@ -2684,7 +2901,7 @@
   // #catering) makes each page deep-linkable and keeps the browser's back
   // button honest.
   // The page a bare URL opens is Home; the menu has its own address now.
-  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering' };
+  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#checkout': 'checkout', '#confirmation': 'order' };
   navLinksEl.addEventListener('click', (e) => {
     // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
     if (e.target.closest('.nav-link[data-inert]')) { e.preventDefault(); return; }
@@ -2709,14 +2926,13 @@
   // "#order/deviled-eggs" is the order page opened on that group's screen.
   function routeFromHash() {
     const [base, group] = location.hash.split('/');
-    const view = PAGE_HASHES[base] || 'home';
+    let view = PAGE_HASHES[base] || 'home';
+    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'catering' ? 'cater-checkout' : 'checkout';
+    if (CHECKOUT_VIEWS.includes(view)) { openCheckoutFromLink(view); return; }
     showView(view);
     if (view === 'order' && group) openOrderGroup(group, { push: false });
   }
-  window.addEventListener('hashchange', () => {
-    if (CHECKOUT_VIEWS.some((v) => !views[v].hidden) || !views.confirmation.hidden) return;
-    routeFromHash();
-  });
+  window.addEventListener('hashchange', routeFromHash);
 
   // Kit cards open their in-app modal; the whole card is the target, as on the menu.
   document.querySelector('.kit-grid').addEventListener('click', (e) => {
@@ -2763,12 +2979,23 @@
     const kind = state.drawerCart;
     if (state.carts[kind].length === 0) return;
     closeCart();
+    openCheckout(kind);
+  });
+
+  function openCheckout(kind) {
     checkoutCart = kind;
     if (kind === 'pickup') renderCheckout();
     else if (kind === 'shipping') renderShipCheckout();
     else renderCaterCheckout();
     showView(CHECKOUT_VIEW_FOR[kind]);
-  });
+  }
+  // An address that points at a checkout (a bookmark, Back, a shared link) only opens it when there is something to
+  // pay for; otherwise it lands on the page that cart is filled from.
+  function openCheckoutFromLink(view) {
+    const kind = Object.keys(CHECKOUT_VIEW_FOR).find((k) => CHECKOUT_VIEW_FOR[k] === view);
+    if (!state.carts[kind].length || (kind === 'pickup' && !pickupSessionValid())) { showView(PAGE_FOR_CART[kind]); return; }
+    openCheckout(kind);
+  }
 
   document.getElementById('back-to-cart').addEventListener('click', () => {
     showView(PAGE_FOR_CART[checkoutCart]);
@@ -2782,11 +3009,6 @@
     'Rockwall, TX': '2065 Summer Lee Drive, Rockwall, TX 75032',
     'Coppell, TX': '3001 Olympus Blvd, Suite 100, Coppell, TX 75019',
   };
-
-  // ---------- Store locator modal (store list + map) ----------
-  let pendingStoreLocation = null;
-  let mapLoadTimer = null;
-  const MAP_LOAD_TIMEOUT_MS = 6000;
 
   // The menu page's store card and the pickup banner name the chosen store.
   function renderStoreHeadings() {
@@ -2802,85 +3024,12 @@
     document.getElementById('store-locator-address').textContent = STORE_ADDRESSES[state.location];
   }
 
-  function showMapStatus(mode, address) {
-    const status = document.getElementById('store-locator-map-status');
-    const statusText = document.getElementById('store-locator-map-status-text');
-    status.hidden = false;
-    status.classList.toggle('error', mode === 'error');
-    statusText.innerHTML = mode === 'error'
-      ? `Map unavailable<span class="store-locator-map-status-address">${address}</span>`
-      : 'Loading map…';
-  }
-
-  function renderStoreLocatorMap() {
-    const address = STORE_ADDRESSES[pendingStoreLocation];
-    const iframe = document.getElementById('store-locator-map-frame');
-
-    clearTimeout(mapLoadTimer);
-    showMapStatus('loading');
-
-    iframe.onload = () => {
-      clearTimeout(mapLoadTimer);
-      document.getElementById('store-locator-map-status').hidden = true;
-    };
-    iframe.onerror = () => showMapStatus('error', address);
-    mapLoadTimer = setTimeout(() => showMapStatus('error', address), MAP_LOAD_TIMEOUT_MS);
-
-    iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
-  }
-
-  function renderStoreLocatorList() {
-    const list = document.getElementById('store-locator-list');
-    list.innerHTML = '';
-    Object.keys(STORE_ADDRESSES).forEach((name) => {
-      const isActive = name === pendingStoreLocation;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'store-locator-row' + (isActive ? ' active' : '');
-      btn.setAttribute('role', 'radio');
-      btn.setAttribute('aria-checked', String(isActive));
-      btn.innerHTML = `<span class="store-locator-row-name">${name}</span><span class="store-locator-row-address">${STORE_ADDRESSES[name]}</span>`;
-      btn.addEventListener('click', () => {
-        if (name === pendingStoreLocation) return;
-        pendingStoreLocation = name;
-        renderStoreLocatorList();
-        renderStoreLocatorMap();
-      });
-      list.appendChild(btn);
-    });
-  }
-
-  const storeLocatorBackdrop = document.getElementById('store-locator-backdrop');
-  const storeLocatorModal = document.getElementById('store-locator-modal');
-
-  function openStoreLocator() {
-    lastFocusedEl = document.activeElement;
-    pendingStoreLocation = state.location;
-    renderStoreLocatorList();
-    renderStoreLocatorMap();
-    storeLocatorBackdrop.hidden = false;
-    storeLocatorModal.hidden = false;
-    updateInert();
-    document.getElementById('close-store-locator').focus();
-  }
-
-  function closeStoreLocator() {
-    storeLocatorBackdrop.hidden = true;
-    storeLocatorModal.hidden = true;
-    updateInert();
-    if (lastFocusedEl) lastFocusedEl.focus();
-  }
-
-  document.getElementById('open-store-locator').addEventListener('click', openStoreLocator);
-  document.getElementById('close-store-locator').addEventListener('click', closeStoreLocator);
-  document.getElementById('cancel-store-locator').addEventListener('click', closeStoreLocator);
-  storeLocatorBackdrop.addEventListener('click', closeStoreLocator);
-  document.getElementById('confirm-store-locator').addEventListener('click', () => {
-    state.location = pendingStoreLocation;
-    savePickupSession();
-    renderStoreLocatorSummary();
-    renderDrawer();
-    closeStoreLocator();
+  // The checkout's Store and Pickup time rows open the funnel's own pieces: the location picker, and the
+  // location details modal (day and time, with ASAP) in edit mode.
+  document.getElementById('open-store-locator').addEventListener('click', () => startFunnel('pickup', { returnTo: 'checkout' }));
+  document.getElementById('open-pickup-settings').addEventListener('click', () => {
+    const [city, st] = state.location.split(', ');
+    openLocationDetails({ city, state: st }, { edit: true });
   });
 
   // ---------- Add payment method modal ----------
@@ -3119,6 +3268,22 @@
     document.getElementById('banner-store').textContent = state.location;
     document.getElementById('banner-address').textContent = STORE_ADDRESSES[state.location] || '';
     document.getElementById('banner-when').textContent = state.pickupChosen ? pickupWhenText() : '';
+    renderPayNote();
+  }
+
+  // The line beside Place order: when the order will be ready and where, in plain words.
+  function pickupReadyText() {
+    if (!state.pickupChosen) return '';
+    const readyBy = (state.pickupTimeLabel || '').split(' – ')[1] || state.pickupTimeLabel;
+    const dateLabel = pickupDateLabel(state.pickupDateKey);
+    if (state.pickupTimeId === ASAP_ID) return `Ready for pickup in about 20–30 minutes at ${state.location}.`;
+    if (dateLabel === 'Today') return `Ready for pickup by ${readyBy} today at ${state.location}.`;
+    if (dateLabel === 'Tomorrow') return `Ready for pickup by ${readyBy} tomorrow at ${state.location}.`;
+    return `Ready for pickup by ${readyBy} on ${dateLabel} at ${state.location}.`;
+  }
+  function renderPayNote() {
+    const el = document.getElementById('pay-note-ready');
+    if (el) el.textContent = pickupReadyText();
   }
 
   // "Tomorrow · 12:00 – 12:30 PM": the chosen day and time in one line. "10:00 AM – 10:30 AM" is shortened to
@@ -3135,99 +3300,6 @@
     const [city, st] = state.location.split(', ');
     window.degLocationPicker.setSaved({ city, state: st, address: STORE_ADDRESSES[state.location], when: pickupWhenText() });
   }
-
-  // Selections apply only to this staging object while the modal is open;
-  // Confirm commits it to state, Cancel/X/backdrop just discard it.
-  let pendingPickup = null;
-
-  function updatePickupDateFade() {
-    const list = document.getElementById('pickup-date-list');
-    const wrap = document.getElementById('pickup-date-row-wrap');
-    const max = list.scrollWidth - list.clientWidth;
-    wrap.classList.toggle('can-scroll-left', list.scrollLeft > 1);
-    wrap.classList.toggle('can-scroll-right', list.scrollLeft < max - 1);
-  }
-
-  function renderPickupDateList() {
-    const list = document.getElementById('pickup-date-list');
-    list.innerHTML = '';
-    pickupDatesCache.forEach((d) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'pickup-date-tile' + (d.key === pendingPickup.dateKey ? ' active' : '');
-      btn.innerHTML = `${d.tileTop}<span class="pickup-date-sub">${d.tileSub}</span>`;
-      btn.addEventListener('click', () => {
-        if (d.key === pendingPickup.dateKey) return;
-        const slots = buildTimeSlots(d.key);
-        if (slots.length === 0) return; // store isn't open again before closing that day
-        pendingPickup = { dateKey: d.key, timeId: slots[0].id, timeLabel: slots[0].label };
-        renderPickupDateList();
-        renderPickupTimeList();
-      });
-      list.appendChild(btn);
-    });
-    updatePickupDateFade();
-  }
-
-  function renderPickupTimeList() {
-    const list = document.getElementById('pickup-time-list');
-    const slots = buildTimeSlots(pendingPickup.dateKey);
-    list.innerHTML = slots.map((slot) => radioChoiceHTML({
-      group: 'pickup-time', value: slot.id, label: slot.label, selected: slot.id === pendingPickup.timeId,
-    })).join('');
-    list.querySelectorAll('.radio-choice-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        const slot = slots.find((sl) => String(sl.id) === input.value);
-        pendingPickup.timeId = slot.id;
-        pendingPickup.timeLabel = slot.label;
-        list.querySelectorAll('.radio-choice').forEach((row) => {
-          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
-        });
-      });
-    });
-  }
-
-  const pickupSettingsBackdrop = document.getElementById('pickup-settings-backdrop');
-  const pickupSettingsModal = document.getElementById('pickup-settings-modal');
-
-  function openPickupSettings() {
-    lastFocusedEl = document.activeElement;
-    pendingPickup = { dateKey: state.pickupDateKey, timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel };
-    renderPickupDateList();
-    renderPickupTimeList();
-    pickupSettingsBackdrop.hidden = false;
-    pickupSettingsModal.hidden = false;
-    updateInert();
-    updatePickupDateFade();
-    document.getElementById('close-pickup-settings').focus();
-  }
-
-  function closePickupSettings() {
-    pickupSettingsBackdrop.hidden = true;
-    pickupSettingsModal.hidden = true;
-    updateInert();
-    if (lastFocusedEl) lastFocusedEl.focus();
-  }
-
-  document.getElementById('open-pickup-settings').addEventListener('click', openPickupSettings);
-  document.getElementById('close-pickup-settings').addEventListener('click', closePickupSettings);
-  document.getElementById('cancel-pickup-settings').addEventListener('click', closePickupSettings);
-  pickupSettingsBackdrop.addEventListener('click', closePickupSettings);
-  document.getElementById('pickup-date-scroll-next').addEventListener('click', () => {
-    const list = document.getElementById('pickup-date-list');
-    list.scrollBy({ left: list.clientWidth, behavior: 'smooth' });
-  });
-  document.getElementById('pickup-date-list').addEventListener('scroll', updatePickupDateFade);
-  document.getElementById('confirm-pickup-settings').addEventListener('click', () => {
-    state.pickupDateKey = pendingPickup.dateKey;
-    state.pickupTimeId = pendingPickup.timeId;
-    state.pickupTimeLabel = pendingPickup.timeLabel;
-    savePickupSession();
-    renderPickupSummary();
-    renderDrawer();
-    closePickupSettings();
-  });
-
 
   // ---------- Pickup session + location details (the Pickup funnel's second step) ----------
   // A pickup order starts when the customer has chosen a store, a day and a time on purpose. That choice is the
@@ -3393,7 +3465,7 @@
     // Only the order page's banner has to leave the page to change store; from the picker, closing is enough.
     const fromOrder = ld && ld.edit && !ld.thenOrder;
     closeLocationDetails();
-    if (fromOrder) startFunnel('pickup');
+    if (fromOrder) startFunnel('pickup', { returnTo: views.checkout.hidden ? null : 'checkout' });
   });
   document.getElementById('banner-change').addEventListener('click', () => {
     const [city, st] = state.location.split(', ');
@@ -3414,11 +3486,12 @@
     renderPickupSummary();
     renderStoreLocatorSummary();
     renderDrawer();
+    // At checkout the new time and store are read out, since nothing else moves.
+    if (!views.checkout.hidden) announceCheckout(`Pickup updated. ${pickupReadyText()}`);
     // Updating from the order page's banner stays where it is; starting from the picker, or changing the time
     // from its Continue block, opens the order page.
     if (ld.edit && !ld.thenOrder) return;
-    history.replaceState(null, '', '#order');
-    showView('order');
+    finishPickerFunnel();
   });
 
   // Payment methods are data: the two saved ones plus any card added in the
@@ -3449,13 +3522,15 @@
   document.getElementById('tip-picker').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-value]');
     if (!btn) return;
-    document.querySelectorAll('#tip-picker .chip').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('#tip-picker .chip').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
     const isCustom = btn.dataset.value === 'custom';
     state.tipPct = isCustom ? 'custom' : Number(btn.dataset.value);
     tipCustomWrap.hidden = !isCustom;
     if (isCustom) tipCustomInput.focus();
     renderCheckoutTotals();
+    announceTotal();
   });
 
   // Dollars and cents only, up to 4 whole digits: anything else snaps back to
@@ -3466,6 +3541,7 @@
     else tipCustomInput.value = lastValidTip;
     state.tipCustom = parseFloat(lastValidTip) || 0;
     renderCheckoutTotals();
+    announceTotal();
   });
   tipCustomInput.addEventListener('blur', () => {
     if (tipCustomInput.value === '') return;
@@ -3501,14 +3577,17 @@
   function renderCheckout() {
     renderSummaryItems(document.getElementById('checkout-items'), document.getElementById('checkout-item-count'), state.carts.pickup);
     renderCheckoutTotals();
+    renderPayNote();
   }
 
   const orderSummaryToggle = document.getElementById('toggle-order-summary');
   const orderSummaryCollapse = document.getElementById('order-summary-collapse');
+  function setOrderSummaryOpen(open) {
+    orderSummaryToggle.setAttribute('aria-expanded', String(open));
+    orderSummaryCollapse.classList.toggle('collapsed', !open);
+  }
   orderSummaryToggle.addEventListener('click', () => {
-    const expanded = orderSummaryToggle.getAttribute('aria-expanded') === 'true';
-    orderSummaryToggle.setAttribute('aria-expanded', String(!expanded));
-    orderSummaryCollapse.classList.toggle('collapsed', expanded);
+    setOrderSummaryOpen(orderSummaryToggle.getAttribute('aria-expanded') !== 'true');
   });
 
   // The shipping and catering checkouts collapse their summaries the same way.
@@ -3521,6 +3600,8 @@
     });
   });
 
+  let placingOrder = false;
+
   function renderCheckoutTotals() {
     const { subtotal, tax, total: preTipTotal } = computeTotals();
     const tipAmt = state.tipPct === 'custom' ? state.tipCustom : subtotal * (state.tipPct / 100);
@@ -3529,10 +3610,18 @@
     document.getElementById('sum-subtotal').textContent = money(subtotal);
     document.getElementById('sum-tax').textContent = money(tax);
     document.getElementById('sum-tip').textContent = money(tipAmt);
+    // Each tip choice shows what it comes to in dollars, so the choice is a figure, not just a percentage.
+    document.querySelectorAll('#tip-picker .tip-chip').forEach((chip) => {
+      const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
+      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.tipCustom : subtotal * (pct / 100));
+    });
     document.getElementById('sum-total').textContent = money(total);
-    document.getElementById('place-order').textContent = 'Place order';
+    if (!placingOrder) document.getElementById('place-order').textContent = 'Place order';
+    document.getElementById('pay-bar-total').textContent = money(total);
     return total;
   }
+
+  document.getElementById('pay-bar-place').addEventListener('click', () => document.getElementById('place-order').click());
 
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
 
@@ -3560,6 +3649,10 @@
     document.getElementById('back-to-menu').textContent = backLabel;
     confirmBack = backView;
     showView('confirmation');
+    // The page changed without a click on it, so focus goes to its heading and it is read out.
+    const heading = document.querySelector('#view-confirmation h1');
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
   }
 
   const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, amount: money(lineTotal(item)) }));
@@ -3571,29 +3664,62 @@
     renderDrawer();
   }
 
-  document.getElementById('place-order').addEventListener('click', () => {
-    if (state.carts.pickup.length === 0) return;
+  // Placing the order takes a moment on screen, so the button says so and cannot be pressed twice.
+  // A quiet status region (visually hidden, announced politely) for what happens on this page without a focus move.
+  const checkoutStatus = document.getElementById('checkout-status');
+  let statusTimer = null;
+  function announceCheckout(message, delay = 50) {
+    window.clearTimeout(statusTimer);
+    checkoutStatus.textContent = '';
+    statusTimer = window.setTimeout(() => { checkoutStatus.textContent = message; }, delay);
+  }
+  const announceTotal = () => announceCheckout(`Tip ${document.getElementById('sum-tip').textContent}. Order total ${document.getElementById('sum-total').textContent}.`, 600);
 
-    const total = renderCheckoutTotals();
-    const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
-    const dateLabel = pickupDateLabel(state.pickupDateKey);
-    const readyBy = state.pickupTimeLabel.split(' – ')[1] || state.pickupTimeLabel;
-    const whenPhrase = state.pickupTimeId === ASAP_ID ? 'in about <strong>20–30 minutes</strong>'
-      : dateLabel === 'Today' ? `by <strong>${readyBy}</strong>`
-      : dateLabel === 'Tomorrow' ? `tomorrow at <strong>${readyBy}</strong>`
-      : `on <strong>${dateLabel}</strong> at <strong>${readyBy}</strong>`;
-    const items = recapLines(state.carts.pickup);
-
-    clearCart('pickup');
-    clearPickupSession();
-    showConfirmation({
-      number: orderNumber(),
-      subHTML: `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
-      steps: ['Preparing', 'Ready'],
-      items, total,
-      cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
-      backLabel: '← Back to menu', backView: 'order',
+  function setPlacingOrder(on) {
+    placingOrder = on;
+    if (on) announceCheckout('Placing your order…');
+    ['place-order', 'pay-bar-place'].forEach((id) => {
+      const btn = document.getElementById(id);
+      btn.disabled = on;
+      btn.setAttribute('aria-busy', String(on));
+      btn.textContent = on ? 'Placing order…' : 'Place order';
     });
+  }
+
+  document.getElementById('place-order').addEventListener('click', () => {
+    if (state.carts.pickup.length === 0 || placingOrder) return;
+    // The store calls this number if something is wrong with the order, so both fields are required.
+    if (!validateFields([
+      [document.getElementById('co-name'), present, 'Enter the name for this order.'],
+      [document.getElementById('co-phone'), isPhone, 'Enter a phone number with area code.'],
+      [document.getElementById('co-email'), isEmail, 'Enter a valid email so we can confirm your order.'],
+    ])) return;
+
+    setPlacingOrder(true);
+    window.setTimeout(() => {
+      setPlacingOrder(false);
+      if (state.carts.pickup.length === 0) return;
+      const total = renderCheckoutTotals();
+      const address = STORE_ADDRESSES[state.location] || STORE_ADDRESSES['McKinney, TX'];
+      const dateLabel = pickupDateLabel(state.pickupDateKey);
+      const readyBy = state.pickupTimeLabel.split(' – ')[1] || state.pickupTimeLabel;
+      const whenPhrase = state.pickupTimeId === ASAP_ID ? 'in about <strong>20–30 minutes</strong>'
+        : dateLabel === 'Today' ? `by <strong>${readyBy}</strong>`
+        : dateLabel === 'Tomorrow' ? `tomorrow at <strong>${readyBy}</strong>`
+        : `on <strong>${dateLabel}</strong> at <strong>${readyBy}</strong>`;
+      const items = recapLines(state.carts.pickup);
+
+      clearCart('pickup');
+      clearPickupSession();
+      showConfirmation({
+        number: orderNumber(),
+        subHTML: `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
+        steps: ['Preparing', 'Ready'],
+        items, total,
+        cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
+        backLabel: '← Back to menu', backView: 'order',
+      });
+    }, 900);
   });
 
   document.getElementById('back-to-menu').addEventListener('click', () => {

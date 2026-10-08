@@ -64,7 +64,13 @@
   let savedId = null;
   let saved = null;
   const viewEl = document.getElementById('view-location-picker');
-  const api = window.degLocationPicker = { onPick: null, onContinue: null, onChangeTime: null, onNavigate: null, sync: null, configure: null, setSaved: null };
+  // app.js made a stub before this script loaded (see loadLocationPicker): keep the callbacks it already assigned
+  // and replay what it queued, once everything below is defined.
+  const stub = window.degLocationPicker || { pending: {} };
+  const api = window.degLocationPicker = {
+    onPick: stub.onPick || null, onContinue: stub.onContinue || null, onChangeTime: stub.onChangeTime || null, onNavigate: stub.onNavigate || null,
+    sync: null, configure: null, setSaved: null, ready: false,
+  };
 
   // The picker serves one order funnel at a time. The funnel supplies the words the picker uses for choosing
   // (app.js owns what choosing does, in FUNNELS); the Pickup funnel is the only one built so far.
@@ -670,4 +676,10 @@
   };
 
   api.sync = () => { if (!viewEl.hidden) { sizeDots(); renderDotStates(); } syncFab(); };
+
+  // Loaded while the picker is already on screen: apply what app.js had queued, then size the map.
+  api.ready = true;
+  if (stub.pending.configure) api.configure(stub.pending.configure);
+  if (stub.pending.saved !== undefined) api.setSaved(stub.pending.saved);
+  api.sync();
 })();

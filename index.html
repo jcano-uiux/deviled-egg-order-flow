@@ -16,6 +16,9 @@
 <div id="page-root">
 <header class="site-header">
   <div class="nav-inner">
+    <button class="order-back nav-back" id="back-to-cart" type="button" aria-label="Back to cart">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <img class="logo" src="assets/logo.svg" alt="Deviled Egg Co. home" role="link" tabindex="0">
     <div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
     <nav class="nav-links" id="nav-links" aria-label="Primary">
@@ -49,7 +52,7 @@
 
 <main id="view-home" class="view home-view">
   <section class="home-hero" aria-labelledby="home-title">
-    <video class="home-hero-video" src="assets/hero-collage.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <video class="home-hero-video" data-hero-src="assets/hero-collage.mp4" data-view="home" muted loop playsinline preload="auto" aria-hidden="true"></video>
     <div class="home-hero-scrim" aria-hidden="true"></div>
     <div class="home-hero-inner">
       <div class="home-hero-copy">
@@ -171,7 +174,6 @@
     </section>
   </details>
 
-  <p class="location-picker-fine">Pickup only on this site; delivery is through our partner apps. This page is a prototype: demo stores are placeholders, and choosing a pickup store does not place an order.</p>
 
   <!-- Bottom dock: holds the floating Search button once the ZIP field has scrolled away. -->
   <div class="dock" id="dock">
@@ -185,7 +187,7 @@
 <main id="view-menu" class="view" hidden>
 
   <div class="store-hero">
-    <video class="hero-media" src="assets/hero-collage.mp4" autoplay muted loop playsinline aria-hidden="true"></video>
+    <video class="hero-media" data-hero-src="assets/hero-collage.mp4" data-view="menu" muted loop playsinline preload="auto" aria-hidden="true"></video>
     <button class="hero-more-btn" type="button" aria-label="View more photos">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.6" fill="#130D00"/><circle cx="12" cy="12" r="1.6" fill="#130D00"/><circle cx="19" cy="12" r="1.6" fill="#130D00"/></svg>
     </button>
@@ -341,7 +343,7 @@
         </li>
       </ul>
     </div>
-    <img class="ship-hero-map" src="assets/shipping/shipping-map.png" width="1182" height="837" alt="Map of the United States: boxes of deviled eggs leave Texas and land across the country, with an egg riding a paper plane. Caption: We ship nationwide.">
+    <img loading="lazy" decoding="async" class="ship-hero-map" src="assets/shipping/shipping-map.png" width="1182" height="837" alt="Map of the United States: boxes of deviled eggs leave Texas and land across the country, with an egg riding a paper plane. Caption: We ship nationwide.">
   </section>
 
   <section class="page-section" id="ship-kits" aria-labelledby="ship-kits-title">
@@ -453,7 +455,7 @@
     <form class="page-form" novalidate>
       <label class="field-group" for="ship-email">
         <span>Email <span class="muted">(Required)</span></span>
-        <input type="email" id="ship-email" name="email" autocomplete="email" inputmode="email" required>
+        <input type="email" id="ship-email" name="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
       </label>
       <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send the heads-up.</p>
       <label class="field-group" for="ship-phone">
@@ -482,9 +484,9 @@
       <a class="pill-btn primary cater-cta" href="#boxed-lunches" data-scroll="boxed-lunches">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
     <div class="cater-hero-art" aria-hidden="true">
-      <img src="assets/catering/classic.png" width="216" height="244" alt="">
-      <img src="assets/catering/allin.png" width="216" height="244" alt="">
-      <img src="assets/catering/bagel-brew.png" width="216" height="244" alt="">
+      <img src="assets/catering/classic.png" width="216" height="244" alt="" loading="lazy" decoding="async">
+      <img src="assets/catering/allin.png" width="216" height="244" alt="" loading="lazy" decoding="async">
+      <img src="assets/catering/bagel-brew.png" width="216" height="244" alt="" loading="lazy" decoding="async">
     </div>
   </section>
 
@@ -658,7 +660,7 @@
     <form class="page-form" novalidate>
       <label class="field-group" for="cater-email">
         <span>Email <span class="muted">(Required)</span></span>
-        <input type="email" id="cater-email" name="email" autocomplete="email" inputmode="email" required>
+        <input type="email" id="cater-email" name="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
       </label>
       <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send your 10% off.</p>
       <label class="field-group" for="cater-phone">
@@ -678,18 +680,10 @@
 
 </main>
 
-<header class="checkout-header">
-  <div class="checkout-header-inner">
-    <button class="text-btn back-link" id="back-to-cart" type="button" aria-label="Back to cart">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="back-link-label">Back to cart</span>
-    </button>
-    <img class="checkout-header-logo" src="assets/logo.svg" alt="Deviled Egg Co.">
-    <span class="checkout-header-spacer" aria-hidden="true"></span>
-  </div>
-</header>
-
 <main id="view-checkout" class="view" hidden>
+  <div class="checkout-title">
+    <h1>Secure Checkout</h1>
+  </div>
   <div class="checkout-layout">
     <div class="checkout-main">
 
@@ -719,13 +713,17 @@
         <div class="input-row">
           <label class="field-group">
             <span class="field-label">Full name</span>
-            <input type="text" name="name" autocomplete="name" placeholder="Jordan Rivera">
+            <input type="text" id="co-name" name="name" autocomplete="name" maxlength="80" aria-required="true" placeholder="First and last name">
           </label>
           <label class="field-group">
             <span class="field-label">Phone number</span>
-            <input type="tel" name="tel" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0100">
+            <input type="tel" id="co-phone" name="tel" autocomplete="tel" inputmode="tel" maxlength="20" aria-required="true" placeholder="(214) 555-0123">
           </label>
         </div>
+        <label class="field-group">
+          <span class="field-label">Email</span>
+          <input type="email" id="co-email" name="email" autocomplete="email" inputmode="email" maxlength="120" aria-required="true" placeholder="name@example.com">
+        </label>
       </section>
 
       <section class="checkout-card">
@@ -758,11 +756,11 @@
 
         <div class="field-group tip-group">
           <span class="field-label">Add a tip for the team</span>
-          <div class="chip-row" id="tip-picker">
-            <button class="chip" data-value="15" type="button">15%</button>
-            <button class="chip active" data-value="18" type="button">18%</button>
-            <button class="chip" data-value="20" type="button">20%</button>
-            <button class="chip" data-value="custom" type="button">Custom</button>
+          <div class="chip-row" id="tip-picker" role="radiogroup" aria-label="Tip">
+            <button class="chip tip-chip" data-value="15" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">15%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip active" data-value="18" type="button" role="radio" aria-checked="true"><span class="tip-chip-pct">18%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip" data-value="20" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">20%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip" data-value="custom" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">Custom</span><span class="tip-chip-amt">$0.00</span></button>
           </div>
           <div class="tip-custom" id="tip-custom" hidden>
             <span class="tip-custom-prefix" aria-hidden="true">$</span>
@@ -774,13 +772,25 @@
         <div class="summary-divider"></div>
         <div class="summary-line total"><span>Total</span><span id="sum-total">$0.00</span></div>
 
+        <p class="pay-note"><span id="pay-note-ready"></span></p>
         <button class="pill-btn dark full" id="place-order" type="button">Place order</button>
       </section>
     </aside>
   </div>
+
+  <!-- Phones only: the total and the one action stay in thumb reach while the form scrolls. It presses the Place order button above, which the stylesheet hides at this width. -->
+  <div class="pay-bar" id="pay-bar">
+    <p class="pay-bar-total"><span>Total</span><strong id="pay-bar-total">$0.00</strong></p>
+    <button class="pill-btn dark" id="pay-bar-place" type="button">Place order</button>
+  </div>
+  <div class="visually-hidden" id="checkout-status" role="status" aria-live="polite" aria-atomic="true"></div>
 </main>
 
 <main id="view-ship-checkout" class="view" hidden>
+  <div class="checkout-title">
+    <h1>Secure Checkout</h1>
+    <p class="checkout-title-sub">Nationwide Shipping</p>
+  </div>
   <div class="checkout-layout">
     <div class="checkout-main">
 
@@ -789,16 +799,16 @@
         <div class="input-row">
           <label class="field-group">
             <span class="field-label">Full name</span>
-            <input type="text" id="sc-name" autocomplete="name" placeholder="Jordan Rivera">
+            <input type="text" id="sc-name" autocomplete="name" placeholder="First and last name">
           </label>
           <label class="field-group">
             <span class="field-label">Phone number</span>
-            <input type="tel" id="sc-phone" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0100">
+            <input type="tel" id="sc-phone" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0123">
           </label>
         </div>
         <label class="field-group">
           <span class="field-label">Email</span>
-          <input type="email" id="sc-email" autocomplete="email" inputmode="email" placeholder="jordan@example.com">
+          <input type="email" id="sc-email" autocomplete="email" inputmode="email" placeholder="name@example.com">
           <span class="field-note">We'll email your tracking link the morning we ship.</span>
         </label>
       </section>
@@ -811,12 +821,12 @@
         </label>
         <label class="field-group">
           <span class="field-label">Apt, suite (optional)</span>
-          <input type="text" id="sc-street2" autocomplete="address-line2">
+          <input type="text" id="sc-street2" autocomplete="address-line2" placeholder="Apt, suite or floor">
         </label>
         <div class="input-row">
           <label class="field-group">
             <span class="field-label">City</span>
-            <input type="text" id="sc-city" autocomplete="address-level2">
+            <input type="text" id="sc-city" autocomplete="address-level2" placeholder="McKinney">
           </label>
           <label class="field-group">
             <span class="field-label">State</span>
@@ -875,6 +885,10 @@
 </main>
 
 <main id="view-cater-checkout" class="view" hidden>
+  <div class="checkout-title">
+    <h1>Secure Checkout</h1>
+    <p class="checkout-title-sub">Catering</p>
+  </div>
   <div class="checkout-layout">
     <div class="checkout-main">
 
@@ -929,16 +943,16 @@
         <div class="input-row">
           <label class="field-group">
             <span class="field-label">Full name</span>
-            <input type="text" id="cc-name" autocomplete="name" placeholder="Jane Smith">
+            <input type="text" id="cc-name" autocomplete="name" placeholder="First and last name">
           </label>
           <label class="field-group">
             <span class="field-label">Phone number</span>
-            <input type="tel" id="cc-phone" autocomplete="tel" inputmode="tel" placeholder="(903) 555-1234">
+            <input type="tel" id="cc-phone" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0123">
           </label>
         </div>
         <label class="field-group">
           <span class="field-label">Email</span>
-          <input type="email" id="cc-email" autocomplete="email" inputmode="email" placeholder="jane@company.com">
+          <input type="email" id="cc-email" autocomplete="email" inputmode="email" placeholder="name@company.com">
         </label>
       </section>
 
@@ -1007,7 +1021,7 @@
       <div class="checkout-card recap">
         <div id="confirm-items" class="summary-lines"></div>
         <div class="summary-divider"></div>
-        <div class="summary-line total"><span>Total paid</span><span id="confirm-total">$0.00</span></div>
+        <div class="summary-line total"><span>Order total</span><span id="confirm-total">$0.00</span></div>
       </div>
 
       <div class="address-card" id="fulfillment-card"></div>
@@ -1031,7 +1045,7 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
-          <img class="shop-card-photo" id="dozen-modal-image" src="assets/products/12-pack.jpg" alt="">
+          <img class="shop-card-photo" id="dozen-modal-image" src="assets/products/12-pack.jpg" alt="" loading="lazy" decoding="async">
         </div>
         <div class="item-modal-content">
           <div class="item-modal-title-block">
@@ -1099,7 +1113,7 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
-          <img class="shop-card-photo" id="bagel-modal-image" src="assets/products/full-size-bagel.jpg" alt="">
+          <img class="shop-card-photo" id="bagel-modal-image" src="assets/products/full-size-bagel.jpg" alt="" loading="lazy" decoding="async">
         </div>
         <div class="item-modal-content">
           <div class="item-modal-title-block">
@@ -1169,7 +1183,7 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
-          <img class="shop-card-photo" id="bowl-modal-image" src="assets/products/avo-chick-blt-bowl.jpg" alt="">
+          <img class="shop-card-photo" id="bowl-modal-image" src="assets/products/avo-chick-blt-bowl.jpg" alt="" loading="lazy" decoding="async">
         </div>
         <div class="item-modal-content">
           <div class="bowl-modal-intro">
@@ -1242,7 +1256,7 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
-          <img class="shop-card-photo" id="wrap-modal-image" src="assets/products/eggceptional-wraps.jpg" alt="">
+          <img class="shop-card-photo" id="wrap-modal-image" src="assets/products/eggceptional-wraps.jpg" alt="" loading="lazy" decoding="async">
         </div>
         <div class="item-modal-content">
           <div class="item-modal-title-block">
@@ -1295,7 +1309,7 @@
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media item-modal-media-cutout">
-          <img class="shop-card-photo" id="box-modal-image" src="assets/catering/classic.png" alt="">
+          <img class="shop-card-photo" id="box-modal-image" src="assets/catering/classic.png" alt="" loading="lazy" decoding="async">
           <div class="box-summary" id="box-summary"></div>
         </div>
         <div class="item-modal-content">
@@ -1450,29 +1464,6 @@
   <span id="cart-bar-count"></span>
 </button>
 
-<div class="overlay" id="pickup-settings-backdrop" hidden></div>
-<div class="pickup-settings-modal" id="pickup-settings-modal" role="dialog" aria-modal="true" aria-labelledby="pickup-settings-title" hidden>
-  <div class="pickup-settings-inner">
-    <button class="close-btn" id="close-pickup-settings" type="button" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <h1 id="pickup-settings-title">Schedule pickup</h1>
-    <div class="pickup-date-row-wrap" id="pickup-date-row-wrap">
-      <div class="pickup-date-row" id="pickup-date-list"></div>
-      <button class="pickup-date-nav" id="pickup-date-scroll-next" type="button" aria-label="Show more dates">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-    <div class="pickup-time-scroll">
-      <div class="radio-list" id="pickup-time-list" role="radiogroup" aria-label="Pickup time"></div>
-    </div>
-    <div class="pickup-settings-actions">
-      <button class="pill-btn dark full" id="confirm-pickup-settings" type="button">Confirm</button>
-      <button class="pill-btn outline full" id="cancel-pickup-settings" type="button">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="ld-backdrop" hidden></div>
 <div class="pickup-settings-modal" id="ld-modal" role="dialog" aria-modal="true" aria-labelledby="ld-title" hidden>
   <div class="pickup-settings-inner ld-inner">
@@ -1508,30 +1499,6 @@
   </div>
 </div>
 
-<div class="overlay" id="store-locator-backdrop" hidden></div>
-<div class="pickup-settings-modal" id="store-locator-modal" role="dialog" aria-modal="true" aria-labelledby="store-locator-title" hidden>
-  <div class="store-locator-inner">
-    <button class="close-btn" id="close-store-locator" type="button" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
-    <h1 id="store-locator-title">Choose a store</h1>
-    <div class="store-locator-body">
-      <div class="store-locator-list" id="store-locator-list" role="radiogroup" aria-label="Store"></div>
-      <div class="store-locator-map">
-        <iframe id="store-locator-map-frame" title="Store location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        <div class="store-locator-map-status" id="store-locator-map-status" aria-live="polite">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#635E57" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#635E57" stroke-width="1.8"/></svg>
-          <span id="store-locator-map-status-text">Loading map…</span>
-        </div>
-      </div>
-    </div>
-    <div class="pickup-settings-actions">
-      <button class="pill-btn dark full" id="confirm-store-locator" type="button">Confirm</button>
-      <button class="pill-btn outline full" id="cancel-store-locator" type="button">Cancel</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="add-payment-backdrop" hidden></div>
 <div class="pickup-settings-modal" id="add-payment-modal" role="dialog" aria-modal="true" aria-labelledby="add-payment-title" hidden>
   <div class="add-payment-inner">
@@ -1543,7 +1510,7 @@
       <label class="field-group">
         <span class="field-label">Card number</span>
         <span class="field-with-icon">
-          <input type="text" id="payment-card-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="19">
+          <input type="text" id="payment-card-number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 1234 1234 1234" maxlength="19">
           <svg class="field-icon" width="28" height="20" viewBox="0 0 28 20" fill="none" aria-hidden="true"><rect x="1" y="1" width="26" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M1 6.5h26" stroke="currentColor" stroke-width="3"/><path d="M5 14h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </span>
       </label>
@@ -1559,7 +1526,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M9.5 9.4a2.6 2.6 0 0 1 5.1.7c0 1.7-2.6 2.2-2.6 3.9" stroke="#FFF7EA" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2" fill="#FFF7EA"/></svg>
             </button>
           </div>
-          <input type="text" id="payment-card-cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="CVV" maxlength="4">
+          <input type="text" id="payment-card-cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="3 or 4 digits" maxlength="4">
         </div>
       </div>
       <p class="field-hint" id="cvv-hint" hidden>The 3 digits on the back of your card, or 4 on the front of an American Express.</p>
@@ -1595,10 +1562,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-<script src="location-picker-stores.js"></script>
-<script src="location-picker.js"></script>
+<!-- The location picker (d3, topojson, the map data and its own script) is loaded by app.js the first time the picker opens. -->
 <script src="app.js"></script>
 </body>
 </html>

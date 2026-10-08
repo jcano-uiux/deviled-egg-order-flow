@@ -50,10 +50,10 @@
   --deg-border-secondary: #CDC5BD; /* colors/border/secondary — heavier section dividers (item modal) */
 
   /* Radius — nothing in the system is sharp-cornered */
-  --deg-radius-pill: 999px;      /* buttons, inputs, chips, badges */
+  --deg-radius-pill: 999px;      /* buttons, dropdowns, chips, badges, the ZIP search field */
   --deg-radius-tight: 8px;       /* small controls: search field, active nav-drawer item */
   --deg-radius-card: 12px;       /* dominant card radius (menu cards, feature card) */
-  --deg-radius-compact: 14px;    /* small tiles, selectable rows */
+  --deg-radius-compact: 14px;    /* small tiles, selectable rows, text fields */
   --deg-radius-media: 16px;      /* standalone photo/hero containers; also the store-info card */
   --deg-radius-panel: 24px;      /* large feature panels, modals */
 
@@ -102,7 +102,7 @@ input, select {
   font-family: var(--deg-font-body);
   font-size: 15px;
   color: var(--deg-ink-body);
-  border-radius: var(--deg-radius-pill);
+  border-radius: var(--deg-radius-compact); /* text fields; the dropdowns below stay pills */
   border: 1px solid var(--deg-border-input);
   padding: 14px 22px;
   background: var(--deg-white);
@@ -115,6 +115,7 @@ input::placeholder { color: var(--deg-ink-muted); }
    deliberately. Every dropdown in the product (quantity, country, and any
    future one) inherits this rather than repeating it per field. */
 select {
+  border-radius: var(--deg-radius-pill);
   appearance: none; -webkit-appearance: none; -moz-appearance: none;
   cursor: pointer;
   padding-right: 44px;

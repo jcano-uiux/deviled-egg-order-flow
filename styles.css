@@ -10,13 +10,8 @@
    derived) so it holds at exactly 69px regardless of content — .nav-
    inner fills it and centers its own children vertically. */
 .site-header { position: sticky; top: 0; z-index: 35; height: 69px; background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); }
-/* Checkout swaps the full marketing nav for a minimal back-link + logo
-   bar (.checkout-header, a standalone sibling shown only in this state —
-   see the Checkout section below) — matching the focused, distraction-free
-   header pattern of a real checkout flow. */
-body.is-checkout .site-header { display: none; }
-/* Full-bleed on purpose — unlike .view/.checkout-header-inner below it,
-   which stay in a contained column, the nav bar itself spans the entire
+/* Full-bleed on purpose — unlike .view below it,
+   which stays in a contained column, the nav bar itself spans the entire
    viewport. .nav-links is already flex-grow:1 + justify-content:center,
    so it fills and re-centers in whatever width is left between the logo
    and cart button rather than needing any other structural change.
@@ -24,6 +19,14 @@ body.is-checkout .site-header { display: none; }
    hidden .nav-links-probe anchors off of it in every mode. */
 .nav-inner { position: relative; display: flex; align-items: center; height: 100%; padding: 0 32px; }
 .logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
+/* On the checkout pages the bar keeps its 69px and its logo but sheds the way out: no menu, no links, no cart, just a
+   round back-to-cart button on the left and the logo centered (set by body.is-checkout in app.js). */
+/* .order-back (the shared round button) sets display later in the file, so the hidden state needs the extra specificity. */
+.nav-inner .nav-back { display: none; }
+body.is-checkout .nav-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+body.is-checkout .nav-inner .nav-back { display: grid; grid-column: 1; grid-row: 1; justify-self: start; }
+body.is-checkout .nav-inner .logo { grid-column: 2; grid-row: 1; justify-self: center; margin-right: 0; }
+body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdrop, body.is-checkout .nav-inner .nav-toggle, body.is-checkout .nav-inner .cart-btn { display: none; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
 /* Exists only so the compact dropdown has a single child to measure for
    the grid-rows open/close animation below — at desktop width .nav-links
@@ -73,7 +76,7 @@ body.is-checkout .site-header { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
 /* Same "1fr auto 1fr" centering grid as .item-modal-header and
-   .checkout-header-inner — the one proven way in this codebase to
+   .view — the one proven way in this codebase to
    center an item between two others of unequal width, rather than
    flex justify-content:space-between quietly relying on the toggle
    and cart buttons happening to be the same size. */
@@ -257,6 +260,52 @@ body { overflow-x: clip; }
 .order-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
 .order-row-add { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; transition: background-color .15s ease; }
 .order-row:hover .order-row-add { background: var(--deg-ink-deep-hover); }
+.order-row-cta { display: none; }
+
+/* TEMP: product-card variants for the group screens, picked with the switcher above the list ([data-cards] on #order-rows). */
+.card-variant-switch { display: flex; gap: 4px; margin: 0 0 16px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; border-radius: 999px; background: var(--deg-cream-cool); }
+.card-variant-switch button { flex: none; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-muted); }
+.card-variant-switch button[aria-pressed="true"] { background: var(--deg-ink-deep); color: #fff; }
+.order-rows li { display: flex; }
+.order-rows .order-row { height: 100%; }
+
+/* 1 · Photo grid: the photo leads, two across even on a phone, the Add circle sits on the photo corner. */
+.order-rows[data-cards="1"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+[data-cards="1"] .order-row { position: relative; container-type: inline-size; flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; border-radius: var(--deg-radius-media); }
+[data-cards="1"] .order-row-media { width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: 0; }
+[data-cards="1"] .order-row-text { flex: 1 1 auto; gap: 4px; padding: 12px 14px 16px; }
+[data-cards="1"] .order-row-name { font-family: var(--deg-font-display); font-weight: 800; font-size: 16px; line-height: 22px; }
+[data-cards="1"] .order-row-meta { flex-wrap: wrap; column-gap: 6px; row-gap: 0; }
+[data-cards="1"] .order-row-desc { -webkit-line-clamp: 2; }
+[data-cards="1"] .order-row-add { position: absolute; right: 10px; top: calc(75cqw - 46px); width: 36px; height: 36px; box-shadow: 0 0 0 3px var(--deg-white); }
+
+/* 2 · Tile: Chipotle's family-meals card. A wide photo, the name and price under it, one full-width action. */
+.order-rows[data-cards="2"] { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+[data-cards="2"] .order-row { flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; border-radius: var(--deg-radius-media); }
+[data-cards="2"] .order-row-media { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 0; }
+[data-cards="2"] .order-row-text { flex: 1 1 auto; gap: 4px; padding: 16px 16px 4px; }
+[data-cards="2"] .order-row-name { font-family: var(--deg-font-display); font-weight: 800; font-size: 20px; line-height: 26px; }
+[data-cards="2"] .order-row-desc { margin-top: 4px; font-size: 14px; line-height: 20px; }
+[data-cards="2"] .order-row-add { display: none; }
+[data-cards="2"] .order-row-cta { display: grid; place-items: center; min-height: 44px; margin: 12px 16px 16px; border-radius: 999px; background: var(--deg-ink-deep); color: #fff; font-size: 15px; font-weight: 600; transition: background-color .15s ease; }
+[data-cards="2"] .order-row:hover .order-row-cta { background: var(--deg-ink-deep-hover); }
+
+/* 3 · Menu list: no card chrome. Text leads, a small photo on the right with the Add circle on its corner, hairline dividers. */
+.order-rows[data-cards="3"] { grid-template-columns: minmax(0, 1fr); gap: 0; }
+[data-cards="3"] .order-row { position: relative; flex-direction: row-reverse; align-items: flex-start; gap: 16px; padding: 16px 0; border: 0; border-bottom: 1px solid var(--deg-border-card); border-radius: 0; background: transparent; box-shadow: none; }
+[data-cards="3"] .order-row-media { width: 112px; height: 112px; border-radius: var(--deg-radius-card); }
+[data-cards="3"] .order-row-text { gap: 2px; }
+[data-cards="3"] .order-row-name { font-weight: 700; }
+[data-cards="3"] .order-row-desc { margin-top: 2px; font-size: 14px; line-height: 20px; }
+[data-cards="3"] .order-row-add { position: absolute; right: 8px; bottom: 24px; width: 32px; height: 32px; box-shadow: 0 0 0 3px var(--deg-cream); }
+
+@media (min-width: 640px) {
+  .order-rows[data-cards="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .order-rows[data-cards="1"] { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .order-rows[data-cards="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+}
 .order-view { padding-bottom: 112px; } /* clears the pinned View cart pill */
 @media (min-width: 900px) {
   .order-screen { padding-top: 0; }
@@ -652,17 +701,40 @@ body { overflow-x: clip; }
   #cart-bar.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 }
 
+/* Checkout labels read as plain sentence-case labels (the system keeps tracked caps for the top nav only). */
+.checkout-card .field-label, .summary-panel .field-label { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--deg-ink-heading); }
+
+/* One plain line above Place order: when and where the order is ready, then a short prototype notice. */
+.pay-note { margin: 0; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
+.pay-note #pay-note-ready { display: block; font-size: 14px; font-weight: 600; color: var(--deg-ink-heading); }
+.pill-btn[aria-busy="true"] { cursor: progress; }
+
+/* Phones: the total and Place order ride the bottom edge of the checkout, so the amount is on screen while the
+   tip is chosen and the button is under the thumb. The in-flow Place order is hidden here (the bar presses it). */
+.pay-bar { display: none; }
+@media (max-width: 640px) {
+  #view-checkout { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  #place-order { display: none; }
+  .pay-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 32;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--deg-white); border-top: 1px solid var(--deg-border-card); box-shadow: 0 -6px 18px rgba(19,13,0,.06);
+  }
+  .pay-bar-total { margin: 0; display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 16px; color: var(--deg-ink-muted); }
+  .pay-bar-total strong { font-weight: 700; font-size: 20px; line-height: 24px; color: var(--deg-ink-deep); font-variant-numeric: tabular-nums; }
+  .pay-bar .pill-btn { flex: none; min-height: 48px; padding: 0 32px; font-size: 16px; }
+}
+
 /* ---------- Checkout ----------
-   The checkout header replaces the full site nav (see body.is-checkout
-   below) but reuses its exact bar construction — same background,
-   hairline, and vertical padding as .site-header/.nav-inner — so the two
-   bars measure identically even though only one is ever on screen. */
-.checkout-header { display: none; background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); padding: 8px 0; }
-body.is-checkout .checkout-header { display: block; }
-.checkout-header-inner { max-width: 1280px; margin: 0 auto; min-height: 40px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 40px; }
-.checkout-header-inner .back-link { justify-self: start; }
-.checkout-header-logo { justify-self: center; height: 37px; width: auto; }
-.checkout-header-spacer { justify-self: end; }
+   Checkout keeps the site's own top bar (the same 69px bar as every other page); the way back to the cart sits
+   beside the page title below. */
+/* The page's own heading: what this is and where, above the form and the summary. */
+.checkout-title { margin: 0 0 20px; }
+.checkout-title h1 { font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); }
+.checkout-title-sub { margin: 4px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.checkout-title-sub strong { font-weight: 600; color: var(--deg-ink-heading); }
+@media (max-width: 640px) { .checkout-title { text-align: center; } .checkout-title h1 { font-size: 28px; line-height: 36px; } }
 .checkout-layout { display: flex; gap: 40px; padding-top: 8px; align-items: flex-start; }
 .checkout-main { flex-grow: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .checkout-card { background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-card); padding: 26px; display: flex; flex-direction: column; gap: 16px; }
@@ -691,6 +763,11 @@ body.is-checkout .checkout-header { display: block; }
    as one set. */
 .tip-group .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .tip-group .chip { padding-inline: 8px; text-align: center; }
+/* Chipotle's layout in our chips: four equal choices in one row, each a percentage over the dollars it comes to. */
+.tip-group .tip-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 8px 4px; border-radius: var(--deg-radius-compact); white-space: nowrap; }
+.tip-chip-pct { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-muted); }
+.tip-chip-amt { font-size: 14px; line-height: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip-group .tip-chip.active .tip-chip-pct { color: var(--deg-ink-on-gold); }
 /* Appears directly under the chips when Custom is chosen. The $ sits inside
    the shared pill input; left padding clears it. */
 .tip-custom { position: relative; }
@@ -699,7 +776,10 @@ body.is-checkout .checkout-header { display: block; }
 
 .order-summary-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; padding: 0; text-align: left; }
 .order-summary-toggle-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
-.order-summary-count { font-family: var(--deg-font-body); font-weight: 400; font-size: 15px; color: var(--deg-ink-muted); }
+/* The item count sits on its own line under the heading, so the heading stays the size of every other card header. */
+.order-summary-count { display: block; font-family: var(--deg-font-body); font-weight: 400; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+/* The cart drawer's "(17 items)" reuses the class but stays inline beside "Your order", as it always was. */
+.drawer-header .order-summary-count { display: inline; font-size: 15px; line-height: inherit; }
 .order-summary-chevron { flex: none; color: var(--deg-ink-deep); transition: transform .2s ease; }
 .order-summary-toggle[aria-expanded="false"] .order-summary-chevron { transform: rotate(180deg); }
 .order-summary-collapse { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s cubic-bezier(.4,0,.2,1); }
@@ -765,54 +845,6 @@ body.is-checkout .checkout-header { display: block; }
 .store-locator-btn-text { display: flex; flex-direction: column; gap: 2px; }
 .store-locator-btn-sub { font-weight: 400; font-size: 13px; color: var(--deg-ink-muted); }
 
-.store-locator-inner {
-  position: relative; width: min(760px, 100%); max-height: 90vh;
-  background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal);
-  padding: 28px 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;
-}
-.store-locator-inner > .close-btn { align-self: flex-start; }
-.store-locator-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
-/* .store-locator-map's own min-height (below) is a hard floor flexbox
-   won't shrink past — on a short viewport the list+map row can need more
-   room than .store-locator-inner's max-height leaves for it, with nothing
-   to shrink. overflow-y:auto here is the .item-modal-scroll pattern
-   applied to this modal: the row becomes its own scroll region instead of
-   silently clipping the last store row or shoving the footer buttons out
-   of their own space. */
-.store-locator-body { display: flex; gap: 20px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-.store-locator-list { flex: none; width: 260px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-.store-locator-row {
-  display: flex; flex-direction: column; gap: 2px; text-align: left; width: 100%;
-  padding: 12px 14px; border-radius: var(--deg-radius-tight);
-  border: none; border-left: 4px solid transparent; appearance: none;
-  background: transparent; font-weight: 500; font-size: 15px; color: var(--deg-ink-body);
-}
-.store-locator-row-address { font-size: 13px; font-weight: 400; color: var(--deg-ink-muted); }
-.store-locator-row.active { background: var(--deg-gold-tint); border-left-color: var(--deg-border-primary); }
-.store-locator-row.active .store-locator-row-name { color: var(--deg-ink-heading); }
-.store-locator-map { position: relative; flex: 1 1 auto; border-radius: 16px; overflow: hidden; background: var(--deg-cream-cool); min-height: 320px; }
-/* The keyless embed (no API key, matching this prototype's no-backend
-   constraint) can't take the Maps JS API's style-array recoloring, which
-   needs a real key. A CSS filter is the keyless equivalent: it warms
-   Google's stock blue/white chrome toward this system's cream/gold
-   palette instead of leaving it the one raw, off-the-shelf element in
-   an otherwise fully-branded modal. */
-.store-locator-map iframe {
-  width: 100%; height: 100%; border: 0; display: block; position: relative; z-index: 1;
-  filter: sepia(28%) saturate(135%) hue-rotate(-6deg) contrast(0.96) brightness(1.03);
-}
-/* Covers the iframe while it loads, and stays up (with different copy) if it
-   never fires a real load — most silent map failures (offline, blocked,
-   CSP) don't throw a catchable error, so a timeout is the real signal. */
-.store-locator-map-status {
-  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center;
-  background: var(--deg-cream-cool); color: var(--deg-ink-muted); font-size: 13px;
-}
-.store-locator-map-status[hidden] { display: none; }
-.store-locator-map-status.error { color: var(--deg-ink-body); }
-.store-locator-map-status-address { display: block; font-weight: 700; font-size: 14px; color: var(--deg-ink-heading); }
-
 /* ---------- Add payment method modal ---------- */
 /* A plain, unbordered row (vs. the filled .radio-choice selectable options
    above it) — the dashed-circle "+" reads as an action, not a choice. */
@@ -853,6 +885,8 @@ body.is-checkout .checkout-header { display: block; }
    the ring room inside the clip box; the equal negative margin keeps the fields
    exactly where they were. */
 .add-payment-form { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 6px; margin: -6px; scroll-padding: 8px; }
+/* The country dropdown sits among text fields here, so it takes their corners. */
+.add-payment-form select { border-radius: var(--deg-radius-compact); }
 
 /* ---------- Confirmation ---------- */
 .confirmation-wrap { max-width: 1360px; margin: 0 auto; display: flex; justify-content: center; padding: 20px 40px 60px; }
@@ -886,7 +920,8 @@ body.is-checkout .checkout-header { display: block; }
   #menu-top, .menu-section { scroll-margin-top: 149px; }
   .shop-grid { grid-template-columns: minmax(0, 1fr); }
   .featured-track { grid-auto-columns: calc((100% - 2.5 * var(--featured-gap)) / 3.25); }
-  .checkout-layout { flex-direction: column; }
+  /* One rhythm once the columns stack: 20px between every card, and the same 20px under the page title. */
+  .checkout-layout { flex-direction: column; gap: 20px; padding-top: 0; }
   /* .checkout-layout's own align-items:flex-start is correct on desktop's
      row layout (so the shorter column isn't stretched to match the
      taller one) but once stacked to a column here, the SAME property
@@ -899,13 +934,6 @@ body.is-checkout .checkout-header { display: block; }
   .summary-col { width: 100%; position: static; }
   .item-modal-row { flex-direction: column; }
   .item-modal-media { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; position: static; }
-  /* Stacked list+map can exceed the modal's available height; the row
-     layout's per-column overflow-y:auto (desktop) becomes a single
-     scroll region on the whole body instead, so overflow scrolls rather
-     than spilling past the footer below it. */
-  .store-locator-body { flex-direction: column; overflow-y: auto; }
-  .store-locator-list { width: 100%; overflow-y: visible; }
-  .store-locator-map { min-height: 220px; }
 
   /* The category nav has exactly two forms — this one, and the desktop
      sidebar's vertical list above 900px — never a third in-between
@@ -968,7 +996,7 @@ body.is-checkout .checkout-header { display: block; }
   .logo { height: 32px; margin-right: 8px; }
 
   .view { --deg-view-pad-x: 16px; }
-  .view, .checkout-header-inner, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
+  .view, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
 
   /* Store info, the divider, and the "Menu / hours" head are desktop-
      sidebar furniture — on a phone they just push the category tabs
@@ -1035,15 +1063,8 @@ body.is-checkout .checkout-header { display: block; }
     aspect-ratio: auto; height: 18vh;
   }
 
-  .back-link-label { display: none; }
-  /* With the label hidden the back control is a bare 26x16 chevron. Pad it
-     out to a 44px touch target and pull it back with equal negative margin,
-     so the chevron stays on the 16px gutter and the header doesn't grow. */
-  .checkout-header-inner .back-link { padding: 15px; margin: -15px; }
   .order-summary-toggle { padding: 10px 0; margin: -10px 0; }
   .tip-group .chip { min-height: 44px; }
-  .checkout-header-logo { height: 24px; }
-  .order-summary-toggle-title { font-size: 18px; line-height: 24px; }
   .featured { margin-top: 24px; }
   /* Phones swipe the row instead of using arrows; ~2.3 cards hint at more. */
   .featured-nav { display: none; }
@@ -1116,7 +1137,7 @@ body.is-checkout .checkout-header { display: block; }
   .drawer-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
 
   .pickup-settings-modal { padding: 0; align-items: stretch; }
-  .pickup-settings-inner, .store-locator-inner, .add-payment-inner {
+  .pickup-settings-inner, .add-payment-inner {
     width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none;
     padding: 8px 16px 0; gap: 16px;
   }
@@ -1459,10 +1480,24 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .thumb-coffee { aspect-ratio: 1; }
 
 /* Cart drawer: box lines edit in the modal and remove with an undo. */
+/* A cart line: photo, then name and price on one row, the choices, and a foot with the line's own actions on the
+   left (plain words, no icons) and the quantity on the right. */
+.drawer-line-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.drawer-line-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.drawer-line-top .drawer-item-name { min-width: 0; }
+.drawer-line-top .item-price { flex: none; font-weight: 600; font-size: 14px; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.drawer-line-qty { margin-top: 6px; }
+.drawer-qty { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--deg-ink-muted); }
+/* The shared select is a tall pill sized for forms; in a cart line it is a compact one. */
+.drawer-qty-select { width: auto; min-height: 36px; padding: 6px 34px 6px 14px; font-size: 14px; font-weight: 600; line-height: 20px; color: var(--deg-ink-deep); background-position: right 12px center; background-size: 14px 14px; font-variant-numeric: tabular-nums; }
+.drawer-line-foot { display: flex; align-items: center; margin-top: 4px; }
+.drawer-line-links { display: flex; align-items: center; flex-wrap: wrap; margin-left: -8px; }
+.drawer-link { min-height: 44px; padding: 0 8px; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--deg-ink-body); text-underline-offset: 3px; }
+.drawer-link:hover { text-decoration: underline; }
+.drawer-line.is-fresh { animation: line-fresh 1.6s ease-out; }
+@keyframes line-fresh { from { background: var(--deg-cream-deep); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .drawer-line.is-fresh { animation: none; } }
 .drawer-item-qty { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
-.drawer-item-buttons { display: flex; align-items: center; gap: 8px; }
-.drawer-edit-btn { padding: 8px 4px; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.drawer-trash-btn { width: 36px; height: 36px; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
 .drawer-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--deg-radius-card); background: var(--deg-ink-deep); color: #FBF3E3; font-size: 14px; line-height: 20px; }
 .drawer-undo .text-btn { color: var(--deg-gold-on-dark); font-weight: 700; padding: 6px 4px; }
 

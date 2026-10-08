@@ -233,7 +233,6 @@ body.has-dock #view-location-picker { padding-bottom: 92px; }
   #view-location-picker .lead-pick { width: 100%; justify-content: center; }
 }
 
-.location-picker-fine { margin: 0; padding: 24px clamp(16px, 4vw, 48px) 40px; background: var(--deg-white); text-align: center; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
 
 /* "No store near you yet": a plain, full-width notice above the nearest real store. */
 #view-location-picker .result-empty { grid-column: 1 / -1; }
