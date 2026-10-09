@@ -290,3 +290,13 @@ body.has-dock #view-location-picker { padding-bottom: 92px; }
 #view-location-picker .directory,
 #view-location-picker .state-group { scroll-margin-top: 93px; }
 
+
+
+/* A real store's card is a link to its page: the "View store" link's box is stretched over the whole card, so a tap anywhere
+   on it opens the store. Placeholder cities carry no link. */
+#view-location-picker .loc-card, #view-location-picker .quick-card, #view-location-picker .dir-store { position: relative; }
+#view-location-picker .store-link { text-decoration: none; }
+#view-location-picker .store-link::before { content: ""; position: absolute; inset: 0; z-index: 1; }
+#view-location-picker .store-link:focus-visible { outline: none; }
+#view-location-picker .store-link:focus-visible::before { border-radius: inherit; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+#view-location-picker .loc-card:has(.store-link:hover), #view-location-picker .quick-card:has(.store-link:hover) { box-shadow: var(--deg-shadow-float); }

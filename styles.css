@@ -19,6 +19,7 @@
    hidden .nav-links-probe anchors off of it in every mode. */
 .nav-inner { position: relative; display: flex; align-items: center; height: 100%; padding: 0 32px; }
 .logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
+.logo-mark { display: none; }
 /* On the checkout pages the bar keeps its 69px and its logo but sheds the way out: no menu, no links, no cart, just a
    round back-to-cart button on the left and the logo centered (set by body.is-checkout in app.js). */
 /* .order-back (the shared round button) sets display later in the file, so the hidden state needs the extra specificity. */
@@ -26,13 +27,20 @@
 body.is-checkout .nav-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
 body.is-checkout .nav-inner .nav-back { display: grid; grid-column: 1; grid-row: 1; justify-self: start; }
 body.is-checkout .nav-inner .logo { grid-column: 2; grid-row: 1; justify-self: center; margin-right: 0; }
-body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdrop, body.is-checkout .nav-inner .nav-toggle, body.is-checkout .nav-inner .cart-btn { display: none; }
+body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdrop, body.is-checkout .nav-inner .nav-toggle, body.is-checkout .nav-inner .cart-btn, body.is-checkout .nav-inner .nav-where { display: none; }
 .nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
 /* Exists only so the compact dropdown has a single child to measure for
    the grid-rows open/close animation below — at desktop width .nav-links
    itself is still the flex row, so this stays transparent to layout. */
 .nav-links-inner { display: contents; }
 .nav-link { padding: 10px; font-size: 14px; line-height: 16px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; text-decoration: none; }
+.nav-where { flex: none; display: inline-flex; align-items: center; gap: 8px; max-width: 220px; min-height: 44px; margin-left: 16px; padding: 0 4px; background: none; border: 0; border-radius: var(--deg-radius-compact); color: var(--deg-ink-deep); text-align: left; }
+.nav-where:hover .nav-where-name { text-decoration: underline; text-underline-offset: 3px; }
+.nav-where-pin { flex: none; }
+.nav-where[data-path="delivery"] .nav-where-ico-pickup, .nav-where:not([data-path="delivery"]) .nav-where-ico-delivery { display: none; }
+.nav-where-text { display: flex; flex-direction: column; min-width: 0; }
+.nav-where-verb { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-muted); white-space: nowrap; }
+.nav-where-name { font-size: 14px; line-height: 18px; font-weight: 700; color: var(--deg-ink-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
 .cart-badge {
   position: absolute; top: -4px; right: -6px; background: var(--deg-error); color: var(--deg-white);
@@ -44,6 +52,7 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    the product to the cart, then the cart button and count react when it lands. */
 .fly-thumb { position: fixed; z-index: 90; border-radius: 50%; background-color: var(--deg-gold); background-size: cover; background-position: center; box-shadow: 0 8px 20px rgba(19,13,0,.28); pointer-events: none; will-change: transform; }
 .cart-btn.is-pop { animation: cart-pop .6s cubic-bezier(.22,1,.36,1); }
+.cart-badge[hidden] { display: none; }
 .cart-badge.is-bump { animation: badge-bump .5s cubic-bezier(.22,1,.36,1); }
 @keyframes cart-pop {
   0% { transform: scale(1) rotate(0); }
@@ -69,7 +78,7 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    link set against .nav-links-probe and applies .nav-compact the moment
    it would wrap to a second line, whatever width that happens to be at —
    a phone, a squeezed desktop window, 200% zoom, all the same rule. */
-.nav-toggle { display: none; width: 40px; height: 40px; margin-left: 8px; color: var(--deg-ink-deep); }
+.nav-toggle { display: none; width: 40px; height: 40px; margin-left: 8px; background: transparent; color: var(--deg-ink-deep); }
 .nav-toggle:hover { background: var(--deg-cream-cool); }
 .nav-toggle .icon-close { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
@@ -80,16 +89,13 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    center an item between two others of unequal width, rather than
    flex justify-content:space-between quietly relying on the toggle
    and cart buttons happening to be the same size. */
-.nav-inner.nav-compact { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-/* grid-row:1 is load-bearing, not decoration: with only grid-column set,
-   sparse auto-placement (default) reads DOM order — logo, then the
-   absolutely-positioned .nav-links, then toggle, then cart — and Chrome
-   splits it into two implicit rows (logo alone in one, toggle+cart in
-   the other) rather than backtrack to pack them into row 1, misaligning
-   the logo vertically from the two buttons either side of it. */
-.nav-compact .nav-toggle { display: flex; grid-column: 1; grid-row: 1; justify-self: start; margin-left: 0; }
-.nav-compact .logo { grid-column: 2; grid-row: 1; justify-self: center; margin-right: 0; }
-.nav-compact .cart-btn { grid-column: 3; grid-row: 1; justify-self: end; margin-left: 0; }
+.nav-inner.nav-compact { display: flex; align-items: center; }
+/* The compact bar follows Chipotle's: logo, then the menu button, then the order indicator pushed right up against the
+   cart (the free space sits between the menu button and the indicator), then the cart. The row is plain flex; the absolutely positioned .nav-links sits outside it. */
+.nav-compact .logo { order: 1; margin-right: 8px; }
+.nav-compact .nav-toggle { order: 2; display: flex; margin-left: 0; }
+.nav-compact .nav-where { order: 3; flex: 0 1 auto; justify-content: flex-start; max-width: none; margin-left: auto; margin-right: 0; min-width: 0; }
+.nav-compact .cart-btn { order: 4; margin-left: 12px; }
 /* Collapses into an anchored dropdown instead of wrapping onto extra
    header rows — .nav-compact only turns on once the full link set has
    nowhere near enough room to wrap gracefully, so it's hidden until
@@ -202,35 +208,6 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    same left/right edges as .menu-layout, both simply inset by .view's own
    padding, so the banner reads as the top of one aligned column instead
    of a wider strip sitting above it. */
-/* The pickup settings banner: where, and when, sits above the menu the way a delivery app keeps the
-   chosen restaurant on screen. Quiet surface (white card, no gold); Change is the one action. */
-/* 100vw includes a classic scrollbar, so the full-bleed banner below can overshoot by its width; clip, not scroll. */
-body { overflow-x: clip; }
-.order-banner {
-  display: flex; align-items: center; gap: 12px; min-height: 56px;
-  /* Full-bleed: out of the view's centered column to both screen edges and up against the header; the content
-     inside still lines up with the page gutter. No padding above or below, so the row sets its own height. */
-  margin: -24px calc(50% - 50vw) 24px; padding: 0 max(var(--deg-view-pad-x), calc((100vw - 1280px) / 2 + var(--deg-view-pad-x)));
-  background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card);
-}
-.order-banner-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-gold-tint); color: var(--deg-ink-deep); }
-.order-banner-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.order-banner-text p { margin: 0; }
-.order-banner-where { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
-.order-banner-where strong { font-weight: 600; color: var(--deg-ink-heading); }
-.order-banner-address { display: none; }
-.order-banner-when { font-size: 13px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
-.order-banner-change { flex: none; padding: 8px 16px; }
-@media (max-width: 640px) {
-  /* Phones: the pin loses its disc so the day and time line fits on one row beside Change. */
-  .order-banner { gap: 8px; margin-bottom: 0; }
-  .order-banner-icon { width: 20px; height: 20px; background: none; }
-}
-@media (min-width: 641px) {
-  .order-banner-address { display: inline; }
-  .order-banner-address::before { content: ' · '; }
-}
-
 /* ---------- Pickup order page (#order) ----------
    Chipotle's mobile ordering structure in our own system: a list of wide category tiles, and a screen of rows for a
    tile that stands for several products. Quiet white cards, one dark Add circle, no gold. */
@@ -702,29 +679,12 @@ body { overflow-x: clip; }
 }
 
 /* Checkout labels read as plain sentence-case labels (the system keeps tracked caps for the top nav only). */
-.checkout-card .field-label, .summary-panel .field-label { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--deg-ink-heading); }
+.checkout-card .field-label, .summary-panel .field-label, .wm-panel .field-label, .dd-form .field-label { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--deg-ink-heading); }
 
 /* One plain line above Place order: when and where the order is ready, then a short prototype notice. */
 .pay-note { margin: 0; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
 .pay-note #pay-note-ready { display: block; font-size: 14px; font-weight: 600; color: var(--deg-ink-heading); }
 .pill-btn[aria-busy="true"] { cursor: progress; }
-
-/* Phones: the total and Place order ride the bottom edge of the checkout, so the amount is on screen while the
-   tip is chosen and the button is under the thumb. The in-flow Place order is hidden here (the bar presses it). */
-.pay-bar { display: none; }
-@media (max-width: 640px) {
-  #view-checkout { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-  #place-order { display: none; }
-  .pay-bar {
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 32;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-    background: var(--deg-white); border-top: 1px solid var(--deg-border-card); box-shadow: 0 -6px 18px rgba(19,13,0,.06);
-  }
-  .pay-bar-total { margin: 0; display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 16px; color: var(--deg-ink-muted); }
-  .pay-bar-total strong { font-weight: 700; font-size: 20px; line-height: 24px; color: var(--deg-ink-deep); font-variant-numeric: tabular-nums; }
-  .pay-bar .pill-btn { flex: none; min-height: 48px; padding: 0 32px; font-size: 16px; }
-}
 
 /* ---------- Checkout ----------
    Checkout keeps the site's own top bar (the same 69px bar as every other page); the way back to the cart sits
@@ -740,7 +700,7 @@ body { overflow-x: clip; }
 .checkout-card { background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-card); padding: 26px; display: flex; flex-direction: column; gap: 16px; }
 .checkout-card h2 { font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
 
-.pickup-time-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); font-size: 15px; font-weight: 600; color: var(--deg-ink-body); text-align: left; }
+.pickup-time-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1px solid var(--deg-border-control); background: var(--deg-white); font-size: 15px; font-weight: 600; color: var(--deg-ink-body); text-align: left; }
 .pickup-time-btn:hover { border-color: var(--deg-border-primary); }
 /* Same hover vocabulary as .pickup-time-btn above, so every tappable row in
    the checkout reads as interactive before the pointer commits to it. */
@@ -761,7 +721,16 @@ body { overflow-x: clip; }
 /* Four equal segments (15 / 18 / 20 / Custom) instead of content-width chips,
    so the row never wraps in the 287px-wide mobile panel and the buttons read
    as one set. */
-.tip-group .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+/* Five choices: the three percentages share the first row and No tip and Custom the second, wider. Only when the picker's own
+   box is wide enough (a single-column checkout on a tablet) do all five sit in one row; the desktop summary column is too narrow. */
+.tip-group { container-type: inline-size; }
+.tip-group .chip-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.tip-group .tip-chip { grid-column: span 2; }
+.tip-group .tip-chip-none, .tip-group .tip-chip[data-value="custom"] { grid-column: span 3; }
+@container (min-width: 440px) {
+  .tip-group .chip-row { grid-template-columns: repeat(5, 1fr); }
+  .tip-group .tip-chip, .tip-group .tip-chip-none, .tip-group .tip-chip[data-value="custom"] { grid-column: auto; }
+}
 .tip-group .chip { padding-inline: 8px; text-align: center; }
 /* Chipotle's layout in our chips: four equal choices in one row, each a percentage over the dollars it comes to. */
 .tip-group .tip-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 8px 4px; border-radius: var(--deg-radius-compact); white-space: nowrap; }
@@ -771,7 +740,7 @@ body { overflow-x: clip; }
 /* Appears directly under the chips when Custom is chosen. The $ sits inside
    the shared pill input; left padding clears it. */
 .tip-custom { position: relative; }
-.tip-custom-prefix { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 600; color: var(--deg-ink-muted); pointer-events: none; }
+.tip-custom-prefix { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-size: 16px; font-weight: 600; color: var(--deg-ink-muted); pointer-events: none; }
 .tip-custom input { width: 100%; padding-left: 38px; }
 
 .order-summary-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; padding: 0; text-align: left; }
@@ -993,7 +962,12 @@ body { overflow-x: clip; }
 
 @media (max-width: 640px) {
   .nav-inner { padding: 0 16px; }
-  .logo { height: 32px; margin-right: 8px; }
+  /* Phones swap the wordmark for the egg submark. The checkout bar has no links, indicator or cart, so it keeps the wordmark. */
+  .logo { height: 40px; margin-right: 4px; }
+  .logo-wordmark { display: none; }
+  .logo-mark { display: block; }
+  body.is-checkout .logo-wordmark { display: block; height: 34px; }
+  body.is-checkout .logo-mark { display: none; }
 
   .view { --deg-view-pad-x: 16px; }
   .view, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
@@ -1001,7 +975,7 @@ body { overflow-x: clip; }
   /* Store info, the divider, and the "Menu / hours" head are desktop-
      sidebar furniture — on a phone they just push the category tabs
      (which do the actual navigating) further from the top of the page. */
-  .store-info-btn, .sidebar-divider, .sidebar-menu-head { display: none; }
+  .sidebar-divider, .sidebar-menu-head { display: none; }
 
   /* Figma annotation (node 231:6791): "in mobile the shop title and the
      badge is centered." */
@@ -1201,6 +1175,27 @@ body { overflow-x: clip; }
    lineup. Section rhythm matches the menu: 56px between sections.
    ========================================================================= */
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* ---------- Grouped links: Order, Gifting, About ----------
+   Three of the bar's four items are disclosure buttons that open a small panel (a section, inline, in the compact
+   menu). They look like the plain links beside them; only the small chevron says there is more. */
+.nav-group { position: relative; display: flex; align-items: center; }
+.nav-group-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; cursor: pointer; font-family: inherit; }
+.nav-group-btn:hover, .nav-link:hover { color: var(--deg-ink-deep); }
+.nav-chevron { flex: none; width: 16px; height: 16px; transition: transform .15s ease; }
+.nav-compact .nav-chevron { width: 20px; height: 20px; }
+.nav-group-btn[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+.nav-menu { position: absolute; z-index: 45; top: 100%; left: 0; margin-top: 20px; min-width: 240px; padding: 8px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-float); }
+.nav-menu[hidden] { display: none; }
+.nav-group:last-child .nav-menu { left: auto; right: 0; }
+.nav-menu-link { display: block; padding: 11px 14px; border-radius: 10px; font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-body); text-decoration: none; white-space: nowrap; }
+.nav-menu-link:hover { background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.nav-menu-link[aria-current="page"] { color: var(--deg-ink-deep); background: var(--deg-cream-cool); }
+/* In the compact menu a group is a row that opens inline: the row is the same Nunito row as the others, the items sit under it. */
+.nav-compact .nav-group { display: block; width: 100%; }
+.nav-compact .nav-group-btn { display: flex; width: 100%; justify-content: space-between; }
+.nav-compact .nav-menu { position: static; min-width: 0; margin: 0 0 8px; padding: 0 0 0 12px; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.nav-compact .nav-menu-link { padding: 10px 0; border-radius: 0; font-size: 17px; line-height: 24px; }
+.nav-compact .nav-menu-link:hover, .nav-compact .nav-menu-link[aria-current="page"] { background: transparent; }
 .nav-link[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--deg-gold); text-decoration-thickness: 3px; text-underline-offset: 6px; }
 
 .page-view { --page-gap: 56px; }
@@ -1563,4 +1558,163 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 @media (max-width: 640px) {
   .ld-store h1 { font-size: 24px; line-height: 30px; }
 }
+
+
+
+/* ---------- Delivery funnel ----------
+   The address step, the address details modal and the delivery checkout. They reuse the checkout cards, the order
+   page's title and the Pickup modal; only what is new to delivery is styled here. */
+/* The "where" modal: Pickup and Delivery in one place, with a map. Two panes on desktop (choices left, map right); on
+   phones a full-screen sheet with the map above and the choices on a rounded panel over its lower edge. At most one
+   dark button is ever on screen. */
+.wm-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.wm-inner {
+  position: relative; display: grid; grid-template-columns: minmax(380px, 460px) 1fr; width: min(1120px, 100%); height: min(720px, calc(100vh - 40px));
+  background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal); overflow: hidden;
+}
+.wm-panel { grid-column: 1; grid-row: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 28px 28px 24px; }
+.wm-map-pane { grid-column: 2; grid-row: 1; position: relative; min-height: 0; background: var(--deg-cream-cool); }
+.wm-map { position: absolute; inset: 0; z-index: 0; background: var(--deg-cream-cool); font-family: var(--deg-font-body); }
+.wm-map.is-unavailable::after { content: "The map isn't available right now."; position: absolute; inset: 0; display: grid; place-items: center; color: var(--deg-ink-muted); font-size: 14px; }
+/* Warm the street tiles toward the cream and gold palette; the controls and pins stay crisp. */
+.wm-map .leaflet-tile-pane { filter: sepia(.22) saturate(.85) brightness(1.03); }
+.wm-map .leaflet-control-attribution { font-size: 11px; background: rgba(255,247,234,.85); color: var(--deg-ink-muted); }
+.wm-map .leaflet-control-attribution a { color: var(--deg-ink-body); }
+.wm-map .leaflet-marker-icon:focus-visible { outline: none; }
+.wm-map .leaflet-marker-icon:focus-visible .wm-pin svg { filter: drop-shadow(0 0 0 2px var(--deg-cream)) drop-shadow(0 0 3px var(--deg-ink-deep)); }
+.wm-pin-wrap { background: none; border: 0; }
+.wm-pin { position: relative; display: block; line-height: 0; transition: transform .15s ease; transform-origin: 50% 100%; }
+.wm-pin svg { display: block; filter: drop-shadow(0 2px 3px rgba(19,13,0,.3)); }
+.wm-pin svg path { fill: var(--deg-ink-deep); }
+.wm-pin-egg { fill: var(--deg-cream); }
+.wm-pin-yolk { fill: var(--deg-gold); }
+.wm-pin.is-selected { transform: scale(1.18); } /* the chosen store only grows; its colour and icon stay the same as every other store pin */
+.wm-pin.is-delivery svg path { fill: var(--deg-gold); }
+.wm-pin-truck { stroke: var(--deg-ink-deep); }
+.wm-pin-tag { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, -2px); padding: 2px 8px; border-radius: 999px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); font-size: 11px; line-height: 16px; font-weight: 700; color: var(--deg-ink-body); white-space: nowrap; }
+.wm-here { fill: #2B6CF0; fill-opacity: 1; stroke: #fff; stroke-width: 3; }
+.wm-pill { position: absolute; z-index: 5; top: 16px; left: 16px; right: 76px; max-width: 380px; display: flex; align-items: center; gap: 12px; padding: 8px 20px 8px 16px; min-height: 52px; background: var(--deg-white); border-radius: 999px; box-shadow: var(--deg-shadow-float); color: var(--deg-ink-deep); }
+.wm-pill[data-mode="pickup"] .wm-pill-ico-delivery, .wm-pill:not([data-mode="pickup"]) .wm-pill-ico-pickup { display: none; }
+.wm-pill-text { display: flex; flex-direction: column; min-width: 0; font-size: 12px; line-height: 16px; color: var(--deg-ink-muted); }
+.wm-pill-text strong { font-size: 16px; line-height: 20px; font-weight: 700; color: var(--deg-ink-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wm-round { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 14px; background: var(--deg-white); color: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); }
+.wm-round:hover { background: var(--deg-cream-cool); }
+.wm-close { position: absolute; z-index: 5; top: 16px; right: 16px; border-radius: 50%; }
+.wm-controls { position: absolute; z-index: 5; right: 16px; bottom: 36px; display: flex; flex-direction: column; gap: 8px; }
+.da-toggle { align-self: center; }
+.da-toggle .chip { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 24px; }
+.wm-tab { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+.wm-tab[hidden] { display: none; }
+.wm-form { display: flex; flex-direction: column; gap: 16px; }
+.wm-field { display: flex; flex-direction: column; gap: 8px; position: relative; }
+.wm-field .field-group { gap: 0; }
+.wm-input-wrap { position: relative; }
+.wm-input-wrap input { width: 100%; padding-right: 52px; }
+.wm-clear { position: absolute; right: 4px; top: 0; width: 44px; height: 100%; display: grid; place-items: center; border: 0; background: transparent; color: var(--deg-ink-muted); border-radius: var(--deg-radius-compact); }
+.wm-clear:hover { color: var(--deg-ink-deep); }
+.wm-suggest { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: 6px; list-style: none; background: var(--deg-white); border-radius: var(--deg-radius-compact); box-shadow: var(--deg-shadow-float); max-height: 280px; overflow-y: auto; }
+.wm-option { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; cursor: pointer; }
+.wm-option[aria-selected="true"], .wm-option:hover { background: var(--deg-cream-cool); }
+.wm-option-pin { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.wm-option-text { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.wm-option-text strong { font-size: 15px; line-height: 20px; font-weight: 700; color: var(--deg-ink-deep); }
+.wm-note { margin: -8px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); min-height: 0; }
+.wm-note:empty { display: none; }
+.wm-switch-note { margin: -8px 0 0; text-align: center; }
+.wm-pill-store-only { display: none; }
+.wm-list-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 700; color: var(--deg-ink-deep); }
+.wm-stores { list-style: none; margin: -8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wm-store .wm-store-meta { color: var(--deg-ink-body); font-weight: 600; font-variant-numeric: tabular-nums; }
+.wm-actions { position: sticky; bottom: -24px; margin: 0 -28px -24px; padding: 16px 28px 24px; background: linear-gradient(to bottom, rgba(255,247,234,0), var(--deg-cream) 28%); }
+/* The saved order sits flat on the panel (a hairline under it, no card), so the panel never holds a card inside a card. */
+.delivery-saved { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 0 0 20px; border-bottom: 1px solid var(--deg-border-secondary); }
+.delivery-saved h2 { margin: 0 0 4px; font-size: 18px; line-height: 26px; font-weight: 700; color: var(--deg-ink-deep); }
+.delivery-saved p { margin: 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-body); }
+.delivery-saved .delivery-saved-when { color: var(--deg-ink-muted); }
+.delivery-saved .pill-btn { margin-top: 12px; }
+.delivery-result { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 236px; padding: 8px 0 4px; text-align: center; }
+.delivery-result .da-icon { color: var(--deg-gold); margin-bottom: 8px; }
+.delivery-result.is-idle .da-icon, .delivery-result.is-no .da-icon { color: var(--deg-ink-muted); }
+.delivery-result h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 800; color: var(--deg-ink-deep); }
+.delivery-result-address { margin: 0; font-size: 17px; line-height: 24px; font-weight: 600; color: var(--deg-ink-heading); }
+.delivery-result-note { margin: 0; max-width: 34ch; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.delivery-result .pill-btn { margin-top: 12px; }
+.delivery-result .text-btn { min-height: 44px; padding: 0 16px; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 760px) {
+  .wm-modal { padding: 0; align-items: stretch; }
+  .wm-inner { width: 100%; height: 100dvh; max-height: none; border-radius: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(200px, 34%) minmax(0, 1fr); box-shadow: none; }
+  .wm-map-pane { grid-column: 1; grid-row: 1; }
+  .wm-panel { grid-column: 1; grid-row: 2; position: relative; z-index: 6; margin-top: -20px; padding: 20px 20px 20px; border-radius: 24px 24px 0 0; background: var(--deg-cream); box-shadow: 0 -6px 18px rgba(19,13,0,.08); }
+  .wm-pill { right: 72px; }
+  .wm-controls { bottom: 36px; }
+  .wm-actions { bottom: -20px; margin: 0 -20px -20px; padding: 16px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+}
+
+.dd-form { gap: 16px; }
+.dd-form .field-group { gap: 8px; }
+.dd-nick .chip { min-height: 44px; padding: 0 20px; }
+.dd-count { align-self: flex-end; margin-top: -4px; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.dc-min-note { margin: 12px 0 0; }
+
+
+/* ---------- The checkout's "where" card ----------
+   Pickup and delivery checkouts open on a map with the Pickup / Delivery toggle over it, then the place and the time
+   (Chipotle's checkout, in our colours). The map is a picture: it does not pan or zoom. */
+.where-card { padding: 0; gap: 0; overflow: hidden; }
+.where-map { position: relative; height: 240px; isolation: isolate; }
+.where-map-canvas { cursor: default; }
+.where-map-canvas.is-unavailable::after { content: "The map isn't available right now."; }
+.where-toggle { position: absolute; z-index: 500; top: 16px; left: 50%; transform: translateX(-50%); background: var(--deg-white); border: 1px solid var(--deg-border-control); }
+.where-toggle .chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; }
+.where-body { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+.where-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.where-head h2 { margin: 0; }
+.where-change { min-height: 44px; padding: 0 4px; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; font-size: 15px; }
+.where-address { margin: -8px 0 0; display: flex; flex-direction: column; gap: 2px; font-size: 16px; line-height: 24px; color: var(--deg-ink-body); }
+.where-address strong { font-weight: 700; color: var(--deg-ink-deep); }
+.where-address span { color: var(--deg-ink-muted); }
+.where-eta { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 16px; border-top: 1px solid var(--deg-border-secondary); text-align: center; }
+.where-eta[hidden] { display: none; }
+.where-eta p { margin: 0; }
+.where-eta-label { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-muted); }
+.where-eta-value { font-family: var(--deg-font-display); font-weight: 800; font-size: 56px; line-height: 64px; color: var(--deg-ink-deep); font-variant-numeric: tabular-nums; }
+.where-eta-sub { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+@media (min-width: 641px) { .where-map { height: 280px; } }
+
+
+/* ---------- A store's own page and its info card ----------
+   The menu page is each store's page. "All locations" sits above the store name; "Store info" opens a card with the store
+   on a map, its address (copyable), hours, delivery terms and directions, in the same quiet rows as an app's place card. */
+.store-back { align-self: inherit; margin-bottom: 4px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); text-decoration: underline; text-underline-offset: 3px; }
+.store-back[hidden] { display: none; }
+.si-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.si-inner { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; background: var(--deg-white); border-radius: var(--deg-radius-panel); box-shadow: var(--deg-shadow-modal); }
+.si-map-wrap { position: relative; height: 220px; }
+.si-map { position: absolute; inset: 0; }
+.si-close { position: absolute; z-index: 5; top: 16px; left: 16px; border-radius: 50%; }
+.si-body { padding: 24px 24px 12px; }
+.si-body h1 { margin: 0; font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); }
+.si-sub { margin: 4px 0 20px; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.si-rows { list-style: none; margin: 0 -24px; padding: 0; border-top: 1px solid var(--deg-border-card); }
+.si-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--deg-border-card); }
+.si-row:last-child { border-bottom: 0; }
+.si-icon { flex: none; display: grid; place-items: center; width: 28px; color: var(--deg-ink-deep); }
+.si-text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); }
+.si-text strong { font-weight: 700; }
+.si-text span { color: var(--deg-ink-muted); font-size: 14px; line-height: 20px; }
+.si-action { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -6px -10px -6px 0; border: 0; border-radius: 50%; background: transparent; color: var(--deg-ink-body); }
+.si-action:hover { background: var(--deg-cream-cool); }
+.si-detail { flex-basis: 100%; margin: -4px 0 0 44px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.si-detail[hidden] { display: none; }
+.si-plus { transition: transform .15s ease; }
+.si-action[aria-expanded="true"] .si-plus { transform: rotate(45deg); }
+.si-link { font-weight: 600; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; padding: 10px 0; }
+@media (max-width: 640px) {
+  .si-modal { align-items: flex-end; padding: 0; }
+  .si-inner { width: 100%; max-height: 92vh; border-radius: 24px 24px 0 0; }
+}
+
+/* The saved order's "Change time" in the "where" modal, opened from the nav indicator. */
+.saved-change-time { min-height: 44px; margin-top: 4px; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.saved-change-time[hidden] { display: none; }
 

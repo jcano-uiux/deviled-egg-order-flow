@@ -44,6 +44,7 @@
   /* Borders */
   --deg-border: #DDDDDD;
   --deg-border-input: #D9D1BF;
+  --deg-border-control: #968B76; /* the edge of a field or select-like button: 3.4:1 on white, so the control's boundary is findable (WCAG 1.4.11) */
   --deg-border-chip: #E9E1D8;
   --deg-border-card: #F3F3F3;    /* card borders — colors/border/neutral */
   --deg-border-primary: #88754F; /* colors/border/primary — inputs, active drawer-item accent */
@@ -100,15 +101,23 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
    promo code, delivery address, item notes — uses this one rule. */
 input, select {
   font-family: var(--deg-font-body);
-  font-size: 15px;
+  font-size: 16px; /* iOS Safari zooms the page when a focused field is under 16px */
   color: var(--deg-ink-body);
   border-radius: var(--deg-radius-compact); /* text fields; the dropdowns below stay pills */
-  border: 1px solid var(--deg-border-input);
+  border: 1px solid var(--deg-border-control);
   padding: 14px 22px;
   background: var(--deg-white);
   min-width: 0; /* let inputs shrink inside a flex row instead of overflowing */
 }
 input::placeholder { color: var(--deg-ink-muted); }
+/* A multi-line field (delivery notes) matches the text fields: the same 14px radius, 16px text and Control Border. */
+textarea {
+  font-family: var(--deg-font-body); font-size: 16px; line-height: 24px; color: var(--deg-ink-body);
+  border-radius: var(--deg-radius-compact); border: 1px solid var(--deg-border-control);
+  padding: 12px 22px; background: var(--deg-white); width: 100%; min-width: 0; resize: vertical;
+}
+textarea::placeholder { color: var(--deg-ink-muted); }
+textarea:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
 /* The browser's own dropdown arrow sits flush against whatever padding you
    give it, with no visual gap of its own — a plain `select` reads as
    cramped against the field's edge unless the arrow is drawn and placed

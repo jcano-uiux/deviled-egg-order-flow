@@ -336,15 +336,26 @@
     },
   ];
 
-  // Three carts, one per fulfillment path, never merged: Pickup (the location
-  // menus), Shipping (Nationwide Shipping kits) and Catering. Each checks out
-  // on its own page. Delivery has no cart yet.
-  const CART_KINDS = ['pickup', 'shipping', 'catering'];
-  const CART_LABELS = { pickup: 'Pickup', shipping: 'Shipping', catering: 'Catering' };
+  // Four carts, one per fulfillment path, never merged: Pickup (the location
+  // menus), Delivery (the same menu, brought to an address), Shipping
+  // (Nationwide Shipping kits) and Catering. Each checks out on its own page.
+  const CART_KINDS = ['pickup', 'delivery', 'shipping', 'catering'];
+  const CART_LABELS = { pickup: 'Pickup', delivery: 'Delivery', shipping: 'Shipping', catering: 'Catering' };
+  // Delivery's placeholder rules, until real ones are approved: one flat fee, a minimum subtotal, and the ASAP estimate.
+  const DELIVERY_FEE = 4.99;
+  const DELIVERY_MINIMUM = 15;
+  const DELIVERY_ASAP_LABEL = 'ASAP (35–50 min)';
+
+  // The nav indicator draws only once the rest of the app is set up (see Init at the end).
+  let navWhereReady = false;
 
   const state = {
-    carts: { pickup: [], shipping: [], catering: [] },
+    carts: { pickup: [], delivery: [], shipping: [], catering: [] },
     drawerCart: 'pickup',
+    // Which funnel the order page is serving: 'pickup' or 'delivery'. A product added there goes to that cart.
+    orderMode: 'pickup',
+    // The store whose own page (#store/<id>) is showing, or null.
+    viewStore: null,
     modalFlavorQty: {},
     modalExclusions: {},
     modalQty: 1,
@@ -393,6 +404,13 @@
     }
   } catch (e) { /* ignore corrupt storage */ }
 
+  // The path the customer is on survives a reload, so the nav indicator names the same one afterwards.
+  function setOrderMode(mode) {
+    state.orderMode = mode;
+    try { localStorage.setItem('deg-order-mode', mode); } catch (e) { /* storage unavailable */ }
+  }
+  try { if (localStorage.getItem('deg-order-mode') === 'delivery') state.orderMode = 'delivery'; } catch (e) { /* ignore */ }
+
   function persistCart() {
     localStorage.setItem('deg-carts', JSON.stringify(state.carts));
     localStorage.removeItem('deg-cart');
@@ -417,7 +435,9 @@
     return state.carts[kind].reduce((sum, item) => sum + lineTotal(item), 0);
   }
 
-  // Which cart an entry belongs to travels with it (`entry.cart`); pickup is the default.
+  // Which cart an entry belongs to travels with it (`entry.cart`). Otherwise it follows the page it was added on:
+  // the delivery order page fills the Delivery cart, every other menu the Pickup cart.
+  const orderKind = () => (state.orderMode === 'delivery' && (!views.order.hidden || !views.menu.hidden) ? 'delivery' : 'pickup');
   // How much the last add moved the badge, so the add flight can hold the old count until it lands.
   let lastAddDelta = 0;
   // A cart line can be reopened in the modal that built it. `editingLine` is the line that modal is
@@ -440,7 +460,7 @@
   }
 
   function addToCart(entry) {
-    const cart = state.carts[entry.cart || 'pickup'];
+    const cart = state.carts[entry.cart || orderKind()];
     const before = cartCount();
     const existing = cart.find((c) => c.key === entry.key);
     if (existing) {
@@ -538,7 +558,11 @@
   // bar keep showing the previous count (see celebrateAdd); null = show the truth.
   let cartCountHeld = null;
   function renderCartBadge() {
-    document.getElementById('cart-badge').textContent = String(cartCountHeld ?? cartCount());
+    // An empty cart has no badge at all, not a 0.
+    const shown = cartCountHeld ?? cartCount();
+    const badge = document.getElementById('cart-badge');
+    badge.textContent = String(shown);
+    badge.hidden = shown === 0;
     updateCartBar();
   }
 
@@ -553,7 +577,7 @@
     // The bar belongs to the menu, so it counts the pickup cart only; a count
     // held for a flight in progress is taken off the same way.
     const pending = cartCountHeld === null ? 0 : cartCount() - cartCountHeld;
-    const count = cartCount('pickup') - pending;
+    const count = cartCount(orderKind()) - pending;
     const show = count > 0 && (!views.menu.hidden || !views.order.hidden);
     if (show) {
       if (cartBarHideTimer) { window.clearTimeout(cartBarHideTimer); cartBarHideTimer = null; }
@@ -583,6 +607,7 @@
 
   // Every product opens its modal first (never an instant add); which modal depends on what it can customize.
   function openMenuItem(item, keyPrefix, cartCategory) {
+    if (gateFulfillment(() => openMenuItem(item, keyPrefix, cartCategory))) return;
     if (item.wrapFlavors) {
       openWrapModal(item);
     } else if (item.pickerConfig || item.fixedFlavors) {
@@ -707,6 +732,9 @@
     });
   }
 
+  // On a store's page, the first thing added asks how the order is going (pickup or delivery) if that is not chosen yet.
+  const openBagelFromMenu = () => { if (!gateFulfillment(() => openBagelFromMenu())) openBagelModal(); };
+
   function renderBagelCard() {
     const grid = document.getElementById('bagels-grid');
     grid.innerHTML = '';
@@ -726,13 +754,13 @@
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Customize Full Size Bagel');
     btn.innerHTML = ADD_ICON;
-    btn.addEventListener('click', openBagelModal);
+    btn.addEventListener('click', openBagelFromMenu);
     media.appendChild(btn);
     card.appendChild(media);
 
     card.addEventListener('click', (e) => {
       if (e.target.closest('.add-btn')) return;
-      openBagelModal();
+      openBagelFromMenu();
     });
 
     grid.appendChild(card);
@@ -767,10 +795,12 @@
     }).join('');
   }
 
+  const orderPageTitle = () => (state.orderMode === 'delivery' ? `Order delivery — ${SITE_NAME}` : PAGE_TITLES.order);
+
   function showOrderTiles() {
     orderTilesScreen.hidden = false;
     orderGroupScreen.hidden = true;
-    document.title = PAGE_TITLES.order;
+    document.title = orderPageTitle();
   }
 
   // TEMP: card-style switcher for comparing the three product-card variants. Remove once one is chosen.
@@ -829,7 +859,7 @@
     renderOrderRows(g);
     orderTilesScreen.hidden = true;
     orderGroupScreen.hidden = false;
-    document.title = `${g.name} — Order pickup — ${SITE_NAME}`;
+    document.title = `${g.name} — ${state.orderMode === 'delivery' ? 'Order delivery' : 'Order pickup'} — ${SITE_NAME}`;
     if (push) history.pushState({ orderGroup: id }, '', '#order/' + id);
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     document.getElementById('order-group-title').focus({ preventScroll: true });
@@ -864,7 +894,7 @@
   const navPanelMq = window.matchMedia('(max-width: 640px)');
   const navCloseBtn = document.getElementById('close-nav');
   const navBackdropEl = document.getElementById('nav-backdrop');
-  const navBehindEls = () => [...document.querySelectorAll('#page-root > :not(.site-header)'), navLogoEl, navToggle, navCartEl];
+  const navBehindEls = () => [...document.querySelectorAll('#page-root > :not(.site-header)'), ...document.querySelectorAll('.site-header .logo'), navToggle, navCartEl];
 
   function setNavOpen(open) {
     const wasOpen = navLinksEl.classList.contains('open');
@@ -873,6 +903,11 @@
     navToggle.setAttribute('aria-expanded', String(open));
     navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     if (open === wasOpen) return;
+    if (open && navInnerEl.classList.contains('nav-compact')) {
+      const current = navGroupBtns.find((b) => b.getAttribute('aria-current') === 'page') || navGroupBtns[0];
+      closeNavGroups({ except: current });
+      setNavGroup(current, true);
+    }
     if (open) {
       if (!navPanelMq.matches) return;
       navBehindEls().forEach((el) => { el.inert = true; });
@@ -899,6 +934,9 @@
   navProbe.setAttribute('aria-hidden', 'true');
   navProbe.inert = true;
   navProbe.innerHTML = navLinksEl.querySelector('.nav-links-inner').innerHTML;
+  // Only the bar's own items are measured: the dropdown menus are not part of the row, and the clone must not repeat ids.
+  navProbe.querySelectorAll('.nav-menu').forEach((menu) => menu.remove());
+  navProbe.querySelectorAll('[id], [aria-controls]').forEach((el) => { el.removeAttribute('id'); el.removeAttribute('aria-controls'); });
   // Appended to <body>, not navInnerEl: the probe must always measure the
   // full/inline rendering, but .nav-compact .nav-link overrides padding
   // (16px 4px for the dropdown rows, vs the base 10px) — as a descendant
@@ -923,6 +961,7 @@
   // whichever mode happens to be live when we ask.
   const NAV_LOGO_GAP_PX = 16;
   const NAV_CART_GAP_PX = 16;
+  const NAV_WHERE_SPACE_PX = 236; // the indicator's 220px cap plus its 16px margin
 
   // A live window drag also settles right on top of the real crossover
   // width for a while (measured: available and needed came out 954.21px
@@ -939,7 +978,9 @@
     const paddingX = parseFloat(innerStyle.paddingLeft) + parseFloat(innerStyle.paddingRight);
     const logoSpace = navLogoEl.getBoundingClientRect().width + NAV_LOGO_GAP_PX;
     const cartSpace = navCartEl.getBoundingClientRect().width + NAV_CART_GAP_PX;
-    const available = navInnerEl.clientWidth - paddingX - logoSpace - cartSpace;
+    // The order indicator is as wide as its text up to its 220px cap; in the compact bar it stretches to fill, so its
+    // width there says nothing about what it needs. Reserve the cap instead.
+    const available = navInnerEl.clientWidth - paddingX - logoSpace - cartSpace - NAV_WHERE_SPACE_PX;
     const needed = navProbe.scrollWidth;
     const isCompact = navInnerEl.classList.contains('nav-compact');
     return isCompact ? needed > available - NAV_HYSTERESIS_PX : needed > available;
@@ -976,8 +1017,35 @@
     setNavOpen(navToggle.getAttribute('aria-expanded') !== 'true');
   });
 
+  // ----- The bar's groups (Order, Gifting, About): disclosure buttons, one open at a time -----
+  // On the wide bar a group opens a small panel under it; in the compact menu it opens inline, like an accordion. It
+  // opens on click or Enter, never on hover, so touch, keyboard and mouse behave alike.
+  const navGroupBtns = [...document.querySelectorAll('#nav-links .nav-group-btn')];
+  function setNavGroup(btn, open) {
+    btn.setAttribute('aria-expanded', String(open));
+    document.getElementById(btn.getAttribute('aria-controls')).hidden = !open;
+  }
+  function closeNavGroups({ except = null } = {}) {
+    navGroupBtns.forEach((b) => { if (b !== except && b.getAttribute('aria-expanded') === 'true') setNavGroup(b, false); });
+  }
+  navGroupBtns.forEach((btn) => btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    closeNavGroups({ except: btn });
+    setNavGroup(btn, open);
+  }));
+  // Outside the bar, or focus leaving a group, closes the wide bar's panel (the compact menu keeps its sections as set).
+  document.addEventListener('click', (e) => {
+    if (!navInnerEl.classList.contains('nav-compact') && !e.target.closest('.nav-group')) closeNavGroups();
+  });
+  document.querySelectorAll('#nav-links .nav-group').forEach((group) => group.addEventListener('focusout', (e) => {
+    if (!navInnerEl.classList.contains('nav-compact') && !group.contains(e.relatedTarget)) closeNavGroups();
+  }));
+
+  // A link or a menu item ends the menu's work; a group button only opens its section.
   navLinksEl.addEventListener('click', (e) => {
-    if (e.target.closest('.nav-link')) setNavOpen(false);
+    if (!e.target.closest('a')) return;
+    closeNavGroups();
+    setNavOpen(false);
   });
 
   document.addEventListener('click', (e) => {
@@ -1109,13 +1177,15 @@
   let lastFocusedEl = null;
 
   function updateInert() {
-    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !addPaymentModal.hidden || !paymentMethodsModal.hidden || !boxModal.hidden || !ldModal.hidden;
+    const anyOpen = !itemModal.hidden || !bagelModal.hidden || !bowlModal.hidden || !wrapModal.hidden || !quickviewModal.hidden || !cartDrawer.hidden || !addPaymentModal.hidden || !paymentMethodsModal.hidden || !boxModal.hidden || !ldModal.hidden || !ddModal.hidden || !daModal.hidden || !siModal.hidden;
     pageRoot.inert = anyOpen;
     document.body.style.overflow = anyOpen ? 'hidden' : '';
   }
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    const openGroup = navGroupBtns.find((b) => b.getAttribute('aria-expanded') === 'true');
+    if (openGroup && !navInnerEl.classList.contains('nav-compact')) { setNavGroup(openGroup, false); openGroup.focus(); return; }
     if (navToggle.getAttribute('aria-expanded') === 'true') setNavOpen(false);
     else if (!itemModal.hidden) closeDozenModal();
     else if (!bagelModal.hidden) closeBagelModal();
@@ -1127,6 +1197,9 @@
     else if (!paymentMethodsModal.hidden) closePaymentMethods();
     else if (!boxModal.hidden) closeBoxModal();
     else if (!ldModal.hidden) closeLocationDetails();
+    else if (!ddModal.hidden) closeDeliveryDetails();
+    else if (!daModal.hidden) closeWhere();
+    else if (!siModal.hidden) closeStoreInfo();
   });
 
   // ---------- Item customization modal ----------
@@ -1534,7 +1607,7 @@
     if (editingLine) { commitLineEdit(entry, closeDozenModal); return; }
     addToCart({
       ...entry,
-      cart: activeProduct.cart || 'pickup',
+      cart: activeProduct.cart || orderKind(),
       key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
     });
     celebrateAdd(itemModal, closeDozenModal, activeProduct.image, state.modalQty);
@@ -2024,7 +2097,7 @@
     const qty = Number(document.getElementById('quickview-qty-select').value);
     const { keyPrefix, cartCategory } = activeQuickview.cartMeta;
     addToCart({
-      cart: activeQuickview.cartMeta.cart || 'pickup',
+      cart: activeQuickview.cartMeta.cart || orderKind(),
       key: keyPrefix + '-' + activeQuickview.id,
       name: activeQuickview.name,
       sub: cartCategory,
@@ -2499,7 +2572,7 @@
   // (or the one a checkout's back link names); if that one is empty it opens
   // on the first cart that has something in it.
   function defaultDrawerCart() {
-    const here = !views.shipping.hidden ? 'shipping' : !views.catering.hidden ? 'catering' : 'pickup';
+    const here = !views.shipping.hidden ? 'shipping' : !views.catering.hidden ? 'catering' : orderKind();
     if (state.carts[here].length) return here;
     return CART_KINDS.find((k) => state.carts[k].length) || here;
   }
@@ -2550,15 +2623,18 @@
     pickup: 'Your cart is empty. Add something delicious from the menu.',
     shipping: 'No shipping kits yet. Add one from Nationwide Shipping.',
     catering: 'No catering items yet. Add one from Catering.',
+    delivery: 'Your cart is empty. Add something delicious from the menu.',
   };
   const DRAWER_NOTE = {
     shipping: 'Shipping is added at checkout.',
     catering: 'Delivery fee and tax are added at checkout.',
+    delivery: 'Delivery fee, tip and tax are added at checkout.',
   };
 
   function drawerContextHTML(kind) {
     if (kind === 'shipping') return 'Ships nationwide · order Mon–Wed for week-of arrival';
     if (kind === 'catering') return 'Catering · box meals are a 10-box minimum';
+    if (kind === 'delivery') return state.delivery && state.delivery.street ? `Delivering to <strong>${escapeHTML(deliveryLabel())}</strong>` : 'Delivery';
     return `Pickup at <strong>${state.location}</strong>`;
   }
 
@@ -2707,15 +2783,17 @@
     document.getElementById('drawer-total-label').textContent = isPickup ? 'Total' : 'Subtotal';
     document.getElementById('drawer-total').textContent = money(isPickup ? computeTotals().total : cartSubtotal(kind));
     const note = document.getElementById('drawer-total-note');
+    // Delivery has a minimum: below it the note says how much is missing, and checkout waits.
+    const short = kind === 'delivery' ? Math.max(0, DELIVERY_MINIMUM - cartSubtotal('delivery')) : 0;
     note.hidden = isPickup || items.length === 0;
-    note.textContent = DRAWER_NOTE[kind] || '';
+    note.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : DRAWER_NOTE[kind] || '';
 
     const totalQty = cartCount(kind);
     document.getElementById('drawer-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
 
     document.getElementById('fulfillment-chip').innerHTML = drawerContextHTML(kind);
 
-    document.getElementById('go-to-checkout').disabled = items.length === 0;
+    document.getElementById('go-to-checkout').disabled = items.length === 0 || short > 0;
   }
 
   // ---------- View switching ----------
@@ -2730,21 +2808,23 @@
     catering: document.getElementById('view-catering'),
     'ship-checkout': document.getElementById('view-ship-checkout'),
     'cater-checkout': document.getElementById('view-cater-checkout'),
+    'delivery-checkout': document.getElementById('view-delivery-checkout'),
   };
   // Each cart checks out on its own page; all of them swap the site header for the checkout header.
-  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'cater-checkout'];
-  const CHECKOUT_VIEW_FOR = { pickup: 'checkout', shipping: 'ship-checkout', catering: 'cater-checkout' };
-  const PAGE_FOR_CART = { pickup: 'order', shipping: 'shipping', catering: 'catering' };
+  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'cater-checkout', 'delivery-checkout'];
+  const CHECKOUT_VIEW_FOR = { pickup: 'checkout', delivery: 'delivery-checkout', shipping: 'ship-checkout', catering: 'cater-checkout' };
+  const PAGE_FOR_CART = { pickup: 'order', delivery: 'order', shipping: 'shipping', catering: 'catering' };
 
   // Each page names itself in the browser tab (and to screen readers when the page changes).
   const SITE_NAME = 'Deviled Egg Co.';
   const PAGE_TITLES = {
     home: 'Deviled Egg Co. — Order Online',
-    'location-picker': `Choose a pickup store — ${SITE_NAME}`,
+    'location-picker': `Our locations — ${SITE_NAME}`,
     menu: `Menu — ${SITE_NAME}`,
     order: `Order pickup — ${SITE_NAME}`,
     shipping: `Nationwide Shipping — ${SITE_NAME}`,
     catering: `Catering — ${SITE_NAME}`,
+    'delivery-checkout': `Secure Checkout, Delivery — ${SITE_NAME}`,
     checkout: `Secure Checkout — ${SITE_NAME}`,
     'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
     'cater-checkout': `Secure Checkout, Catering — ${SITE_NAME}`,
@@ -2754,19 +2834,38 @@
   function showView(name) {
     // The pickup order page is the Pickup funnel's third step: without a chosen store, day and time, start the funnel
     // instead. The products page (#menu) stays open to everyone.
-    if (name === 'order' && !pickupSessionValid()) { startFunnel('pickup'); return; }
+    // The Delivery funnel's order page asks the same of its own session.
+    if (name === 'order') {
+      if (state.orderMode === 'delivery') { if (!deliverySessionValid()) { startDelivery(); return; } }
+      else if (!pickupSessionValid()) { startFunnel('pickup'); return; }
+    }
     Object.entries(views).forEach(([key, el]) => { el.hidden = key !== name; });
     document.title = PAGE_TITLES[name] || PAGE_TITLES.home;
-    if (name === 'order') showOrderTiles();
+    // The menu page is also each store's own page (#store/<id>): then it is about that store.
+    if (name === 'menu') {
+      if (!location.hash.startsWith('#store/')) state.viewStore = null;
+      renderStoreHeadings();
+      if (state.viewStore) document.title = `${storeName(storeById(state.viewStore))} — ${SITE_NAME}`;
+    }
+    if (name === 'order') { renderNavWhere(); showOrderTiles(); }
+    if (name === 'delivery-checkout') setSummaryOpen(document.getElementById('dc-toggle-summary'), true);
+    if (name === 'checkout') renderCheckoutMap('pickup');
+    if (name === 'delivery-checkout') renderCheckoutMap('delivery');
     document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
     // The order summary opens expanded at every width; the customer can fold it.
     if (name === 'checkout') setOrderSummaryOpen(true);
     if (name === 'location-picker') { syncPickerSaved(); loadLocationPicker(); }
     // The two top-level pages the header links to; checkout/confirmation
     // aren't reachable from the nav so they leave it unmarked.
-    document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
-      if (link.dataset.view === name) link.setAttribute('aria-current', 'page');
+    document.querySelectorAll('#nav-links a[data-view]').forEach((link) => {
+      if (link.dataset.view === (name === 'menu' && state.viewStore ? 'location-picker' : name)) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
+    });
+    // A group is current when one of its pages is open.
+    document.querySelectorAll('#nav-links .nav-group').forEach((group) => {
+      const btn = group.querySelector('.nav-group-btn');
+      if (group.querySelector('a[aria-current="page"]')) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
     });
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
     updateCartBar();
@@ -2778,14 +2877,15 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'cater-checkout', 'confirmation'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'cater-checkout', 'delivery-checkout', 'confirmation'];
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
-  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'cater-checkout': '#checkout/catering', confirmation: '#confirmation' };
+  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'cater-checkout': '#checkout/catering', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
   function syncPageHash(name) {
     if (!PAGE_VIEWS.includes(name)) return;
     // #order/<group> is the order page too (see openOrderGroup).
     if (name === 'order' && location.hash.startsWith('#order')) return;
+    if (name === 'menu' && location.hash.startsWith('#store/')) return;
     const want = name === 'home' ? '' : (PAGE_HASH_OF[name] || '#' + name);
     if (location.hash === want || (name === 'home' && (location.hash === '' || location.hash === '#home'))) return;
     const url = location.pathname + location.search + want;
@@ -2807,18 +2907,101 @@
     });
   }
   reduceMotionQuery.addEventListener('change', syncHeroVideos);
-  // Pointing at "Order pickup" starts loading the picker before the page it opens is shown.
-  const pickupTile = document.querySelector('[data-home-go="pickup"]');
-  ['pointerenter', 'touchstart', 'focus'].forEach((type) => pickupTile.addEventListener(type, loadLocationPicker, { once: true, passive: true }));
+  // Pointing at either tile starts loading the map the "where" modal shows.
+  document.querySelectorAll('[data-home-go="pickup"], [data-home-go="delivery"]').forEach((tile) => {
+    ['pointerenter', 'touchstart', 'focus'].forEach((type) => tile.addEventListener(type, () => loadLeaflet().catch(() => {}), { once: true, passive: true }));
+  });
 
   // The logo is the way home; the tiles are the front doors to each order path.
   const goHome = () => {
     history.replaceState(null, '', '#home');
     showView('home');
   };
-  const siteLogo = document.querySelector('.site-header .logo');
-  siteLogo.addEventListener('click', goHome);
-  siteLogo.addEventListener('keydown', (e) => { if (e.key === 'Enter') goHome(); });
+  // Two logos, one shown at a time: the wordmark, and on phones the egg submark (the checkout bar keeps the wordmark).
+  document.querySelectorAll('.site-header .logo').forEach((siteLogo) => {
+    siteLogo.addEventListener('click', goHome);
+    siteLogo.addEventListener('keydown', (e) => { if (e.key === 'Enter') goHome(); });
+  });
+
+  // ---------- A store's own page ----------
+  // The menu page, with its banner, store card and menu, is every real store's page: #store/<id>. The finder's cards
+  // open it. Browsing is open to everyone; the first thing added asks how the order is going (pickup or delivery) if
+  // that is not chosen yet, with this store already selected, and then carries on with what was tapped.
+  function showStorePage(id) {
+    if (!storeById(id)) { history.replaceState(null, '', '#location-picker'); showView('location-picker'); return; }
+    state.viewStore = id;
+    showView('menu');
+  }
+  document.getElementById('store-back').addEventListener('click', (e) => {
+    e.preventDefault();
+    history.pushState(null, '', '#location-picker');
+    showView('location-picker');
+  });
+  let pendingStoreOpen = null;
+  function gateFulfillment(resume) {
+    if (views.menu.hidden) return false;
+    const chosen = state.orderMode === 'delivery' ? deliverySessionValid() : pickupSessionValid();
+    if (chosen) return false;
+    pendingStoreOpen = resume;
+    openWhere('pickup', { returnTo: 'store', store: state.viewStore || currentStoreId() });
+    return true;
+  }
+  function resumeStorePage() {
+    const resume = pendingStoreOpen;
+    pendingStoreOpen = null;
+    if (resume) resume();
+  }
+
+  // ----- Store info: a card with the store on a map, its address, hours, delivery terms and directions -----
+  const siBackdrop = document.getElementById('si-backdrop');
+  const siModal = document.getElementById('si-modal');
+  const infoStore = () => (state.viewStore ? storeById(state.viewStore) : PICKUP_STORES.find((st) => storeName(st) === state.location)) || PICKUP_STORES[0];
+  function openStoreInfo() {
+    const st = infoStore();
+    const name = storeName(st);
+    const address = STORE_ADDRESSES[name];
+    lastFocusedEl = document.activeElement;
+    document.getElementById('si-title').textContent = name;
+    document.getElementById('si-address').textContent = address;
+    document.getElementById('si-copy').dataset.address = address;
+    document.getElementById('si-hours').textContent = storeHoursText().text;
+    document.getElementById('si-delivery').textContent = `${money(DELIVERY_FEE)} delivery fee · ${money(DELIVERY_MINIMUM)} minimum`;
+    document.getElementById('si-directions').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const toggle = document.getElementById('si-hours-toggle');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.getElementById('si-hours-detail').hidden = true;
+    siBackdrop.hidden = false;
+    siModal.hidden = false;
+    updateInert();
+    document.getElementById('si-close').focus();
+    placePinMap('store-info', document.getElementById('si-map'), { lat: st.lat, lng: st.lng, html: storePinHTML(false, false), size: [36, 44] }, 0);
+  }
+  function closeStoreInfo() {
+    siBackdrop.hidden = true;
+    siModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+  document.querySelector('.store-info-btn').addEventListener('click', openStoreInfo);
+  document.getElementById('si-close').addEventListener('click', closeStoreInfo);
+  siBackdrop.addEventListener('click', closeStoreInfo);
+  document.getElementById('si-hours-toggle').addEventListener('click', (e) => {
+    const open = e.currentTarget.getAttribute('aria-expanded') !== 'true';
+    e.currentTarget.setAttribute('aria-expanded', String(open));
+    document.getElementById('si-hours-detail').hidden = !open;
+  });
+  document.getElementById('si-copy').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    try { await navigator.clipboard.writeText(btn.dataset.address); } catch (err) { /* clipboard unavailable: the address is on screen to select */ }
+    const status = document.getElementById('si-copy-status');
+    status.textContent = 'Address copied';
+    window.setTimeout(() => { status.textContent = ''; }, 2000);
+  });
+  // Delivery from this store: the row opens the "where" modal on its Delivery tab.
+  document.getElementById('si-delivery-btn').addEventListener('click', () => {
+    closeStoreInfo();
+    openWhere('delivery', { returnTo: 'store' });
+  });
 
   // ---------- Order funnels ----------
   // A funnel is one way of ordering, start to finish. Each one names the words the location picker uses while
@@ -2842,19 +3025,34 @@
   // without it the funnel ends on the pickup order page.
   let funnelReturn = null;
   function startFunnel(name, { returnTo = null } = {}) {
-    const funnel = FUNNELS[name];
     activeFunnel = name;
-    funnelReturn = returnTo;
-    if (window.degLocationPicker && window.degLocationPicker.configure) window.degLocationPicker.configure(funnel);
-    history.replaceState(null, '', '#location-picker');
-    showView('location-picker');
+    // Pickup now starts in the "where" modal (the Pickup tab), over whatever page the customer is on. The old
+    // location picker page is no longer part of the funnel.
+    openWhere('pickup', { returnTo });
   }
 
   // The picker's work is done: back to checkout if the customer came from there, otherwise on to the order page.
   function finishPickerFunnel() {
     const back = funnelReturn;
     funnelReturn = null;
-    if (back === 'checkout') { renderCheckout(); showView('checkout'); return; }
+    setOrderMode('pickup');
+    if (back === 'store') { resumeStorePage(); return; }
+    if (back === 'nav') {
+      // Changed from the nav: stay on the page; an order that was on delivery comes along.
+      const moved = wm.origin === 'delivery' ? moveCart('delivery', 'pickup') : 0;
+      renderNavWhere();
+      announceNav(moved ? 'Your order moved to pickup.' : 'Pickup updated.');
+      return;
+    }
+    if (back === 'checkout') {
+      // Switching from the delivery checkout: the order comes along.
+      const moved = checkoutCart === 'delivery' ? moveCart('delivery', 'pickup') : 0;
+      checkoutCart = 'pickup';
+      renderCheckout();
+      showView('checkout');
+      if (moved) announceCheckout('Your order moved to pickup.');
+      return;
+    }
     history.replaceState(null, '', '#order');
     showView('order');
   }
@@ -2869,6 +3067,8 @@
   // with no funnel started belongs to Pickup, the only funnel there is.
   if (window.degLocationPicker) {
     window.degLocationPicker.onPick = (store) => FUNNELS[activeFunnel || 'pickup'].onPick(store);
+    // A real store's card opens that store's own page.
+    window.degLocationPicker.onOpenStore = (id) => { history.pushState(null, '', '#store/' + id); showStorePage(id); };
   }
 
   function goFromHome(path) {
@@ -2877,7 +3077,8 @@
       showView(path);
       return;
     }
-    // "Order pickup" is the Pickup funnel's first step. The Delivery tile has no data-home-go on purpose: it links nowhere for now.
+    // "Order delivery" opens the Delivery funnel's address step; "Order pickup" the Pickup funnel's store picker.
+    if (path === 'delivery') { startDelivery(); return; }
     startFunnel(path);
   }
 
@@ -2904,8 +3105,9 @@
   const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#checkout': 'checkout', '#confirmation': 'order' };
   navLinksEl.addEventListener('click', (e) => {
     // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
-    if (e.target.closest('.nav-link[data-inert]')) { e.preventDefault(); return; }
-    const link = e.target.closest('.nav-link[data-view]');
+    // "Pickup & Delivery" opens the "where" modal, like the Home tiles, on the tab it was last on.
+    if (e.target.closest('[data-open-where]')) { e.preventDefault(); openWhere(wm.tab); return; }
+    const link = e.target.closest('a[data-view]');
     if (!link) return;
     e.preventDefault();
     const name = link.dataset.view;
@@ -2926,8 +3128,11 @@
   // "#order/deviled-eggs" is the order page opened on that group's screen.
   function routeFromHash() {
     const [base, group] = location.hash.split('/');
+    // The address checker is a modal: a link to #delivery opens it over Home.
+    if (base === '#delivery') { showView('home'); startDelivery(); return; }
+    if (base === '#store') { showStorePage(group); return; }
     let view = PAGE_HASHES[base] || 'home';
-    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'catering' ? 'cater-checkout' : 'checkout';
+    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'catering' ? 'cater-checkout' : group === 'delivery' ? 'delivery-checkout' : 'checkout';
     if (CHECKOUT_VIEWS.includes(view)) { openCheckoutFromLink(view); return; }
     showView(view);
     if (view === 'order' && group) openOrderGroup(group, { push: false });
@@ -2984,7 +3189,11 @@
 
   function openCheckout(kind) {
     checkoutCart = kind;
+    // A delivery whose chosen time has passed asks for a new one first, then comes back here.
+    if (kind === 'delivery' && !deliverySessionValid()) { startDelivery({ returnTo: 'checkout' }); return; }
+    if (kind === 'delivery') setOrderMode('delivery');
     if (kind === 'pickup') renderCheckout();
+    else if (kind === 'delivery') renderDeliveryCheckout();
     else if (kind === 'shipping') renderShipCheckout();
     else renderCaterCheckout();
     showView(CHECKOUT_VIEW_FOR[kind]);
@@ -2993,6 +3202,7 @@
   // pay for; otherwise it lands on the page that cart is filled from.
   function openCheckoutFromLink(view) {
     const kind = Object.keys(CHECKOUT_VIEW_FOR).find((k) => CHECKOUT_VIEW_FOR[k] === view);
+    if (kind === 'delivery' && (!state.carts.delivery.length || !deliverySessionValid())) { startDelivery(); return; }
     if (!state.carts[kind].length || (kind === 'pickup' && !pickupSessionValid())) { showView(PAGE_FOR_CART[kind]); return; }
     openCheckout(kind);
   }
@@ -3011,17 +3221,21 @@
   };
 
   // The menu page's store card and the pickup banner name the chosen store.
+  // On a store's own page (#store/<id>) they name that store instead, whatever the customer's pickup is.
   function renderStoreHeadings() {
-    const address = STORE_ADDRESSES[state.location];
-    document.querySelector('.store-name').textContent = state.location;
-    document.querySelector('.store-address').textContent = address;
-    renderOrderBanner();
+    const viewing = state.viewStore ? storeById(state.viewStore) : null;
+    const name = viewing ? storeName(viewing) : state.location;
+    document.querySelector('.store-name').textContent = name;
+    document.querySelector('.store-address').textContent = STORE_ADDRESSES[name];
+    document.getElementById('store-back').hidden = !viewing;
+    renderNavWhere();
   }
 
   function renderStoreLocatorSummary() {
     renderStoreHeadings();
     document.getElementById('store-locator-name').textContent = state.location;
     document.getElementById('store-locator-address').textContent = STORE_ADDRESSES[state.location];
+    if (!views.checkout.hidden) renderCheckoutMap('pickup');
   }
 
   // The checkout's Store and Pickup time rows open the funnel's own pieces: the location picker, and the
@@ -3258,18 +3472,40 @@
 
   function renderPickupSummary() {
     document.getElementById('pickup-time-summary').textContent = `${pickupDateLabel(state.pickupDateKey)} · ${state.pickupTimeLabel}`;
-    renderOrderBanner();
+    renderNavWhere();
   }
 
   // The banner above the menu: the store, day and time chosen on the way here.
-  function renderOrderBanner() {
-    const banner = document.getElementById('order-banner');
-    if (!banner) return;
-    document.getElementById('banner-store').textContent = state.location;
-    document.getElementById('banner-address').textContent = STORE_ADDRESSES[state.location] || '';
-    document.getElementById('banner-when').textContent = state.pickupChosen ? pickupWhenText() : '';
+  // The indicator in the nav (pickup from which store, or delivery to where). It names the path the customer is on
+  // and opens the "where" modal to change it; before anything is chosen it asks.
+  function navWhereState() {
+    const pickup = pickupSessionValid();
+    const delivery = deliverySessionValid();
+    if (delivery && (state.orderMode === 'delivery' || !pickup)) return { path: 'delivery', verb: 'Deliver to', name: deliveryLabel() };
+    if (pickup) return { path: 'pickup', verb: 'Pickup from', name: state.location };
+    return { path: null, verb: 'Pickup or delivery?', name: 'Choose a store' };
+  }
+  function renderNavWhere() {
+    if (!navWhereReady) return;
+    const w = navWhereState();
+    document.getElementById('nav-where-verb').textContent = w.verb;
+    document.getElementById('nav-where-name').textContent = w.name;
+    // The icon is the map's: the egg pin for pickup (and before a choice), the gold truck pin for delivery.
+    document.getElementById('nav-where').dataset.path = w.path || '';
+    document.getElementById('nav-where').setAttribute('aria-label', w.path ? `${w.verb} ${w.name}. Change` : 'Choose pickup or delivery');
     renderPayNote();
   }
+  function announceNav(message) {
+    const region = document.getElementById('nav-status');
+    region.textContent = '';
+    window.setTimeout(() => { region.textContent = message; }, 50);
+  }
+  document.getElementById('nav-where').addEventListener('click', () => {
+    const w = navWhereState();
+    // Nothing chosen yet: the plain funnel. Otherwise the modal changes the order in place.
+    if (!w.path) { openWhere(wm.tab); return; }
+    openWhere(w.path, { returnTo: 'nav' });
+  });
 
   // The line beside Place order: when the order will be ready and where, in plain words.
   function pickupReadyText() {
@@ -3295,10 +3531,8 @@
 
   // The location picker opens on the saved choice (with a Continue) only while it is still valid.
   function syncPickerSaved() {
-    if (!window.degLocationPicker || !window.degLocationPicker.setSaved) return;
-    if (!pickupSessionValid()) { window.degLocationPicker.setSaved(null); return; }
-    const [city, st] = state.location.split(', ');
-    window.degLocationPicker.setSaved({ city, state: st, address: STORE_ADDRESSES[state.location], when: pickupWhenText() });
+    // The locations page is a finder now: the saved order lives in the "where" modal, not on this page.
+    if (window.degLocationPicker && window.degLocationPicker.setSaved) window.degLocationPicker.setSaved(null);
   }
 
   // ---------- Pickup session + location details (the Pickup funnel's second step) ----------
@@ -3308,6 +3542,7 @@
   const ASAP_ID = 'asap';
   const ASAP_LABEL = 'ASAP (20–30 min)';
   state.pickupChosen = false;
+  state.delivery = emptyDelivery();
 
   function savePickupSession() {
     state.pickupChosen = true;
@@ -3317,12 +3552,14 @@
       }));
     } catch (e) { /* storage unavailable: the choice lasts until reload */ }
     syncPickerSaved();
+    renderNavWhere();
   }
 
   function clearPickupSession() {
     state.pickupChosen = false;
     try { localStorage.removeItem(PICKUP_SESSION_KEY); } catch (e) { /* ignore */ }
     syncPickerSaved();
+    renderNavWhere();
   }
 
   // The chosen time has passed if it was an earlier day, or a window starting before now today. ASAP is good for its own day.
@@ -3359,6 +3596,13 @@
 
   function ldTimeOptions(key) {
     const slots = buildTimeSlots(key);
+    // Delivery takes longer, so its ASAP closes an hour before the store does, not half an hour.
+    if (ld && ld.kind === 'delivery') {
+      const now = new Date();
+      const mins = now.getHours() * 60 + now.getMinutes();
+      const open = key === dateKey(now) && mins >= PICKUP_OPEN_HOUR * 60 && mins <= PICKUP_CLOSE_HOUR * 60 - 60;
+      return open ? [{ id: ASAP_ID, label: DELIVERY_ASAP_LABEL, note: 'Out for delivery as soon as it is made' }, ...slots] : slots;
+    }
     return asapAvailable(key) ? [{ id: ASAP_ID, label: ASAP_LABEL, note: 'Ready as soon as it is made' }, ...slots] : slots;
   }
 
@@ -3366,8 +3610,12 @@
     const ready = !!(ld.dateKey && ld.timeId);
     const start = document.getElementById('ld-start');
     start.disabled = !ready;
-    start.textContent = ld.edit ? 'Update order' : 'Start my order';
-    document.getElementById('ld-hint').textContent = ready ? '' : ld.dateKey ? 'Pick a time to start.' : 'Pick a day and a time to start.';
+    // Coming from a checkout, this is a step on the way back to it, not the start of an order.
+    const back = ld.kind === 'delivery' ? deliveryReturn : funnelReturn;
+    const fromCheckout = back === 'checkout';
+    start.textContent = ld.edit ? 'Update order' : fromCheckout ? 'Continue to checkout' : back === 'store' || back === 'nav' ? 'Continue' : ld.kind === 'delivery' ? 'Continue' : 'Start my order';
+    const verb = fromCheckout || back === 'store' || back === 'nav' || ld.edit ? 'continue' : 'start';
+    document.getElementById('ld-hint').textContent = ready ? '' : ld.dateKey ? `Pick a time to ${verb}.` : `Pick a day and a time to ${verb}.`;
   }
 
   function updateLdDateFade() {
@@ -3427,19 +3675,27 @@
 
   // From the picker, nothing is preselected. From the menu banner ({ edit: true }) the modal opens on the
   // current day and time, as long as they are still on offer, and saving updates the order in place.
-  function openLocationDetails(store, { edit = false, thenOrder = false } = {}) {
-    const name = `${store.city}, ${store.state}`;
-    if (!STORE_ADDRESSES[name]) return;
+  // The same modal picks a delivery's day and time (`kind: 'delivery'`): then its heading is where the order is
+  // going, and "Change store" becomes "Change address".
+  function openLocationDetails(store, { edit = false, thenOrder = false, kind = 'pickup' } = {}) {
+    const delivery = kind === 'delivery';
+    const name = delivery ? '' : `${store.city}, ${store.state}`;
+    if (!delivery && !STORE_ADDRESSES[name]) return;
     lastFocusedEl = document.activeElement;
-    ld = { store: name, dateKey: null, timeId: null, timeLabel: null, edit, thenOrder };
-    if (edit && pickupSessionValid()) {
-      const options = ldTimeOptions(state.pickupDateKey);
-      if (options.length) ld.dateKey = state.pickupDateKey;
+    ld = { store: name, dateKey: null, timeId: null, timeLabel: null, edit, thenOrder, kind };
+    const saved = delivery
+      ? { ok: deliverySessionValid(), dateKey: state.delivery.dateKey, timeId: state.delivery.timeId, timeLabel: state.delivery.timeLabel }
+      : { ok: pickupSessionValid(), dateKey: state.pickupDateKey, timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel };
+    if (edit && saved.ok) {
+      const options = ldTimeOptions(saved.dateKey);
+      if (options.length) ld.dateKey = saved.dateKey;
       // The saved time can have gone (ASAP after the store's last half hour); then the day stays and the time is asked again.
-      if (options.some((o) => String(o.id) === String(state.pickupTimeId))) Object.assign(ld, { timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel });
+      if (options.some((o) => String(o.id) === String(saved.timeId))) Object.assign(ld, { timeId: saved.timeId, timeLabel: saved.timeLabel });
     }
-    document.getElementById('ld-title').textContent = name;
-    document.getElementById('ld-address').textContent = STORE_ADDRESSES[name];
+    document.getElementById('ld-title').textContent = delivery ? `Deliver to ${deliveryLabel()}` : name;
+    document.getElementById('ld-address').textContent = delivery ? deliveryAddressLine() : STORE_ADDRESSES[name];
+    document.getElementById('ld-hours').textContent = delivery ? 'Delivery hours: 10:00 AM – 8:00 PM' : 'Pickup hours: 10:00 AM – 8:00 PM';
+    document.getElementById('ld-change').textContent = delivery ? 'Change address' : 'Change store';
     renderLdDates();
     renderLdTimes();
     renderLdFooter();
@@ -3464,12 +3720,10 @@
   document.getElementById('ld-change').addEventListener('click', () => {
     // Only the order page's banner has to leave the page to change store; from the picker, closing is enough.
     const fromOrder = ld && ld.edit && !ld.thenOrder;
+    const wasDelivery = ld && ld.kind === 'delivery';
     closeLocationDetails();
+    if (wasDelivery) { startDelivery({ returnTo: views['delivery-checkout'].hidden ? null : 'checkout' }); return; }
     if (fromOrder) startFunnel('pickup', { returnTo: views.checkout.hidden ? null : 'checkout' });
-  });
-  document.getElementById('banner-change').addEventListener('click', () => {
-    const [city, st] = state.location.split(', ');
-    openLocationDetails({ city, state: st }, { edit: true });
   });
   ldBackdrop.addEventListener('click', closeLocationDetails);
   document.getElementById('ld-date-next').addEventListener('click', () => {
@@ -3480,6 +3734,8 @@
 
   document.getElementById('ld-start').addEventListener('click', () => {
     if (!ld || !ld.dateKey || !ld.timeId) return;
+    if (ld.kind === 'delivery') { commitDeliveryTime(ld); return; }
+    setOrderMode('pickup');
     Object.assign(state, { location: ld.store, pickupDateKey: ld.dateKey, pickupTimeId: ld.timeId, pickupTimeLabel: ld.timeLabel });
     savePickupSession();
     closeLocationDetails();
@@ -3493,6 +3749,814 @@
     if (ld.edit && !ld.thenOrder) return;
     finishPickerFunnel();
   });
+
+
+  // ---------- Delivery funnel ----------
+  // The Delivery funnel: Home ("Order delivery") → address step (is it deliverable?) → address details modal (who,
+  // where exactly, how to drop off) → day and time (the same modal Pickup uses) → the order page → the Delivery cart
+  // → delivery checkout → confirmation. The address, contact and time form the "delivery session", kept for the
+  // visit like the pickup one: it lapses when the chosen slot passes, and placing an order ends it.
+  const DELIVERY_SESSION_KEY = 'deg-delivery-session';
+  // Placeholder delivery area: the ZIP codes around the four stores, each delivered from its nearest store.
+  // Real areas, minimums and fees are still to be approved; there is no geocoding here.
+  const DELIVERY_AREAS = [
+    { store: 'McKinney, TX', cities: { McKinney: ['75069', '75070', '75071', '75072'], Allen: ['75002', '75013'], Frisco: ['75033', '75034', '75035'], Plano: ['75023', '75024', '75025', '75074', '75093'] } },
+    { store: 'Rockwall, TX', cities: { Rockwall: ['75032', '75087'], Rowlett: ['75088', '75089'], 'Royse City': ['75189'] } },
+    { store: 'Denison, TX', cities: { Denison: ['75020', '75021'], Sherman: ['75090', '75091', '75092'] } },
+    { store: 'Coppell, TX', cities: { Coppell: ['75019'], Lewisville: ['75056', '75057', '75067', '75077'], 'Flower Mound': ['75022', '75028'], Carrollton: ['75006', '75007', '75010'], Irving: ['75063'] } },
+  ];
+  function deliveryAreaFor(zip) {
+    for (const area of DELIVERY_AREAS) {
+      for (const [city, zips] of Object.entries(area.cities)) if (zips.includes(zip)) return { city, store: area.store };
+    }
+    return null;
+  }
+
+  function emptyDelivery() {
+    return {
+      chosen: false, street: '', apt: '', city: '', state: 'TX', zip: '', store: '', lat: null, lng: null,
+      name: '', phone: '', email: '', nickname: 'Home', otherName: '', dropoff: 'door', notes: '',
+      dateKey: null, timeId: null, timeLabel: null,
+    };
+  }
+  function deliveryLabel() {
+    const d = state.delivery;
+    return d.nickname === 'Other' ? d.otherName || 'Other' : d.nickname;
+  }
+  function deliveryStreetLine() {
+    const d = state.delivery;
+    return d.apt ? `${d.street}, ${d.apt}` : d.street;
+  }
+  function deliveryAddressLine() {
+    const d = state.delivery;
+    return `${deliveryStreetLine()}, ${d.city}, ${d.state} ${d.zip}`;
+  }
+  const deliveryDropoffText = () => (state.delivery.dropoff === 'hand' ? 'Hand it to me' : 'Leave it at my door');
+
+  function saveDeliverySession() {
+    try { localStorage.setItem(DELIVERY_SESSION_KEY, JSON.stringify(state.delivery)); } catch (e) { /* storage unavailable: the choice lasts until reload */ }
+    renderNavWhere();
+  }
+  // Placing an order ends the session (the day and time); the address and contact stay for the next order.
+  function endDeliverySession() {
+    Object.assign(state.delivery, { chosen: false, dateKey: null, timeId: null, timeLabel: null });
+    saveDeliverySession();
+  }
+  function deliverySlotPassed() {
+    const d = state.delivery;
+    if (!d.dateKey) return true;
+    const now = new Date();
+    const today = dateKey(now);
+    if (d.dateKey < today) return true;
+    if (d.dateKey > today || d.timeId === ASAP_ID) return false;
+    return Number(d.timeId) < now.getHours() * 100 + now.getMinutes();
+  }
+  const deliverySessionValid = () => state.delivery.chosen && !deliverySlotPassed();
+  function restoreDeliverySession() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DELIVERY_SESSION_KEY) || 'null');
+      if (!saved || typeof saved !== 'object' || !saved.street) return;
+      state.delivery = { ...emptyDelivery(), ...saved };
+      if (state.delivery.chosen && deliverySlotPassed()) endDeliverySession();
+    } catch (e) { /* ignore a corrupt session */ }
+  }
+  restoreDeliverySession();
+
+  // "Tomorrow · 12:00 – 12:30 PM", or "ASAP · 35–50 min": the chosen day and time in one line.
+  function deliveryWhenText() {
+    const d = state.delivery;
+    if (d.timeId === ASAP_ID) return 'ASAP · 35–50 min';
+    const time = (d.timeLabel || '').replace(/^(\d+:\d+) (AM|PM) – (\d+:\d+) \2$/, '$1 – $3 $2');
+    return `${pickupDateLabel(d.dateKey)} · ${time}`;
+  }
+  // The line beside Place order: when it arrives and where, in plain words.
+  function deliveryArrivalText() {
+    const d = state.delivery;
+    if (!d.chosen) return '';
+    if (d.timeId === ASAP_ID) return 'Arriving in about 35–50 minutes.';
+    const window = (d.timeLabel || '').replace(' – ', ' and ');
+    const day = pickupDateLabel(d.dateKey);
+    return `Arriving ${day === 'Today' ? 'today' : day === 'Tomorrow' ? 'tomorrow' : 'on ' + day} between ${window}.`;
+  }
+
+  // ----- Step 1: where (one modal for Pickup and Delivery, with a map) -----
+  // The modal has two tabs behind a Pickup / Delivery toggle. Pickup lists our stores (nearest first once a place is
+  // searched) and pins them on the map; Delivery takes an address, suggests as it is typed, drops a pin and answers
+  // whether we deliver there. There is no "Check" button anywhere, and at most one dark button on screen.
+  // The map (Leaflet, vendored) and the address search (Photon, OpenStreetMap data) are loaded and called only
+  // here; both are companions: the fields, the list and the buttons do everything without them.
+  let deliveryReturn = null; // 'checkout' when the funnel was opened from there
+  let deliveryChecked = null; // the deliverable address the customer is about to add details to
+  const daBackdrop = document.getElementById('da-backdrop');
+  const daModal = document.getElementById('da-modal');
+  const daAddress = document.getElementById('da-address');
+  const daZip = document.getElementById('da-zip');
+  const daResult = document.getElementById('da-result');
+  const DA_ICON = '<svg class="da-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h11v9H3V7ZM14 10h4l3 3v3h-7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="7.5" cy="17.5" r="1.8" fill="var(--deg-cream)" stroke="currentColor" stroke-width="1.4"/><circle cx="17.5" cy="17.5" r="1.8" fill="var(--deg-cream)" stroke="currentColor" stroke-width="1.4"/></svg>';
+
+  // What the modal knows right now. `sel` is the suggestion chosen on the Delivery tab; `store` the store chosen on Pickup.
+  const wm = { tab: 'pickup', sel: null, store: null, point: null, geoDown: false, suggestions: [], active: -1, origin: null, nav: false };
+  // Opened from a checkout, the modal is about changing that order: `origin` is that checkout's path. On the same path
+  // it only changes the place (a different store, with the day and time kept); on the other path it carries the order
+  // over (see moveCart) once the new path's steps are done.
+  const currentStoreId = () => { const st = PICKUP_STORES.find((x) => storeName(x) === state.location); return st ? st.id : null; };
+
+  // ----- the four stores -----
+  const PICKUP_STORES = [
+    { id: 'mckinney', city: 'McKinney', state: 'TX', lat: 33.1972, lng: -96.6154 },
+    { id: 'rockwall', city: 'Rockwall', state: 'TX', lat: 32.8990, lng: -96.4670 },
+    { id: 'coppell', city: 'Coppell', state: 'TX', lat: 32.9680, lng: -97.0040 },
+    { id: 'denison', city: 'Denison', state: 'TX', lat: 33.7554, lng: -96.5391 },
+  ];
+  const storeName = (st) => `${st.city}, ${st.state}`;
+  const storeById = (id) => PICKUP_STORES.find((x) => x.id === id);
+  function milesBetween(a, b) {
+    const rad = (d) => (d * Math.PI) / 180;
+    const h = Math.sin(rad(b.lat - a.lat) / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lng - a.lng) / 2) ** 2;
+    return 3958.8 * 2 * Math.asin(Math.sqrt(h));
+  }
+  // "Open until 8:00 PM" or "Closed · opens 10:00 AM", from the stores' 10 AM – 8 PM hours.
+  function storeHoursText() {
+    const now = new Date();
+    const mins = now.getHours() * 60 + now.getMinutes();
+    if (mins >= PICKUP_OPEN_HOUR * 60 && mins < PICKUP_CLOSE_HOUR * 60) return { open: true, text: `Open until ${formatClock(PICKUP_CLOSE_HOUR, 0)}` };
+    return { open: false, text: `Closed · opens ${mins < PICKUP_OPEN_HOUR * 60 ? '' : 'tomorrow '}${formatClock(PICKUP_OPEN_HOUR, 0)}` };
+  }
+
+  // ----- the map (Leaflet, loaded on first use) -----
+  let leafletLoad = null;
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (leafletLoad) return leafletLoad;
+    leafletLoad = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'vendor/leaflet.css';
+      document.head.appendChild(css);
+      const el = document.createElement('script');
+      el.src = 'vendor/leaflet.js';
+      el.onload = resolve;
+      el.onerror = () => { leafletLoad = null; reject(new Error('Could not load the map')); };
+      document.head.appendChild(el);
+    });
+    return leafletLoad;
+  }
+  let wmMap = null;
+  let wmStoreLayer = null;
+  let wmPinLayer = null;
+  const wmMarkers = {};
+  const PIN_PATH = 'M18 0C8.06 0 0 8.06 0 18c0 12.6 18 26 18 26s18-13.4 18-26C36 8.06 27.94 0 18 0Z';
+  const storePinHTML = (selected, closed) => `<span class="wm-pin${selected ? ' is-selected' : ''}">${closed ? '<span class="wm-pin-tag">Closed</span>' : ''}<svg width="36" height="44" viewBox="0 0 36 44" aria-hidden="true"><path d="${PIN_PATH}"/><ellipse cx="18" cy="17" rx="6.5" ry="8" class="wm-pin-egg"/><circle cx="18" cy="19" r="3" class="wm-pin-yolk"/></svg></span>`;
+  const deliveryPinHTML = '<span class="wm-pin is-delivery"><svg width="44" height="54" viewBox="0 0 36 44" aria-hidden="true"><path d="' + PIN_PATH + '"/><g class="wm-pin-truck" fill="none" stroke-width="1.8" stroke-linejoin="round"><path d="M8.5 13h10v9h-10v-9ZM18.5 15.5h4l3 3.2V22h-7"/><circle cx="12" cy="23" r="1.8"/><circle cx="22.5" cy="23" r="1.8"/></g></svg></span>';
+  const mapMove = (fn) => (reduceMotionQuery.matches ? fn(false) : fn(true));
+
+  async function ensureMap() {
+    try { await loadLeaflet(); } catch (e) { document.getElementById('wm-map').classList.add('is-unavailable'); return null; }
+    if (wmMap) { wmMap.invalidateSize(); return wmMap; }
+    const L = window.L;
+    wmMap = L.map('wm-map', { zoomControl: false, attributionControl: true, minZoom: 3, maxZoom: 18 });
+    wmMap.attributionControl.setPrefix(false);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+    }).addTo(wmMap);
+    wmStoreLayer = L.layerGroup();
+    wmPinLayer = L.layerGroup().addTo(wmMap);
+    const L2 = L;
+    PICKUP_STORES.forEach((st) => {
+      // Created with our own icon, so Leaflet never looks for its default marker images.
+      const m = L2.marker([st.lat, st.lng], { icon: L2.divIcon({ className: 'wm-pin-wrap', html: storePinHTML(false, false), iconSize: [36, 44], iconAnchor: [18, 44] }), keyboard: true, title: storeName(st), alt: storeName(st), riseOnHover: true });
+      m.on('click', () => selectStore(st.id, { fromMap: true }));
+      wmMarkers[st.id] = m;
+      wmStoreLayer.addLayer(m);
+    });
+    new ResizeObserver(() => wmMap && wmMap.invalidateSize()).observe(document.getElementById('wm-map'));
+    wmMap.fitBounds(PICKUP_STORES.map((st) => [st.lat, st.lng]), { padding: [40, 40], animate: false });
+    return wmMap;
+  }
+  function refreshStorePins() {
+    if (!wmMap) return;
+    const hours = storeHoursText();
+    PICKUP_STORES.forEach((st) => wmMarkers[st.id].setIcon(window.L.divIcon({
+      className: 'wm-pin-wrap', html: storePinHTML(wm.store === st.id, !hours.open), iconSize: [36, 44], iconAnchor: [18, 44],
+    })));
+  }
+  // The map follows the tab: the stores on Pickup, the typed address on Delivery.
+  async function syncMap({ fit = true } = {}) {
+    const map = await ensureMap();
+    if (!map) return;
+    map.invalidateSize();
+    wmPinLayer.clearLayers();
+    if (wm.tab === 'pickup') {
+      if (!map.hasLayer(wmStoreLayer)) wmStoreLayer.addTo(map);
+      refreshStorePins();
+      if (wm.point) {
+        window.L.circleMarker([wm.point.lat, wm.point.lng], { radius: 7, className: 'wm-here', interactive: false }).addTo(wmPinLayer);
+      }
+      if (fit) {
+        const near = wm.store ? [storeById(wm.store)] : sortedStores().slice(0, wm.point ? 2 : 4);
+        const pts = near.map((st) => [st.lat, st.lng]).concat(wm.point ? [[wm.point.lat, wm.point.lng]] : []);
+        mapMove((animate) => map.fitBounds(pts, { padding: [48, 48], maxZoom: 13, animate }));
+      }
+    } else {
+      if (map.hasLayer(wmStoreLayer)) map.removeLayer(wmStoreLayer);
+      if (wm.sel && wm.sel.lat != null) {
+        window.L.marker([wm.sel.lat, wm.sel.lng], { icon: window.L.divIcon({ className: 'wm-pin-wrap', html: deliveryPinHTML, iconSize: [44, 54], iconAnchor: [22, 54] }), interactive: false, keyboard: false }).addTo(wmPinLayer);
+        if (fit) mapMove((animate) => map.setView([wm.sel.lat, wm.sel.lng], 15, { animate }));
+      } else if (fit) {
+        map.fitBounds(PICKUP_STORES.map((st) => [st.lat, st.lng]), { padding: [40, 40], animate: false });
+      }
+    }
+  }
+
+  // The pill on the map: where the order is going, once that is known.
+  function renderWmPill() {
+    const pill = document.getElementById('wm-pill');
+    let verb = '';
+    let name = '';
+    if (wm.tab === 'delivery') {
+      if (state.delivery.street) { verb = 'Deliver to'; name = deliveryLabel(); }
+    } else if (wm.store) { verb = 'Pick up at'; name = storeName(storeById(wm.store)); }
+    pill.hidden = !name;
+    pill.dataset.mode = wm.tab;
+    document.getElementById('wm-pill-verb').textContent = verb;
+    document.getElementById('wm-pill-name').textContent = name;
+  }
+
+  // ----- opening, closing, switching -----
+  function openWhere(tab, { returnTo = null, store = null } = {}) {
+    const fresh = daModal.hidden;
+    if (fresh) {
+      wm.preselect = store;
+      lastFocusedEl = document.activeElement;
+      deliveryReturn = returnTo;
+      funnelReturn = returnTo;
+      wm.origin = returnTo === 'checkout' ? checkoutCart : returnTo === 'nav' ? navWhereState().path : null;
+      wm.nav = returnTo === 'nav';
+      // A fresh open sets both tabs up, whichever one it opens on.
+      resetPickupTab();
+      resetDeliveryTab();
+      daBackdrop.hidden = false;
+      daModal.hidden = false;
+      updateInert();
+    }
+    setWhereTab(tab);
+    if (fresh) document.querySelector('#da-toggle .chip.active').focus();
+  }
+  function closeWhere() {
+    pendingStoreOpen = null;
+    closeWhereQuietly();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+  // Moving on to another step, not cancelling: the next step owns focus, so do not hand it back to the opener.
+  function closeWhereQuietly() {
+    daBackdrop.hidden = true;
+    daModal.hidden = true;
+    hideSuggestions();
+    updateInert();
+  }
+  const startDelivery = ({ returnTo = null } = {}) => openWhere('delivery', { returnTo });
+
+  function setWhereTab(tab) {
+    wm.tab = tab;
+    document.querySelectorAll('#da-toggle .chip').forEach((chip) => {
+      const on = chip.dataset.mode === tab;
+      chip.classList.toggle('active', on);
+      chip.setAttribute('aria-checked', String(on));
+    });
+    document.getElementById('wm-tab-delivery').hidden = tab !== 'delivery';
+    document.getElementById('wm-tab-pickup').hidden = tab !== 'pickup';
+    if (tab === 'delivery') initDeliveryTab(); else initPickupTab();
+    // Leaving the checkout's own path says what happens to the order.
+    const note = document.getElementById('wm-switch-note');
+    const moving = wm.origin && wm.origin !== tab;
+    note.hidden = !moving;
+    if (moving) note.textContent = `Your order moves to ${tab} when you finish here.`;
+    renderWmPill();
+    syncMap();
+  }
+  document.getElementById('da-toggle').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip && chip.dataset.mode !== wm.tab) setWhereTab(chip.dataset.mode);
+  });
+  document.getElementById('da-close').addEventListener('click', closeWhere);
+  daBackdrop.addEventListener('click', closeWhere);
+  document.getElementById('wm-zoom-in').addEventListener('click', () => wmMap && wmMap.zoomIn());
+  document.getElementById('wm-zoom-out').addEventListener('click', () => wmMap && wmMap.zoomOut());
+
+  // ----- the geocoder (Photon) -----
+  let geoAbort = null;
+  async function geocode(q) {
+    if (geoAbort) geoAbort.abort();
+    geoAbort = new AbortController();
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en&lat=33.2&lon=-96.6&location_bias_scale=0.6`;
+    const res = await fetch(url, { signal: geoAbort.signal });
+    if (!res.ok) throw new Error('geocoder ' + res.status);
+    const data = await res.json();
+    return (data.features || [])
+      .filter((f) => f.properties && f.properties.countrycode === 'US' && f.geometry)
+      .map((f) => {
+        const p = f.properties;
+        const [lng, lat] = f.geometry.coordinates;
+        return {
+          street: p.housenumber && p.street ? `${p.housenumber} ${p.street}` : p.street || p.name || '',
+          hasNumber: !!p.housenumber, name: p.name || '', type: p.type || '',
+          city: p.city || p.district || p.locality || '', stateName: p.state || '', zip: p.postcode || '', lat, lng,
+        };
+      });
+  }
+
+  // ----- Delivery tab -----
+  // Each tab's working state is set once, when the modal opens, whichever tab it opens on, so flipping between the
+  // tabs (from a checkout or from Home) never finds one of them empty or stale.
+  // The saved-order button says where it leads: back to checkout, on with what was tapped or the nav change, or to the menu.
+  const savedContinueLabel = () => (funnelReturn === 'checkout' ? 'Continue to checkout' : funnelReturn === 'store' || funnelReturn === 'nav' ? 'Continue' : 'Continue to menu');
+
+  function resetDeliveryTab() {
+    // Opening (or coming back with "Change address") keeps the address already entered or just checked.
+    const d = state.delivery;
+    const from = deliveryChecked || (d.street ? { street: d.street, zip: d.zip, city: d.city, lat: d.lat, lng: d.lng } : null);
+    wm.sel = from ? { street: from.street, zip: from.zip, city: from.city, lat: from.lat, lng: from.lng } : null;
+    wm.geoDown = false;
+    daAddress.value = from ? `${from.street}${from.city ? ', ' + from.city : ''}` : '';
+    daZip.value = '';
+    document.getElementById('da-clear').hidden = !daAddress.value;
+    hideSuggestions();
+  }
+  function initDeliveryTab() {
+    // From the delivery checkout the saved delivery is the order being changed, so it is not offered again.
+    // From the nav it is the order being changed: the saved delivery shows with a way to change its time.
+    const saved = document.getElementById('da-saved');
+    const own = wm.origin === 'delivery';
+    const ok = deliverySessionValid() && (!own || wm.nav);
+    saved.hidden = !ok;
+    if (ok) {
+      document.getElementById('da-saved-title').textContent = own ? 'Your delivery' : 'Continue your delivery order';
+      document.getElementById('da-saved-where').innerHTML = `<strong>${escapeHTML(deliveryLabel())}</strong> · ${escapeHTML(deliveryAddressLine())}`;
+      document.getElementById('da-saved-when').textContent = deliveryWhenText();
+      // From the nav the saved order also offers the way straight to the menu; from a checkout it is simply the order being changed.
+      document.getElementById('da-saved-continue').hidden = own && !wm.nav;
+      document.getElementById('da-change-time').hidden = !own;
+      document.getElementById('da-saved-continue').textContent = own && wm.nav ? 'Continue to menu' : savedContinueLabel();
+    }
+    renderDeliveryResult();
+  }
+
+  // What the fields say right now: nothing yet, a deliverable address, or one outside the area.
+  function renderDeliveryResult() {
+    const sel = wm.sel;
+    const zipTyped = daZip.value.trim();
+    const needZip = (sel && !sel.zip) || (!sel && wm.geoDown);
+    document.getElementById('da-zip-wrap').hidden = !needZip;
+    const street = sel ? sel.street : wm.geoDown ? daAddress.value.trim() : '';
+    const zip = sel && sel.zip ? sel.zip : zipTyped;
+    if (street.length < 3 || !isZip(zip)) {
+      deliveryChecked = null;
+      const message = needZip && wm.geoDown ? "Address search isn't available right now. Enter your street address and ZIP code."
+        : needZip ? 'Add your ZIP code to see if we deliver there.'
+        : `Search for your street address to see if we deliver there. A ${money(DELIVERY_FEE)} delivery fee applies.`;
+      daResult.className = 'delivery-result is-idle';
+      daResult.innerHTML = `${DA_ICON}<p class="delivery-result-note">${message}</p>
+        <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>`;
+      return;
+    }
+    const area = deliveryAreaFor(zip);
+    deliveryChecked = area ? { street, zip, city: area.city, store: area.store, lat: sel ? sel.lat : null, lng: sel ? sel.lng : null } : null;
+    const place = area ? `${area.city}, TX ${zip}` : `${sel && sel.city ? sel.city + ' ' : ''}${zip}`.trim();
+    const address = `${escapeHTML(street)}<br>${escapeHTML(place)}`;
+    daResult.className = 'delivery-result ' + (area ? 'is-ok' : 'is-no');
+    daResult.innerHTML = area ? `${DA_ICON}
+      <h2>You're in luck, we can deliver to</h2>
+      <p class="delivery-result-address">${address}</p>
+      <p class="delivery-result-note">A ${money(DELIVERY_FEE)} delivery fee applies, and the minimum order is ${money(DELIVERY_MINIMUM)}.</p>
+      <button class="pill-btn dark full" id="da-add-details" type="button">Add address details</button>
+      <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>` : `${DA_ICON}
+      <h2>Sorry, we can't deliver to</h2>
+      <p class="delivery-result-address">${address}</p>
+      <p class="delivery-result-note">That address is outside our delivery area for now. Try another address, or pick up at a store.</p>
+      <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>`;
+  }
+
+  // ----- address suggestions -----
+  const suggestEl = document.getElementById('wm-suggest');
+  function hideSuggestions() {
+    suggestEl.hidden = true;
+    daAddress.setAttribute('aria-expanded', 'false');
+    daAddress.removeAttribute('aria-activedescendant');
+    wm.active = -1;
+  }
+  function renderSuggestions() {
+    if (!wm.suggestions.length) { hideSuggestions(); return; }
+    suggestEl.innerHTML = wm.suggestions.map((sg, i) => `
+      <li role="option" id="wm-opt-${i}" class="wm-option" data-i="${i}" aria-selected="${i === wm.active}">
+        <span class="wm-option-pin" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="2"/></svg></span>
+        <span class="wm-option-text"><strong>${escapeHTML(sg.street)}</strong><span>${escapeHTML([sg.city, sg.stateName, sg.zip].filter(Boolean).join(', '))}</span></span>
+      </li>`).join('');
+    suggestEl.hidden = false;
+    daAddress.setAttribute('aria-expanded', 'true');
+  }
+  function chooseSuggestion(i) {
+    const sg = wm.suggestions[i];
+    if (!sg) return;
+    wm.sel = { street: sg.street, zip: sg.zip, city: sg.city, lat: sg.lat, lng: sg.lng };
+    daAddress.value = `${sg.street}${sg.city ? ', ' + sg.city : ''}`;
+    document.getElementById('da-clear').hidden = false;
+    hideSuggestions();
+    daZip.value = '';
+    renderDeliveryResult();
+    syncMap();
+  }
+  let suggestTimer = null;
+  daAddress.addEventListener('input', () => {
+    window.clearTimeout(suggestTimer);
+    document.getElementById('da-clear').hidden = !daAddress.value;
+    // Changing the text makes the chosen address stale.
+    if (wm.sel) { wm.sel = null; renderDeliveryResult(); syncMap({ fit: false }); }
+    const q = daAddress.value.trim();
+    if (q.length < 4) { hideSuggestions(); if (wm.geoDown) renderDeliveryResult(); return; }
+    if (wm.geoDown) { renderDeliveryResult(); }
+    suggestTimer = window.setTimeout(async () => {
+      try {
+        const found = await geocode(q);
+        wm.geoDown = false;
+        // Street addresses first; a street with no number still helps, a place name does not.
+        // The street data often lacks the house number the customer typed; it is kept, on the street's position.
+        const typedNumber = (q.match(/^\s*(\d+[A-Za-z]?)\b/) || [])[1];
+        const seen = new Set();
+        wm.suggestions = found
+          .filter((f) => f.street && f.type !== 'city' && f.type !== 'state')
+          .map((f) => (typedNumber && !f.hasNumber ? { ...f, street: `${typedNumber} ${f.street}`, hasNumber: true } : f))
+          .sort((a, b) => Number(b.hasNumber) - Number(a.hasNumber))
+          .filter((f) => { const k = `${f.street}|${f.zip}`; if (seen.has(k)) return false; seen.add(k); return true; })
+          .slice(0, 5);
+        wm.active = -1;
+        renderSuggestions();
+        document.getElementById('da-zip-wrap').hidden = true;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+        wm.geoDown = true;
+        hideSuggestions();
+        renderDeliveryResult();
+      }
+    }, 350);
+  });
+  daZip.addEventListener('input', renderDeliveryResult);
+  daAddress.addEventListener('keydown', (e) => {
+    const open = !suggestEl.hidden;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!open) return;
+      e.preventDefault();
+      const n = wm.suggestions.length;
+      wm.active = (wm.active + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
+      suggestEl.querySelectorAll('.wm-option').forEach((li, i) => li.setAttribute('aria-selected', String(i === wm.active)));
+      daAddress.setAttribute('aria-activedescendant', 'wm-opt-' + wm.active);
+    } else if (e.key === 'Enter' && open) {
+      e.preventDefault();
+      chooseSuggestion(wm.active >= 0 ? wm.active : 0);
+    } else if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      hideSuggestions();
+    }
+  });
+  suggestEl.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus in the field
+  suggestEl.addEventListener('click', (e) => {
+    const li = e.target.closest('.wm-option');
+    if (li) chooseSuggestion(Number(li.dataset.i));
+  });
+  daAddress.addEventListener('blur', () => window.setTimeout(hideSuggestions, 120));
+  document.getElementById('da-clear').addEventListener('click', () => {
+    daAddress.value = '';
+    daZip.value = '';
+    wm.sel = null;
+    hideSuggestions();
+    document.getElementById('da-clear').hidden = true;
+    renderDeliveryResult();
+    syncMap();
+    daAddress.focus();
+  });
+  // Enter with the address complete moves on.
+  document.getElementById('da-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!suggestEl.hidden) { chooseSuggestion(wm.active >= 0 ? wm.active : 0); return; }
+    renderDeliveryResult();
+    if (deliveryChecked) { closeWhereQuietly(); openDeliveryDetails({ from: deliveryChecked }); }
+  });
+
+  daResult.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'da-add-details') { closeWhereQuietly(); openDeliveryDetails({ from: deliveryChecked }); }
+    else if (btn.id === 'da-pickup') setWhereTab('pickup');
+  });
+  document.getElementById('da-saved-continue').addEventListener('click', () => {
+    closeWhereQuietly();
+    // Opened from the nav on the delivery that is already chosen: this goes to the menu, not back to the page it was opened on.
+    if (wm.nav && wm.origin === 'delivery') deliveryReturn = null;
+    finishDeliveryFunnel();
+  });
+  document.getElementById('da-change-time').addEventListener('click', () => { closeWhereQuietly(); openLocationDetails(null, { edit: true, kind: 'delivery' }); });
+
+  // ----- Pickup tab -----
+  function sortedStores() {
+    const list = PICKUP_STORES.map((st) => ({ ...st, miles: wm.point ? milesBetween(wm.point, st) : null }));
+    return wm.point ? list.sort((a, b) => a.miles - b.miles) : list.sort((a, b) => a.city.localeCompare(b.city));
+  }
+  function resetPickupTab() {
+    // From the pickup checkout the current store starts chosen: the modal is only there to change it.
+    wm.store = wm.origin === 'pickup' ? currentStoreId() : wm.preselect || null;
+    wm.point = null;
+    document.getElementById('wm-pk-q').value = '';
+    document.getElementById('wm-pk-clear').hidden = true;
+    document.getElementById('wm-pk-note').textContent = '';
+  }
+  function initPickupTab() {
+    // From the pickup checkout the saved pickup is the order being changed, so it is not offered again.
+    const saved = document.getElementById('wm-pk-saved');
+    const own = wm.origin === 'pickup';
+    const ok = pickupSessionValid() && (!own || wm.nav);
+    saved.hidden = !ok;
+    if (ok) {
+      document.getElementById('wm-pk-saved-title').textContent = own ? 'Your pickup' : 'Continue your pickup order';
+      document.getElementById('wm-pk-saved-where').innerHTML = `<strong>${escapeHTML(state.location)}</strong> · ${escapeHTML(STORE_ADDRESSES[state.location] || '')}`;
+      document.getElementById('wm-pk-saved-when').textContent = pickupWhenText();
+      document.getElementById('wm-pk-saved-continue').hidden = own && !wm.nav;
+      document.getElementById('wm-pk-change-time').hidden = !own;
+      document.getElementById('wm-pk-saved-continue').textContent = own && wm.nav ? 'Continue to menu' : savedContinueLabel();
+    }
+    renderStoreList();
+  }
+  function renderStoreList() {
+    const hours = storeHoursText();
+    const list = document.getElementById('wm-stores');
+    const storeOnly = wm.origin === 'pickup';
+    const current = storeOnly ? currentStoreId() : null;
+    document.getElementById('wm-pk-title').textContent = wm.point ? 'Nearby' : 'Our stores';
+    list.innerHTML = sortedStores().map((st) => `
+      <li><div class="radio-choice wm-store${wm.store === st.id ? ' selected' : ''}">
+        <label class="radio-choice-row">
+          <input class="radio-choice-input" type="radio" name="wm-store" value="${st.id}"${wm.store === st.id ? ' checked' : ''}>
+          <span class="radio-choice-text">
+            <span class="radio-choice-name">${escapeHTML(storeName(st))}</span>
+            <span class="radio-choice-note">${escapeHTML(STORE_ADDRESSES[storeName(st)] || '')}</span>
+            <span class="radio-choice-note wm-store-meta">${st.id === current ? 'Your store · ' : ''}${st.miles != null ? `${st.miles < 10 ? st.miles.toFixed(1) : Math.round(st.miles)} mi · ` : ''}${escapeHTML(hours.text)}</span>
+          </span>
+          <span class="radio-choice-ind" aria-hidden="true"></span>
+        </label>
+      </div></li>`).join('');
+    list.querySelectorAll('.radio-choice-input').forEach((input) => input.addEventListener('change', () => selectStore(input.value)));
+    // The one action: "Pick up here", or from the pickup checkout "Update pickup location", which waits for a different store.
+    const pick = document.getElementById('wm-pk-pick');
+    pick.textContent = storeOnly ? 'Update pickup location' : 'Pick up here';
+    pick.disabled = storeOnly && wm.store === current;
+    document.getElementById('wm-pk-actions').hidden = !wm.store;
+  }
+  function selectStore(id, { fromMap = false } = {}) {
+    wm.store = id;
+    renderStoreList();
+    renderWmPill();
+    refreshStorePins();
+    const st = storeById(id);
+    if (wmMap) mapMove((animate) => wmMap.setView([st.lat, st.lng], Math.max(wmMap.getZoom(), 12), { animate }));
+    if (fromMap) {
+      const row = document.querySelector(`#wm-stores input[value="${id}"]`);
+      if (row) row.closest('li').scrollIntoView({ block: 'nearest' });
+    }
+  }
+  document.getElementById('wm-pk-pick').addEventListener('click', () => {
+    const st = storeById(wm.store);
+    if (!st) return;
+    // From the pickup checkout only the store changes: the day and time stay, and the customer is back where they were.
+    if (wm.origin === 'pickup') {
+      if (st.id === currentStoreId()) return;
+      closeWhere();
+      state.location = storeName(st);
+      savePickupSession();
+      renderPickupSummary();
+      renderStoreLocatorSummary();
+      renderDrawer();
+      const msg = `Pickup location updated to ${state.location}. ${pickupReadyText()}`;
+      if (views.checkout.hidden) announceNav(msg); else announceCheckout(msg);
+      return;
+    }
+    closeWhereQuietly();
+    openLocationDetails(st);
+  });
+  document.getElementById('wm-pk-saved-continue').addEventListener('click', () => {
+    closeWhereQuietly();
+    if (wm.nav && wm.origin === 'pickup') funnelReturn = null;
+    finishPickerFunnel();
+  });
+  document.getElementById('wm-pk-change-time').addEventListener('click', () => {
+    const st = storeById(currentStoreId());
+    closeWhereQuietly();
+    if (st) openLocationDetails(st, { edit: true });
+  });
+
+  // A searched place (or the customer's location) puts the stores in order of distance from it.
+  function showPickupPoint(point, label) {
+    wm.point = point;
+    wm.store = wm.origin === 'pickup' ? currentStoreId() : null;
+    document.getElementById('wm-pk-note').textContent = label ? `Showing stores near ${label}.` : '';
+    renderStoreList();
+    syncMap();
+  }
+  const pkInput = document.getElementById('wm-pk-q');
+  pkInput.addEventListener('input', () => { document.getElementById('wm-pk-clear').hidden = !pkInput.value; });
+  document.getElementById('wm-pk-clear').addEventListener('click', () => {
+    pkInput.value = '';
+    document.getElementById('wm-pk-clear').hidden = true;
+    wm.point = null;
+    wm.store = wm.origin === 'pickup' ? currentStoreId() : null;
+    document.getElementById('wm-pk-note').textContent = '';
+    renderStoreList();
+    syncMap();
+    pkInput.focus();
+  });
+  document.getElementById('wm-pk-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const q = pkInput.value.trim();
+    const note = document.getElementById('wm-pk-note');
+    if (q.length < 2) return;
+    // A ZIP in our delivery area is answered without the network.
+    const known = /^\d{5}$/.test(q) ? deliveryAreaFor(q) : null;
+    if (known) {
+      const near = PICKUP_STORES.find((st) => storeName(st) === known.store);
+      showPickupPoint({ lat: near.lat, lng: near.lng }, q);
+      return;
+    }
+    note.textContent = 'Searching…';
+    try {
+      const found = await geocode(q);
+      const hit = found[0];
+      if (!hit) { note.textContent = "We couldn't find that place. Try a city, state or ZIP code."; return; }
+      showPickupPoint({ lat: hit.lat, lng: hit.lng }, [hit.city || hit.name, hit.stateName].filter(Boolean).join(', ') || q);
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      note.textContent = "Search isn't available right now. Our four stores are listed below.";
+    }
+  });
+
+  // The target button: stores (or the address) near where the customer is.
+  document.getElementById('wm-locate').addEventListener('click', () => {
+    const note = document.getElementById(wm.tab === 'pickup' ? 'wm-pk-note' : 'da-result');
+    if (!navigator.geolocation) { if (wm.tab === 'pickup') note.textContent = "Your browser can't share your location. Search by city, state or ZIP."; return; }
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (wm.tab === 'pickup') { showPickupPoint(point, 'you'); return; }
+      if (wmMap) mapMove((animate) => wmMap.setView([point.lat, point.lng], 15, { animate }));
+    }, () => {
+      if (wm.tab === 'pickup') note.textContent = "We couldn't get your location. Search by city, state or ZIP instead.";
+    }, { timeout: 8000 });
+  });
+
+  // ----- Step 2: address details -----
+  const ddBackdrop = document.getElementById('dd-backdrop');
+  const ddModal = document.getElementById('dd-modal');
+  const ddFields = {
+    street: document.getElementById('dd-street'), apt: document.getElementById('dd-apt'),
+    name: document.getElementById('dd-name'), phone: document.getElementById('dd-phone'),
+    other: document.getElementById('dd-nick-other'), notes: document.getElementById('dd-notes'),
+  };
+  let dd = null; // { edit, nickname, dropoff, area }
+
+  function renderDdNick() {
+    document.querySelectorAll('#dd-nick .chip').forEach((chip) => {
+      const on = chip.dataset.value === dd.nickname;
+      chip.classList.toggle('active', on);
+      chip.setAttribute('aria-checked', String(on));
+    });
+    ddFields.other.hidden = dd.nickname !== 'Other';
+  }
+  function renderDdDropoff() {
+    const list = document.getElementById('dd-dropoff');
+    list.innerHTML = [
+      { value: 'door', label: 'Leave it at my door', note: 'Contactless' },
+      { value: 'hand', label: 'Hand it to me', note: 'Your courier meets you at the door' },
+    ].map((o) => radioChoiceHTML({ group: 'dd-dropoff', value: o.value, label: o.label, note: o.note, selected: o.value === dd.dropoff })).join('');
+    list.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        dd.dropoff = input.value;
+        list.querySelectorAll('.radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked));
+      });
+    });
+  }
+  const updateDdCount = () => { document.getElementById('dd-count').textContent = `${ddFields.notes.value.length} / 200`; };
+
+  // `from` is the address the customer just checked on the step before (street, ZIP, city, store); `edit` reopens
+  // the saved details from checkout or the banner, keeping the address they already have.
+  function openDeliveryDetails({ from = null, edit = false } = {}) {
+    const d = state.delivery;
+    const area = from || { street: d.street, zip: d.zip, city: d.city, store: d.store, lat: d.lat, lng: d.lng };
+    lastFocusedEl = document.activeElement;
+    dd = { edit, area, nickname: d.nickname || 'Home', dropoff: d.dropoff || 'door' };
+    ddFields.street.value = area.street;
+    ddFields.apt.value = from ? '' : d.apt;
+    ddFields.name.value = d.name;
+    ddFields.phone.value = d.phone;
+    ddFields.other.value = d.otherName;
+    ddFields.notes.value = d.notes;
+    Object.values(ddFields).forEach((input) => setFieldError(input, ''));
+    document.getElementById('dd-where').textContent = `${area.city}, TX ${area.zip}`;
+    renderDdNick();
+    renderDdDropoff();
+    updateDdCount();
+    // With a valid day and time already chosen, saving goes straight back to checkout.
+    document.getElementById('dd-save').textContent = edit || (deliveryReturn === 'checkout' && deliverySessionValid()) ? 'Save' : 'Continue';
+    document.querySelector('#dd-modal .ld-scroll').scrollTop = 0;
+    ddBackdrop.hidden = false;
+    ddModal.hidden = false;
+    updateInert();
+    document.getElementById('dd-close').focus();
+  }
+  function closeDeliveryDetails() {
+    ddBackdrop.hidden = true;
+    ddModal.hidden = true;
+    updateInert();
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.getElementById('dd-close').addEventListener('click', closeDeliveryDetails);
+  ddBackdrop.addEventListener('click', closeDeliveryDetails);
+  document.getElementById('dd-change').addEventListener('click', () => {
+    closeDeliveryDetails();
+    startDelivery({ returnTo: dd && dd.edit ? 'checkout' : deliveryReturn });
+  });
+  document.getElementById('dd-nick').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    dd.nickname = chip.dataset.value;
+    renderDdNick();
+    if (dd.nickname === 'Other') ddFields.other.focus();
+  });
+  ddFields.notes.addEventListener('input', updateDdCount);
+
+  document.getElementById('dd-save').addEventListener('click', () => {
+    const rows = [
+      [ddFields.street, present, 'Enter the street address to deliver to.'],
+      [ddFields.name, present, 'Enter the name for this order.'],
+      [ddFields.phone, isPhone, 'Enter a phone number with area code.'],
+    ];
+    if (dd.nickname === 'Other') rows.push([ddFields.other, present, 'Name this address, like "Mom\'s".']);
+    if (!validateFields(rows)) return;
+    Object.assign(state.delivery, {
+      street: ddFields.street.value.trim(), apt: ddFields.apt.value.trim(), city: dd.area.city, state: 'TX', zip: dd.area.zip, store: dd.area.store, lat: dd.area.lat ?? null, lng: dd.area.lng ?? null,
+      name: ddFields.name.value.trim(), phone: ddFields.phone.value.trim(),
+      nickname: dd.nickname, otherName: dd.nickname === 'Other' ? ddFields.other.value.trim() : '',
+      dropoff: dd.dropoff, notes: ddFields.notes.value.trim(),
+    });
+    saveDeliverySession();
+    closeDeliveryDetails();
+    // Saving from checkout, or changing the address with a valid day and time already chosen, goes straight back.
+    if (dd.edit || ((deliveryReturn === 'checkout' || deliveryReturn === 'nav') && deliverySessionValid())) {
+      if (!views['delivery-checkout'].hidden) { renderDeliveryCheckout(); announceCheckout('Delivery details updated.'); return; }
+      if (deliveryReturn === 'checkout' || deliveryReturn === 'nav') { finishDeliveryFunnel(); return; }
+      renderNavWhere();
+      renderDrawer();
+      return;
+    }
+    openLocationDetails(null, { kind: 'delivery' });
+  });
+
+  // ----- Step 3: day and time (the Pickup modal, in delivery mode) -----
+  function commitDeliveryTime(chosen) {
+    Object.assign(state.delivery, { dateKey: chosen.dateKey, timeId: chosen.timeId, timeLabel: chosen.timeLabel, chosen: true });
+    saveDeliverySession();
+    closeLocationDetails();
+    if (chosen.edit) {
+      renderNavWhere();
+      renderDrawer();
+      if (!views['delivery-checkout'].hidden) { renderDeliveryCheckout(); announceCheckout(`Delivery updated. ${deliveryArrivalText()}`); }
+      return;
+    }
+    finishDeliveryFunnel();
+  }
+
+  // The funnel's work is done: back to checkout if the customer came from there, otherwise on to the order page.
+  function finishDeliveryFunnel() {
+    const back = deliveryReturn;
+    deliveryReturn = null;
+    setOrderMode('delivery');
+    if (back === 'store') { renderDrawer(); resumeStorePage(); return; }
+    if (back === 'nav') {
+      const moved = wm.origin === 'pickup' ? moveCart('pickup', 'delivery') : 0;
+      renderDrawer();
+      renderNavWhere();
+      announceNav(moved ? 'Your order moved to delivery.' : 'Delivery updated.');
+      return;
+    }
+    if (back === 'checkout') {
+      // Switching from the pickup checkout: the order comes along.
+      const moved = checkoutCart === 'pickup' ? moveCart('pickup', 'delivery') : 0;
+      checkoutCart = 'delivery';
+      renderDrawer();
+      renderDeliveryCheckout();
+      showView('delivery-checkout');
+      if (moved) announceCheckout('Your order moved to delivery.');
+      return;
+    }
+    renderDrawer();
+    history.replaceState(null, '', '#order');
+    showView('order');
+  }
 
   // Payment methods are data: the two saved ones plus any card added in the
   // modal. Rows update in place on change so keyboard focus survives.
@@ -3590,8 +4654,12 @@
     setOrderSummaryOpen(orderSummaryToggle.getAttribute('aria-expanded') !== 'true');
   });
 
-  // The shipping and catering checkouts collapse their summaries the same way.
-  ['sc', 'cc'].forEach((p) => {
+  function setSummaryOpen(toggle, open) {
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.nextElementSibling.classList.toggle('collapsed', !open);
+  }
+  // The shipping, catering and delivery checkouts collapse their summaries the same way.
+  ['sc', 'cc', 'dc'].forEach((p) => {
     const toggle = document.getElementById(p + '-toggle-summary');
     toggle.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -3617,13 +4685,223 @@
     });
     document.getElementById('sum-total').textContent = money(total);
     if (!placingOrder) document.getElementById('place-order').textContent = 'Place order';
-    document.getElementById('pay-bar-total').textContent = money(total);
     return total;
   }
 
-  document.getElementById('pay-bar-place').addEventListener('click', () => document.getElementById('place-order').click());
-
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
+
+
+  // ---------- Delivery checkout ----------
+  const dcMinNote = document.getElementById('dc-min-note');
+  state.dTipPct = 18;
+  state.dTipCustom = 0;
+
+  function deliveryTotals() {
+    const subtotal = cartSubtotal('delivery');
+    const tax = subtotal * TAX_RATE;
+    const tip = state.dTipPct === 'custom' ? state.dTipCustom : subtotal * (state.dTipPct / 100);
+    return { subtotal, fee: DELIVERY_FEE, tax, tip, total: subtotal + DELIVERY_FEE + tax + tip };
+  }
+
+  function renderDeliveryTotals() {
+    const t = deliveryTotals();
+    document.getElementById('dc-subtotal').textContent = money(t.subtotal);
+    document.getElementById('dc-fee').textContent = money(t.fee);
+    document.getElementById('dc-tax').textContent = money(t.tax);
+    document.getElementById('dc-tip').textContent = money(t.tip);
+    document.querySelectorAll('#dc-tip-picker .tip-chip').forEach((chip) => {
+      const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
+      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.dTipCustom : t.subtotal * (pct / 100));
+    });
+    document.getElementById('dc-total').textContent = money(t.total);
+    // Below the minimum the order cannot be placed; the note says by how much, and the cart is where to fix it.
+    const short = Math.max(0, DELIVERY_MINIMUM - t.subtotal);
+    dcMinNote.hidden = short === 0;
+    dcMinNote.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : '';
+    if (!placingOrder) document.getElementById('dc-place-order').disabled = short > 0;
+    return t.total;
+  }
+
+  function renderDeliveryCheckout() {
+    const d = state.delivery;
+    document.getElementById('dc-address-name').textContent = deliveryLabel();
+    document.getElementById('dc-address-line').textContent = deliveryAddressLine();
+    document.getElementById('dc-dropoff-line').textContent = deliveryDropoffText() + (d.notes ? ` · ${d.notes}` : '');
+    document.getElementById('dc-time-summary').textContent = d.chosen ? deliveryWhenText() : '';
+    renderDeliveryEta();
+    if (!views['delivery-checkout'].hidden) renderCheckoutMap('delivery');
+    // The name and number were asked for with the address, so they arrive filled in; typing over them is fine.
+    [['dc-name', d.name], ['dc-phone', d.phone], ['dc-email', d.email]].forEach(([id, value]) => {
+      const input = document.getElementById(id);
+      if (!input.value && value) input.value = value;
+    });
+    renderSummaryItems(document.getElementById('dc-items'), document.getElementById('dc-item-count'), state.carts.delivery);
+    document.getElementById('dc-pay-note').textContent = deliveryArrivalText();
+    renderDeliveryTotals();
+  }
+
+
+  // ----- The checkout's map: where the order is going, with the way to change how -----
+  // Pickup and delivery checkouts open on a map (the store's pin, or the delivery address's gold pin) with a Pickup /
+  // Delivery toggle laid over it. The map is only a picture here (it does not pan or zoom, so it never catches a
+  // scroll); the pin sits in the middle of the part of it that the toggle leaves clear. The toggle's other side opens
+  // the "where" modal, which carries the order over.
+  const miniMaps = {};
+  const TOGGLE_ZONE = 64; // the toggle's height plus its margin, at the top of the map
+  function whereTarget(kind) {
+    if (kind === 'pickup') {
+      const st = PICKUP_STORES.find((x) => storeName(x) === state.location);
+      return st ? { lat: st.lat, lng: st.lng, html: storePinHTML(false, false), size: [36, 44] } : null;
+    }
+    const d = state.delivery;
+    let { lat, lng } = d;
+    if (lat == null) {
+      // An address typed without the address search has no position; the store that delivers it stands in.
+      const st = PICKUP_STORES.find((x) => storeName(x) === d.store);
+      if (!st) return null;
+      ({ lat, lng } = st);
+    }
+    return { lat, lng, html: deliveryPinHTML, size: [44, 54] };
+  }
+  // A small still map with one pin, the pin's body centred in the part of the map that is clear of `topZone` px at its top.
+  async function placePinMap(key, el, target, topZone) {
+    try { await loadLeaflet(); } catch (e) { el.classList.add('is-unavailable'); return; }
+    const L = window.L;
+    let m = miniMaps[key];
+    if (!m) {
+      const map = L.map(el, { zoomControl: false, attributionControl: true, dragging: false, touchZoom: false, doubleClickZoom: false, scrollWheelZoom: false, boxZoom: false, keyboard: false, tap: false });
+      map.attributionControl.setPrefix(false);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+      }).addTo(map);
+      m = miniMaps[key] = { map, layer: L.layerGroup().addTo(map) };
+    }
+    m.map.invalidateSize();
+    m.layer.clearLayers();
+    L.marker([target.lat, target.lng], {
+      icon: L.divIcon({ className: 'wm-pin-wrap', html: target.html, iconSize: target.size, iconAnchor: [target.size[0] / 2, target.size[1]] }),
+      interactive: false, keyboard: false,
+    }).addTo(m.layer);
+    // Put the map's centre above the pin by half the top zone plus half the pin, so the pin's body sits mid-way in the clear area.
+    const zoom = 15;
+    const point = m.map.project([target.lat, target.lng], zoom).subtract([0, topZone / 2 + target.size[1] / 2]);
+    m.map.setView(m.map.unproject(point, zoom), zoom, { animate: false });
+  }
+  function renderCheckoutMap(kind) {
+    const el = document.getElementById(kind === 'pickup' ? 'co-map' : 'dc-map');
+    const target = whereTarget(kind);
+    if (el && target) placePinMap(kind, el, target, TOGGLE_ZONE);
+  }
+  document.querySelectorAll('.where-toggle').forEach((toggle) => toggle.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip || chip.classList.contains('active')) return;
+    openWhere(chip.dataset.where, { returnTo: 'checkout' });
+  }));
+
+  // "Estimated arrival", set big like Chipotle's: the minutes for an ASAP order, or the window it was scheduled for.
+  function renderDeliveryEta() {
+    const d = state.delivery;
+    const eta = document.getElementById('dc-eta');
+    eta.hidden = !d.chosen;
+    if (!d.chosen) return;
+    const label = document.getElementById('dc-eta-label');
+    const value = document.getElementById('dc-eta-value');
+    const sub = document.getElementById('dc-eta-sub');
+    if (d.timeId === ASAP_ID) {
+      label.textContent = 'Estimated arrival';
+      value.textContent = '35–50';
+      sub.textContent = 'minutes until arrival (soonest available)';
+      return;
+    }
+    const m = (d.timeLabel || '').match(/^(\d+:\d+) (AM|PM) – (\d+:\d+) (AM|PM)$/);
+    label.textContent = 'Scheduled arrival';
+    value.textContent = m ? `${m[1]}–${m[3]}` : d.timeLabel;
+    sub.textContent = `${m ? (m[2] === m[4] ? m[2] : `${m[2]} to ${m[4]}`) : ''} · ${pickupDateLabel(d.dateKey)}`.replace(/^ · /, '');
+  }
+
+  document.getElementById('dc-open-address').addEventListener('click', () => openDeliveryDetails({ edit: true }));
+  document.getElementById('dc-open-time').addEventListener('click', () => openLocationDetails(null, { edit: true, kind: 'delivery' }));
+
+  const dcTipCustomWrap = document.getElementById('dc-tip-custom');
+  const dcTipCustomInput = document.getElementById('dc-tip-custom-input');
+  document.getElementById('dc-tip-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-value]');
+    if (!btn) return;
+    document.querySelectorAll('#dc-tip-picker .chip').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
+    btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
+    const isCustom = btn.dataset.value === 'custom';
+    state.dTipPct = isCustom ? 'custom' : Number(btn.dataset.value);
+    dcTipCustomWrap.hidden = !isCustom;
+    if (isCustom) dcTipCustomInput.focus();
+    renderDeliveryTotals();
+    announceCheckout(`Courier tip ${document.getElementById('dc-tip').textContent}. Order total ${document.getElementById('dc-total').textContent}.`, 600);
+  });
+  let lastValidDTip = '';
+  dcTipCustomInput.addEventListener('input', () => {
+    if (/^\d{0,4}(\.\d{0,2})?$/.test(dcTipCustomInput.value)) lastValidDTip = dcTipCustomInput.value;
+    else dcTipCustomInput.value = lastValidDTip;
+    state.dTipCustom = parseFloat(lastValidDTip) || 0;
+    renderDeliveryTotals();
+    announceCheckout(`Courier tip ${document.getElementById('dc-tip').textContent}. Order total ${document.getElementById('dc-total').textContent}.`, 600);
+  });
+  dcTipCustomInput.addEventListener('blur', () => {
+    if (dcTipCustomInput.value === '') return;
+    lastValidDTip = state.dTipCustom.toFixed(2);
+    dcTipCustomInput.value = lastValidDTip;
+  });
+
+  document.getElementById('dc-place-order').addEventListener('click', () => {
+    if (state.carts.delivery.length === 0 || placingOrder) return;
+    if (cartSubtotal('delivery') < DELIVERY_MINIMUM) return;
+    // The day and time chosen on the way in can pass while the customer fills in the form.
+    if (!deliverySessionValid()) { startDelivery({ returnTo: 'checkout' }); return; }
+    if (!validateFields([
+      [document.getElementById('dc-name'), present, 'Enter the name for this order.'],
+      [document.getElementById('dc-phone'), isPhone, 'Enter a phone number with area code.'],
+      [document.getElementById('dc-email'), isEmail, 'Enter a valid email so we can confirm your order.'],
+    ])) return;
+    Object.assign(state.delivery, {
+      name: document.getElementById('dc-name').value.trim(),
+      phone: document.getElementById('dc-phone').value.trim(),
+      email: document.getElementById('dc-email').value.trim(),
+    });
+
+    const DC_BUTTONS = ['dc-place-order'];
+    setPlacingOrder(true, DC_BUTTONS);
+    window.setTimeout(() => {
+      setPlacingOrder(false, DC_BUTTONS);
+      if (state.carts.delivery.length === 0) return;
+      const total = renderDeliveryTotals();
+      const t = deliveryTotals();
+      const d = state.delivery;
+      const asap = d.timeId === ASAP_ID;
+      const dateLabel = pickupDateLabel(d.dateKey);
+      const windowText = (d.timeLabel || '').replace(' – ', ' and ');
+      const whenPhrase = asap ? 'in about <strong>35–50 minutes</strong>'
+        : dateLabel === 'Today' ? `today between <strong>${windowText}</strong>`
+        : dateLabel === 'Tomorrow' ? `tomorrow between <strong>${windowText}</strong>`
+        : `on <strong>${dateLabel}</strong> between <strong>${windowText}</strong>`;
+      const items = recapLines(state.carts.delivery);
+      items.push({ label: 'Delivery fee', amount: money(t.fee) });
+      items.push({ label: 'Tax', amount: money(t.tax) });
+      if (t.tip > 0) items.push({ label: 'Courier tip', amount: money(t.tip) });
+      const addressLines = `<strong>${escapeHTML(deliveryLabel())}</strong><br>${escapeHTML(deliveryStreetLine())}<br>${escapeHTML(d.city)}, ${d.state} ${escapeHTML(d.zip)}<br>${escapeHTML(deliveryDropoffText())}`;
+
+      clearCart('delivery');
+      endDeliverySession();
+      showConfirmation({
+        number: orderNumber(),
+        subHTML: asap
+          ? `Order {number} · We're preparing it now — arriving ${whenPhrase}`
+          : `Order {number} · Scheduled for delivery ${whenPhrase}`,
+        steps: ['Preparing', 'Delivered'],
+        items, total,
+        cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
+        backLabel: '← Back to home', backView: 'home',
+      });
+    }, 900);
+  });
 
   // ---------- Confirmation (all three carts) ----------
   // One confirmation page; each cart fills in its own sentence, progress
@@ -3657,6 +4935,20 @@
 
   const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, amount: money(lineTotal(item)) }));
 
+  // Switching a checkout from pickup to delivery (or back) takes its lines with it. Carts are otherwise kept apart;
+  // this is the one place they join, and only when the customer changes how the order is fulfilled.
+  function moveCart(from, to) {
+    const lines = state.carts[from];
+    if (!lines.length) return 0;
+    lines.forEach((line) => { if (line.cart) line.cart = to; });
+    state.carts[to].push(...lines);
+    state.carts[from] = [];
+    persistCart();
+    renderCartBadge();
+    renderDrawer();
+    return lines.length;
+  }
+
   function clearCart(kind) {
     state.carts[kind] = [];
     persistCart();
@@ -3669,16 +4961,17 @@
   const checkoutStatus = document.getElementById('checkout-status');
   let statusTimer = null;
   function announceCheckout(message, delay = 50) {
+    const region = views['delivery-checkout'].hidden ? checkoutStatus : document.getElementById('dc-status');
     window.clearTimeout(statusTimer);
-    checkoutStatus.textContent = '';
-    statusTimer = window.setTimeout(() => { checkoutStatus.textContent = message; }, delay);
+    region.textContent = '';
+    statusTimer = window.setTimeout(() => { region.textContent = message; }, delay);
   }
   const announceTotal = () => announceCheckout(`Tip ${document.getElementById('sum-tip').textContent}. Order total ${document.getElementById('sum-total').textContent}.`, 600);
 
-  function setPlacingOrder(on) {
+  function setPlacingOrder(on, ids = ['place-order']) {
     placingOrder = on;
     if (on) announceCheckout('Placing your order…');
-    ['place-order', 'pay-bar-place'].forEach((id) => {
+    ids.forEach((id) => {
       const btn = document.getElementById(id);
       btn.disabled = on;
       btn.setAttribute('aria-busy', String(on));
@@ -3688,7 +4981,7 @@
 
   document.getElementById('place-order').addEventListener('click', () => {
     if (state.carts.pickup.length === 0 || placingOrder) return;
-    // The store calls this number if something is wrong with the order, so both fields are required.
+    // The store calls this number if something is wrong, and the receipt goes to the email, so all three fields are required.
     if (!validateFields([
       [document.getElementById('co-name'), present, 'Enter the name for this order.'],
       [document.getElementById('co-phone'), isPhone, 'Enter a phone number with area code.'],
@@ -3713,16 +5006,21 @@
       clearPickupSession();
       showConfirmation({
         number: orderNumber(),
-        subHTML: `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
+        subHTML: state.pickupTimeId === ASAP_ID
+          ? `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`
+          : `Order {number} · Scheduled for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
         steps: ['Preparing', 'Ready'],
         items, total,
         cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
-        backLabel: '← Back to menu', backView: 'order',
+        backLabel: '← Back to home', backView: 'home',
       });
     }, 900);
   });
 
+  // A placed order ends its pickup or delivery session, so the order page is no longer open to the customer: pickup and
+  // delivery confirmations go back Home, where the next order starts. Shipping and Catering go back to their own pages.
   document.getElementById('back-to-menu').addEventListener('click', () => {
+    if (confirmBack === 'home') history.replaceState(null, '', '#home');
     showView(confirmBack);
   });
 
@@ -3735,12 +5033,15 @@
     if (!message) {
       if (el) el.remove();
       input.removeAttribute('aria-invalid');
+      if (input.id && input.getAttribute('aria-describedby') === input.id + '-error') input.removeAttribute('aria-describedby');
       return;
     }
     if (!el) {
       el = document.createElement('p');
       el.className = 'field-error';
       el.setAttribute('role', 'alert');
+      // The message is the field's description too, so it is read when focus lands on the field.
+      if (input.id) { el.id = input.id + '-error'; input.setAttribute('aria-describedby', el.id); }
       group.appendChild(el);
       input.addEventListener('input', () => setFieldError(input, ''), { once: true });
       input.addEventListener('change', () => setFieldError(input, ''), { once: true });
@@ -3752,12 +5053,17 @@
   // Runs [input, test, message] rows; marks every failure, focuses the first. True when all pass.
   function validateFields(rows) {
     let first = null;
+    let failed = 0;
     rows.forEach(([input, ok, message]) => {
       const pass = ok(input.value.trim());
       setFieldError(input, pass ? '' : message);
-      if (!pass && !first) first = input;
+      if (!pass) { failed += 1; if (!first) first = input; }
     });
-    if (first) first.focus();
+    if (first) {
+      first.focus();
+      // Focus moves to the first problem and reads its message; the count says how many more there are.
+      if (failed > 1 && first.closest('#view-checkout, #view-delivery-checkout')) announceCheckout(`${failed} fields need attention.`, 700);
+    }
     return !first;
   }
   const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -3980,5 +5286,7 @@
   renderGrids();
   renderCartBadge();
   renderDrawer();
+  navWhereReady = true;
+  renderNavWhere();
   openFirstPage();
 })();

@@ -68,14 +68,14 @@
   // and replay what it queued, once everything below is defined.
   const stub = window.degLocationPicker || { pending: {} };
   const api = window.degLocationPicker = {
-    onPick: stub.onPick || null, onContinue: stub.onContinue || null, onChangeTime: stub.onChangeTime || null, onNavigate: stub.onNavigate || null,
+    onPick: stub.onPick || null, onOpenStore: stub.onOpenStore || null, onContinue: stub.onContinue || null, onChangeTime: stub.onChangeTime || null, onNavigate: stub.onNavigate || null,
     sync: null, configure: null, setSaved: null, ready: false,
   };
 
   // The picker serves one order funnel at a time. The funnel supplies the words the picker uses for choosing
   // (app.js owns what choosing does, in FUNNELS); the Pickup funnel is the only one built so far.
   const funnelText = {
-    title: 'Where will you pick up?', pickLabel: 'Pick up here', pickedLabel: 'Your pickup store',
+    title: 'Our locations', pickLabel: 'Order pickup here', pickedLabel: 'Your pickup store',
     savedTitle: 'Continue your pickup order', continueLabel: 'Continue to menu', changeLabel: 'Change time',
   };
 
@@ -91,24 +91,23 @@
 
   // One plain status line instead of badges: what the store is, in words.
   function statusFor(s) {
-    if (s.kind === 'real') return s.id === savedId ? funnelText.pickedLabel : 'Open for pickup';
-    if (s.kind === 'soon') return 'Demo location · coming soon';
-    return 'Demo location · not taking orders';
+    if (s.kind === 'real') return 'Open for pickup and delivery';
+    return 'Coming soon';
   }
 
-  // The saved store continues with what the customer already chose; every other store starts a new choice.
+  // A real store's card opens that store's own page; the link's box is stretched over the whole card (see the CSS), so
+  // the card is the link. Placeholder cities have no page and no link.
+  const storeSlug = (s) => s.city.toLowerCase();
   function pickControl(s, cls) {
     if (s.kind !== 'real') return '';
-    if (s.id === savedId) return `<button class="deg-btn ${cls}" type="button" data-continue aria-label="${funnelText.continueLabel}: ${label(s)}, ${saved.when}">Continue</button>`;
-    return `<button class="deg-btn ${cls}" type="button" data-pick="${s.id}" aria-label="${funnelText.pickLabel} at ${label(s)}">${funnelText.pickLabel}</button>`;
+    return `<a class="deg-btn ${cls} store-link" href="#store/${storeSlug(s)}" data-store="${storeSlug(s)}" aria-label="View the ${label(s)} store page">View store</a>`;
   }
 
   viewEl.addEventListener('click', (e) => {
     const go = e.target.closest('[data-picker-go]');
     if (go) { e.preventDefault(); if (api.onNavigate) api.onNavigate(go.dataset.pickerGo); return; }
-    if (e.target.closest('[data-continue]')) { if (api.onContinue) api.onContinue(); return; }
-    const btn = e.target.closest('[data-pick]');
-    if (btn) pickStore(btn.dataset.pick);
+    const store = e.target.closest('[data-store]');
+    if (store) { e.preventDefault(); if (api.onOpenStore) api.onOpenStore(store.dataset.store); }
   });
 
   // ---------- Directory ----------
@@ -122,7 +121,7 @@
   function storeRows(st) {
     const list = byState.get(st).slice().sort((a, b) => (a.kind === 'real' ? -1 : 0) - (b.kind === 'real' ? -1 : 0) || a.city.localeCompare(b.city));
     return `<ul>${list.map((s) => `<li class="dir-store">
-      <span class="dir-store-name">${s.city}<small>${s.kind === 'real' ? s.address : (s.kind === 'soon' ? 'Demo · coming soon' : 'Demo location')}</small></span>
+      <span class="dir-store-name">${s.city}<small>${s.kind === 'real' ? s.address : 'Coming soon'}</small></span>
       ${pickControl(s, 'deg-btn-text')}
     </li>`).join('')}</ul>`;
   }
@@ -162,7 +161,7 @@
   const realStates = [...new Set(realStores.map((s) => s.state))];
   const renderSummary = () => {
     const where = realStates.length === 1 ? `, all in ${STATE_NAME[realStates[0]]}` : ` in ${realStates.length} states`;
-    $('directory-summary').textContent = `${realStores.length} ${realStores.length === 1 ? 'store' : 'stores'}${where}. Everything else listed here is demo placeholder data. Open a state to see it.`;
+    $('directory-summary').textContent = `${realStores.length} ${realStores.length === 1 ? 'store' : 'stores'}${where}. Everything else listed here is coming soon. Open a state to see it.`;
   };
   renderSummary();
 
@@ -214,7 +213,7 @@
     svg.select('#map-dots').selectAll('circle').data(stores.filter((s) => s.xy), (s) => s.id).join('circle')
       .attr('class', (s) => `dot ${s.kind}`)
       .attr('cx', (s) => s.xy[0]).attr('cy', (s) => s.xy[1])
-      .on('mousemove', (e, s) => showTip(e, `${label(s)}${s.kind === 'real' ? '' : s.kind === 'soon' ? ' · demo, coming soon' : ' · demo'}`))
+      .on('mousemove', (e, s) => showTip(e, `${label(s)}${s.kind === 'real' ? '' : ' · coming soon'}`))
       .on('mouseleave', hideTip)
       .on('click', (e, s) => { e.stopPropagation(); showStoresNear([s.lng, s.lat], `Stores near ${label(s)}`); });
 
@@ -463,7 +462,7 @@
         <h3>${label(s)}</h3>
         ${distances ? `<span class="distance">${formatMiles(distances.get(s.id))}</span>` : ''}
       </div>
-      <p class="address">${s.kind === 'real' ? s.address : 'Demo location, not a real store'}</p>
+      <p class="address">${s.kind === 'real' ? s.address : 'A new location, opening soon'}</p>
       <p class="loc-status">${statusFor(s)}</p>
       ${s.kind === 'real' ? `<div class="card-actions">${pickControl(s, 'deg-btn-text result-pick')}</div>` : ''}
     </article></li>`;
@@ -474,7 +473,7 @@
       <div class="lead-main">
         <h3>${label(s)}</h3>
         <p class="lead-meta">${near} · ${d < 0.1 ? 'right here' : `${formatMiles(d)} away`}</p>
-        <p class="address">${s.kind === 'real' ? s.address : 'Demo location, not a real store'}</p>
+        <p class="address">${s.kind === 'real' ? s.address : 'A new location, opening soon'}</p>
         <p class="loc-status">${statusFor(s)}</p>
       </div>
       <div class="lead-side">${pickControl(s, 'deg-btn-dark lead-pick')}</div>
