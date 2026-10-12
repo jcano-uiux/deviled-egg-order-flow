@@ -496,9 +496,9 @@
       <a class="pill-btn primary cater-cta" href="#boxed-lunches" data-scroll="boxed-lunches">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
     <div class="cater-hero-art" aria-hidden="true">
-      <img src="assets/catering/classic.png" width="216" height="244" alt="" loading="lazy" decoding="async">
-      <img src="assets/catering/allin.png" width="216" height="244" alt="" loading="lazy" decoding="async">
-      <img src="assets/catering/bagel-brew.png" width="216" height="244" alt="" loading="lazy" decoding="async">
+      <img src="assets/catering/power-pair.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
+      <img src="assets/catering/allin.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
+      <img src="assets/catering/bagel-brew.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
     </div>
   </section>
 
@@ -509,7 +509,7 @@
     </div>
     <ul class="cater-grid">
       <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/classic.png" width="216" height="244" alt="Bowls of chicken salad, greens and buffalo chicken on a black tray" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/classic.jpg" width="216" height="244" alt="Bowls of chicken salad, greens and buffalo chicken on a black tray" loading="lazy">
           <p class="cater-tag">Everyday delicious</p>
         </div>
         <div class="cater-body">
@@ -532,7 +532,7 @@
         </div>
       </li>
       <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/allin.png" width="216" height="244" alt="A grilled wrap cut in half beside two deviled eggs and chips" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/allin.jpg" width="216" height="244" alt="A grilled wrap cut in half beside two deviled eggs and chips" loading="lazy">
           <p class="cater-tag">Fuel the whole team</p>
         </div>
         <div class="cater-body">
@@ -569,6 +569,7 @@
         <p class="cater-note"><strong>Drinks:</strong> Fiji Water, Coke, Coke Zero, Dr Pepper, Sweet Tea, Unsweet Tea, RedBull +$1.00</p>
       </div>
       <div class="cater-coffee">
+        <div class="cater-coffee-media"><img src="assets/catering/coffee-bar.jpg" width="1024" height="1024" alt="Cream poured into an iced coffee in a Devil's Coffee cup, on a yellow banquette" loading="lazy" decoding="async"></div>
         <div class="cater-coffee-head">
           <h3 class="cater-name">Catering Coffee Bar</h3>
           <p class="cater-tag">Add-on station</p>
@@ -592,7 +593,7 @@
     </div>
     <ul class="cater-grid">
       <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/power-pair.png" width="216" height="244" alt="Two deviled eggs topped with seasoning in a clear tray" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/power-pair.jpg" width="216" height="244" alt="Two deviled eggs topped with seasoning in a clear tray" loading="lazy">
           <p class="cater-tag">Serves 10</p>
         </div>
         <div class="cater-body">
@@ -607,7 +608,7 @@
         </div>
       </li>
       <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/bagel-brew.png" width="216" height="244" alt="A bagel piled with smoked salmon egg spread" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/bagel-brew.jpg" width="216" height="244" alt="A bagel piled with smoked salmon egg spread" loading="lazy">
           <p class="cater-tag">Serves 10 • Fan favorite</p>
         </div>
         <div class="cater-body">
@@ -632,7 +633,7 @@
     </div>
     <ul class="cater-grid">
       <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/light-lunch.png" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/light-lunch.jpg" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
           <p class="cater-tag">Serves 10 • Top pick</p>
         </div>
         <div class="cater-body">
@@ -647,7 +648,7 @@
         </div>
       </li>
       <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/light-lunch.png" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
+        <div class="cater-media"><img src="assets/catering/light-lunch.jpg" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
           <p class="cater-tag">Serves 10</p>
         </div>
         <div class="cater-body">
@@ -719,6 +720,7 @@
               <span id="pickup-time-summary">Today</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
+            <p class="field-note" id="co-catering-note" hidden></p>
           </div>
         </div>
       </section>
@@ -824,6 +826,7 @@
               <span id="dc-time-summary">ASAP</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
+            <p class="field-note" id="dc-catering-note" hidden></p>
           </div>
           <div class="where-eta" id="dc-eta" aria-live="polite">
             <p class="where-eta-label" id="dc-eta-label">Estimated arrival</p>
@@ -1009,114 +1012,6 @@
   </div>
 </main>
 
-<main id="view-cater-checkout" class="view" hidden>
-  <div class="checkout-title">
-    <h1>Secure Checkout</h1>
-    <p class="checkout-title-sub">Catering</p>
-  </div>
-  <div class="checkout-layout">
-    <div class="checkout-main">
-
-      <section class="checkout-card">
-        <h2>Your event</h2>
-        <p class="checkout-lead">We'll confirm by phone within an hour of your order.</p>
-        <label class="field-group">
-          <span class="field-label">Event date</span>
-          <input type="date" id="cc-date">
-          <span class="field-note" id="cc-date-help"></span>
-        </label>
-        <div class="field-group">
-          <span class="field-label">Pickup or delivery</span>
-          <div class="segmented cc-fulfilment" id="cc-fulfilment" role="radiogroup" aria-label="Fulfillment">
-            <button class="chip active" type="button" role="radio" aria-checked="true" data-value="pickup">Pickup <span class="cc-fulfilment-sub">Free · 4 locations</span></button>
-            <button class="chip" type="button" role="radio" aria-checked="false" data-value="delivery">Delivery <span class="cc-fulfilment-sub">$20 flat · Free over $200</span></button>
-          </div>
-        </div>
-
-        <div id="cc-pickup" class="cc-panel">
-          <div class="field-group">
-            <span class="field-label">Pickup location</span>
-            <div class="radio-list" id="cc-locations" role="radiogroup" aria-label="Pickup location"></div>
-          </div>
-          <label class="field-group">
-            <span class="field-label">Pickup time</span>
-            <input type="time" id="cc-pickup-time">
-          </label>
-        </div>
-
-        <div id="cc-delivery" class="cc-panel" hidden>
-          <label class="field-group">
-            <span class="field-label">Delivery address</span>
-            <input type="text" id="cc-address" autocomplete="street-address" placeholder="123 Main St, McKinney TX">
-          </label>
-          <div class="input-row">
-            <label class="field-group">
-              <span class="field-label">ZIP code</span>
-              <input type="text" id="cc-zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="75069" aria-required="true">
-            </label>
-            <label class="field-group">
-              <span class="field-label">Delivery time</span>
-              <input type="time" id="cc-delivery-time">
-            </label>
-          </div>
-          <p class="field-note">Delivery is within 5 miles of a location.</p>
-        </div>
-      </section>
-
-      <section class="checkout-card">
-        <h2>Contact info</h2>
-        <div class="input-row">
-          <label class="field-group">
-            <span class="field-label">Full name</span>
-            <input type="text" id="cc-name" autocomplete="name" placeholder="First and last name" maxlength="80" aria-required="true">
-          </label>
-          <label class="field-group">
-            <span class="field-label">Phone number</span>
-            <input type="tel" id="cc-phone" autocomplete="tel" inputmode="tel" placeholder="(214) 555-0123" maxlength="20" aria-required="true">
-          </label>
-        </div>
-        <label class="field-group">
-          <span class="field-label">Email</span>
-          <input type="email" id="cc-email" autocomplete="email" inputmode="email" placeholder="name@company.com" maxlength="120" aria-required="true">
-        </label>
-      </section>
-
-      <section class="checkout-card">
-        <h2>Payment method</h2>
-        <div id="cc-payment-picker" class="radio-list payment-picker" role="radiogroup" aria-label="Payment method"></div>
-        <button class="payment-add-row" data-add-payment type="button">
-          <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
-          Add payment method
-        </button>
-      </section>
-    </div>
-
-    <aside class="summary-col">
-      <section class="summary-panel">
-        <button class="order-summary-toggle" id="cc-toggle-summary" type="button" aria-expanded="true" aria-controls="cc-items">
-          <span class="order-summary-toggle-title">Order summary <span class="order-summary-count" id="cc-item-count"></span></span>
-          <svg class="order-summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="order-summary-collapse">
-          <div id="cc-items" class="drawer-items"></div>
-        </div>
-      </section>
-
-      <section class="summary-panel">
-        <h2>Order total</h2>
-        <div class="summary-line"><span>Subtotal</span><span id="cc-subtotal">$0.00</span></div>
-        <div class="summary-divider"></div>
-        <div class="summary-line"><span>Delivery</span><span id="cc-delivery-fee">Free</span></div>
-        <div class="summary-divider"></div>
-        <div class="summary-line"><span>Tax</span><span id="cc-tax">$0.00</span></div>
-        <div class="summary-divider"></div>
-        <div class="summary-line total"><span>Total</span><span id="cc-total">$0.00</span></div>
-        <button class="pill-btn dark full" id="cc-place-order" type="button">Place order</button>
-      </section>
-    </aside>
-  </div>
-</main>
-
 <main id="view-confirmation" class="view" hidden>
   <div class="confirmation-wrap">
     <div class="confirmation-card">
@@ -1183,6 +1078,13 @@
             <ul class="modal-list" id="dozen-modal-details"></ul>
           </div>
           <div class="divider thick"></div>
+          <div id="option-block" class="option-block" hidden>
+            <div class="modal-section-head">
+              <span class="modal-section-title" id="option-title"></span>
+              <span class="modal-section-sub" id="option-hint" aria-live="polite"></span>
+            </div>
+            <div class="addon-list" id="option-grid" role="radiogroup" aria-labelledby="option-title"></div>
+          </div>
           <div id="bagel-preset-block" hidden>
             <div class="modal-section-head">
               <span class="modal-section-title">Bagels</span>
@@ -1194,10 +1096,6 @@
             <div class="modal-section-head">
               <span class="modal-section-title" id="flavor-section-title">Choose your flavors</span>
               <span class="modal-section-sub" id="flavor-hint"></span>
-            </div>
-            <div class="flavor-meter" id="flavor-meter">
-              <span class="flavor-meter-count" id="flavor-count" aria-live="polite"></span>
-              <div class="flavor-meter-bar" id="flavor-meter-bar" aria-hidden="true"></div>
             </div>
             <div class="flavor-grid" id="flavor-grid"></div>
           </div>
@@ -1220,6 +1118,10 @@
       </div>
     </div>
     <div class="item-modal-footer">
+      <div class="flavor-meter" id="flavor-meter">
+        <span class="flavor-meter-count" id="flavor-count" aria-live="polite"></span>
+        <div class="flavor-meter-bar" id="flavor-meter-bar" aria-hidden="true"></div>
+      </div>
       <button class="pill-btn dark full" id="add-to-order" type="button">Add 1 to order · $24.99</button>
     </div>
   </div>
@@ -1331,15 +1233,6 @@
           <div class="divider"></div>
           <div class="bowl-modal-section">
             <div class="modal-section-head">
-              <span class="modal-section-title">Free Eggstras</span>
-              <span class="modal-section-sub">Jazz up your bowl with your choice of sauce or extras on us.</span>
-            </div>
-            <div class="chip-row" id="bowl-eggstras-picker"></div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="bowl-modal-section">
-            <div class="modal-section-head">
               <span class="modal-section-title">No</span>
               <span class="modal-section-sub">Choose what items you may not want.</span>
             </div>
@@ -1433,8 +1326,8 @@
     </div>
     <div class="item-modal-scroll">
       <div class="item-modal-row">
-        <div class="item-modal-media item-modal-media-cutout">
-          <img class="shop-card-photo" id="box-modal-image" src="assets/catering/classic.png" alt="" loading="lazy" decoding="async">
+        <div class="item-modal-media item-modal-media-box">
+          <img class="shop-card-photo" id="box-modal-image" src="assets/catering/classic.jpg" alt="" loading="lazy" decoding="async">
           <div class="box-summary" id="box-summary"></div>
         </div>
         <div class="item-modal-content">
@@ -1715,12 +1608,8 @@
               <button class="wm-clear" id="da-clear" type="button" aria-label="Clear address" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
               <ul class="wm-suggest" id="wm-suggest" role="listbox" aria-label="Address suggestions" hidden></ul>
             </div>
+            <p class="wm-note" id="da-search-note" role="status" aria-live="polite"></p>
           </div>
-          <!-- Only when the suggestion has no ZIP, or the address search is unavailable. -->
-          <label class="field-group" id="da-zip-wrap" hidden>
-            <span class="field-label">ZIP code</span>
-            <input type="text" id="da-zip" name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="75069">
-          </label>
           <button class="visually-hidden" type="submit" tabindex="-1" aria-hidden="true">Continue</button>
         </form>
 
@@ -1741,13 +1630,20 @@
           <div class="wm-field">
             <label class="field-group" for="wm-pk-q"><span class="field-label">City, state or ZIP</span></label>
             <div class="wm-input-wrap">
-              <input type="text" id="wm-pk-q" name="q" autocomplete="off" maxlength="80" placeholder="Dallas, TX or 75069">
+              <input type="text" id="wm-pk-q" name="q" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="wm-pk-suggest" autocomplete="off" maxlength="80" placeholder="Dallas, TX or 75069">
               <button class="wm-clear" id="wm-pk-clear" type="button" aria-label="Clear search" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+              <ul class="wm-suggest" id="wm-pk-suggest" role="listbox" aria-label="Place suggestions" hidden></ul>
             </div>
           </div>
         </form>
         <p class="wm-note" id="wm-pk-note" role="status" aria-live="polite"></p>
 
+        <div class="wm-empty" id="wm-pk-empty" role="status" hidden>
+          <h2 class="wm-empty-title">There are no stores near that location</h2>
+          <span class="wm-empty-rule" aria-hidden="true"></span>
+          <p class="wm-empty-copy">Search for a different location, or have our deviled eggs shipped to you.</p>
+          <button class="pill-btn outline" id="wm-pk-ship" type="button">See Nationwide Shipping</button>
+        </div>
         <h2 class="wm-list-title" id="wm-pk-title">Our stores</h2>
         <ul class="wm-stores" id="wm-stores" aria-labelledby="wm-pk-title"></ul>
 

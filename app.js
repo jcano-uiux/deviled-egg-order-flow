@@ -73,6 +73,8 @@
     img.loading = 'lazy';
     img.decoding = 'async';
     img.alt = item.name;
+    // A photo that fails to load falls back to the placeholder instead of showing a broken image.
+    img.addEventListener('error', () => img.replaceWith(eggThumb()), { once: true });
     img.src = item.image;
     return img;
   };
@@ -86,8 +88,19 @@
   // (it's a fixed platter of every flavor), so it carries none here either.
   const DEVILED_EGGS = [
     { id: '2-pack', name: '2 Pack Deviled Egg', price: 4.99, note: '140 Cal.', desc: 'Two of our signature gourmet deviled eggs — perfect for a quick snack or a tasty add-on to any meal.', image: 'assets/products/2-pack.jpg', pickerConfig: { total: 2, maxFlavors: 2 } },
-    { id: '6-pack-3-flavors', name: '6 Pack – 3 Flavors', price: 12.99, note: '420 Cal.', desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', image: 'assets/products/6-pack-3-flavors.jpg', pickerConfig: { total: 6, maxFlavors: 3 } },
-    { id: '6-pack-6-flavors', name: '6 Pack – 6 Flavors', price: 14.99, note: '420 Cal.', desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', image: 'assets/products/6-pack-6-flavors.jpg', pickerConfig: { total: 6, maxFlavors: 6 } },
+    // One card for both 6 Packs: the modal asks 3 flavors or 6 (a different price, photo and number of flavors, the
+    // same six eggs). The card shows the entry price; `pickerConfig` here only marks it as a flavor picker.
+    {
+      id: '6-pack', name: '6 Pack', price: 12.99, note: '420 Cal.', image: 'assets/products/6-pack-6-flavors.jpg',
+      desc: 'Six deviled eggs, in three flavors or all six. A great way to sample our most popular creations.',
+      pickerConfig: { total: 6, maxFlavors: 3 }, optionsTitle: 'How many flavors?', optionsHint: 'Six deviled eggs either way.',
+      options: [
+        { id: '3-flavors', label: '3 flavors', name: '6 Pack – 3 Flavors', price: 12.99, image: 'assets/products/6-pack-3-flavors.jpg',
+          desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', pickerConfig: { total: 6, maxFlavors: 3 } },
+        { id: '6-flavors', label: '6 flavors', name: '6 Pack – 6 Flavors', price: 14.99, image: 'assets/products/6-pack-6-flavors.jpg',
+          desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', pickerConfig: { total: 6, maxFlavors: 6 } },
+      ],
+    },
     { id: '12-pack', name: '12 Pack Deviled Egg', price: 24.99, note: '840 Cal.', desc: 'A dozen of our gourmet deviled eggs — perfect for sharing at parties, picnics, or family gatherings.', image: 'assets/products/12-pack.jpg', pickerConfig: { total: 12, maxFlavors: 4 } },
     { id: '24-count-platter', name: '24 Count Deviled Egg Platter', price: 44.99, note: '1680 Cal.', desc: 'A stunning platter of 24 deviled eggs — the ultimate centerpiece for your next event or celebration.', image: 'assets/products/24-count-platter.jpg', pickerConfig: { total: 24, maxFlavors: 3 } },
     { id: 'try-them-all-platter', name: 'Try Them All Deviled Egg Platter', price: 54.99, note: '1800 Cal.', desc: 'Every flavor we offer on one beautiful platter — the complete Deviled Egg Co. experience.', image: 'assets/products/try-them-all-platter.jpg' },
@@ -95,7 +108,7 @@
 
   // Every Eggceptional Bowl is a WooCommerce "variable" product on the live
   // site (unlike Egg Salads/Platters, which are simple products) — each has
-  // its own Add-Ons (paid, priced per item), Free Eggstras (unpriced extras),
+  // its own Add-Ons (paid, priced per item)
   // and "No" exclusions matching that bowl's own ingredients. Sourced verbatim
   // per bowl from deviledeggco.com rather than assumed to share one list —
   // the add-on prices and exclusion lists both vary bowl to bowl. "Options"
@@ -110,7 +123,6 @@
         { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Egg', price: 3.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
       exclusions: ['Chicken', 'Bacon', 'Avo-Smash', 'Cheddar', 'Lettuce', 'Tomato', 'Ranch'],
     },
     { id: 'cheeseburger', name: 'Cheeseburger Eggceptional Bowl', price: 14.99, note: '47g Protein', desc: 'Seasoned beef, cheese, pickles, and our famous deviled eggs in bowl form.', image: 'assets/products/cheeseburger-bowl.jpg',
@@ -119,7 +131,6 @@
         { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
       exclusions: ['Hamburger', 'Cheese', 'Red Onion', 'Lettuce', 'Pickles', 'Ketchup'],
     },
     { id: 'caesar', name: 'The Caesar Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Crisp romaine, parmesan, croutons, and our signature deviled eggs.', image: 'assets/products/caesar-bowl.jpg',
@@ -129,7 +140,6 @@
         { label: 'Avocado Smash', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Eggs', price: 3.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Creamy Caesar', 'Ranch', 'Cholua Sauce', 'Teriyaki', 'Parmesan', 'Buffalo Sauce', 'Sweet & Sour', 'BBQ Sauce', 'Ranch'],
       exclusions: ['Egg Whites', 'Grilled Chicken', 'Capers', 'Diced Red Onion', 'Shredded Romaine Lettuce', 'Creamy Caesar Dressing', 'Parmesan Cheese'],
     },
     { id: 'buffalo', name: 'Buffalo Eggceptional Bowl', price: 14.99, desc: 'Bold buffalo flavors paired with cool ranch and our signature deviled eggs.', image: 'assets/products/buffalo-bowl.jpg',
@@ -138,7 +148,6 @@
         { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
       exclusions: ['Grilled Chicken', 'Red Onion', 'Lettuce', 'Buffalo Sauce', 'Homemade Ranch', 'Cheddar', 'Egg White'],
     },
     { id: 'walking-taco', name: 'Walking Taco Eggceptional Bowl', price: 14.99, note: '70g Protein', desc: 'Seasoned meat, crunchy chips, cheese, salsa, and deviled eggs in one bowl.', image: 'assets/products/walking-taco-bowl.jpg',
@@ -147,7 +156,6 @@
         { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Egg', price: 3.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
       exclusions: ['Refried Beans', 'Sharp Cheddar Cheese', 'Cholula', 'Lettuce', 'Sour Cream', 'Doritos', 'Chicken', 'Egg White'],
     },
     { id: 'bangin-brisket', name: 'Bangin’ Brisket Eggceptional Bowl', price: 14.99, note: '57g Protein', desc: 'Slow-smoked brisket paired with our deviled eggs for bold Texas flavor.', image: 'assets/products/bangin-brisket-bowl.jpg',
@@ -156,7 +164,6 @@
         { label: 'Smashed Avocado', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Egg', price: 2.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Terriyaki', 'Parmesan', 'Buffalo', 'Sweet & Sour', 'BBQ', 'Homemade Ranch'],
       exclusions: ['Brisket', 'Pickled Jalapeño', 'Red Onion', 'BBQ Sauce', 'Cheese', 'Lettuce'],
     },
     { id: 'pok-egg', name: 'Pok-Egg Eggceptional Bowl', price: 14.99, note: '32g Protein', desc: 'Hawaiian-inspired poke-style bowl with crisp vegetables and deviled eggs.', image: 'assets/products/pok-egg-bowl.jpg',
@@ -165,7 +172,6 @@
         { label: 'Avocado Smash', price: 2.00, note: '½ whole fresh avocado' },
         { label: 'Eggstra Eggs', price: 3.00, note: '+3oz egg whites' },
       ],
-      freeEggstras: ['Lettuce', 'Onions', 'Sriracha', 'Sriracha Aioli', 'Creamy Caesar', 'Ranch', 'Cholula', 'Teriyaki', 'Parmesan', 'Buffalo Sauce', 'Sweet & Sour', 'BBQ Sauce', 'Ranch'],
       exclusions: ['Egg Whites', 'Imitation Crab', 'Sriracha Aioli', 'Avocado Smash', 'Cucumber', 'Teriyaki', 'Black Sesame Seeds'],
     },
   ];
@@ -336,11 +342,14 @@
     },
   ];
 
-  // Four carts, one per fulfillment path, never merged: Pickup (the location
-  // menus), Delivery (the same menu, brought to an address), Shipping
-  // (Nationwide Shipping kits) and Catering. Each checks out on its own page.
-  const CART_KINDS = ['pickup', 'delivery', 'shipping', 'catering'];
-  const CART_LABELS = { pickup: 'Pickup', delivery: 'Delivery', shipping: 'Shipping', catering: 'Catering' };
+  // Three carts, one per fulfillment path: Pickup (the location menus), Delivery (the same menu, brought to an
+  // address) and Shipping (Nationwide Shipping kits). Catering is not a cart of its own: a catering item goes into
+  // the Pickup or Delivery bag, next to everything else in it. Each cart checks out on its own page.
+  const CART_KINDS = ['pickup', 'delivery', 'shipping'];
+  const CART_LABELS = { pickup: 'Pickup', delivery: 'Delivery', shipping: 'Shipping' };
+  // Catering's figures, applied to a delivery bag that has a catering item in it: a flat fee, free over a threshold.
+  const CATERING_DELIVERY_FEE = 20;
+  const CATERING_FREE_DELIVERY_AT = 200;
   // Delivery's placeholder rules, until real ones are approved: one flat fee, a minimum subtotal, and the ASAP estimate.
   const DELIVERY_FEE = 4.99;
   const DELIVERY_MINIMUM = 15;
@@ -349,8 +358,20 @@
   // The nav indicator draws only once the rest of the app is set up (see Init at the end).
   let navWhereReady = false;
 
+  // Set when the customer starts from Home's "Order catering" tile: the "where" modal then offers only times catering
+  // can meet (see cateringLead), and the funnel ends on the order page's Catering group. It lasts for that pickup or
+  // delivery session; starting a regular funnel, cancelling the modal or placing an order clears it.
+  let cateringIntent = false;
+  try { cateringIntent = localStorage.getItem('deg-catering-intent') === '1'; } catch (e) { /* ignore */ }
+  // What the flag was before a funnel from Home changed it, so cancelling that funnel puts it back.
+  let intentBeforeFunnel = null;
+  function setCateringIntent(on) {
+    cateringIntent = !!on;
+    try { if (on) localStorage.setItem('deg-catering-intent', '1'); else localStorage.removeItem('deg-catering-intent'); } catch (e) { /* ignore */ }
+  }
+
   const state = {
-    carts: { pickup: [], delivery: [], shipping: [], catering: [] },
+    carts: { pickup: [], delivery: [], shipping: [] },
     drawerCart: 'pickup',
     // Which funnel the order page is serving: 'pickup' or 'delivery'. A product added there goes to that cart.
     orderMode: 'pickup',
@@ -365,7 +386,6 @@
     bagelOptions: new Set(),
     bagelQty: 1,
     bowlAddOns: new Set(),
-    bowlEggstras: new Set(),
     bowlExclusions: new Set(),
     bowlOptions: new Set(),
     bowlQty: 1,
@@ -386,16 +406,30 @@
   [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, ...SANDWICH_WRAP].forEach((p) => {
     if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
   });
+  // A product with options (the 6 Pack) is saved in the bag under the chosen option's own name.
+  [...DEVILED_EGGS].forEach((p) => (p.options || []).forEach((o) => { PRODUCT_IMAGE_BY_NAME[o.name] = o.image; }));
   PRODUCT_IMAGE_BY_NAME['Full Size Bagel'] = BAGEL_IMAGE;
+  // The product with the options picked: its name, price, photo, description and picker become the option's.
+  const resolveOption = (product, optionId) => {
+    if (!product.options) return product;
+    const o = product.options.find((x) => x.id === optionId) || product.options[0];
+    return { ...product, ...o, id: product.id, optionId: o.id };
+  };
+  // Lines saved before the two 6 Packs became one remember which one they were by their old ids.
+  const LEGACY_OPTION = { '6-pack-3-flavors': ['6-pack', '3-flavors'], '6-pack-6-flavors': ['6-pack', '6-flavors'] };
+  const priceLabel = (item) => (item.options ? 'From ' : '') + money(item.price);
   SHIPPING_KITS.forEach((k) => { PRODUCT_IMAGE_BY_NAME[k.name] = k.image; });
 
   // Saved carts: the current per-path shape, or the older single list, whose
   // shipping kits (tagged `ships`) move to the Shipping cart.
   const withImage = (item) => ({ ...item, image: item.image || PRODUCT_IMAGE_BY_NAME[item.name] });
+  let savedCatering = [];
   try {
     const saved = JSON.parse(localStorage.getItem('deg-carts') || 'null');
     if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
       CART_KINDS.forEach((kind) => { if (Array.isArray(saved[kind])) state.carts[kind] = saved[kind].map(withImage); });
+      // A Catering cart saved before catering joined the Pickup and Delivery bags moves into the one in use.
+      if (Array.isArray(saved.catering)) savedCatering = saved.catering.map(withImage);
     } else {
       const legacy = JSON.parse(localStorage.getItem('deg-cart') || 'null');
       if (Array.isArray(legacy)) {
@@ -410,6 +444,7 @@
     try { localStorage.setItem('deg-order-mode', mode); } catch (e) { /* storage unavailable */ }
   }
   try { if (localStorage.getItem('deg-order-mode') === 'delivery') state.orderMode = 'delivery'; } catch (e) { /* ignore */ }
+  savedCatering.forEach((line) => state.carts[state.orderMode].push({ ...line, catering: true, cart: state.orderMode }));
 
   function persistCart() {
     localStorage.setItem('deg-carts', JSON.stringify(state.carts));
@@ -420,7 +455,7 @@
 
   // Items across every cart (the header badge), or one cart's.
   // Catering counts lines, not boxes: 200 boxes is one order line, and "211 items" on two lines was misleading.
-  const unitsIn = (kind, items) => (kind === 'catering' ? items.length : items.reduce((n, item) => n + item.qty, 0));
+  const unitsIn = (kind, items) => items.reduce((n, item) => n + (item.catering ? 1 : item.qty), 0);
   function cartCount(kind) {
     const kinds = kind ? [kind] : CART_KINDS;
     return kinds.reduce((sum, k) => sum + unitsIn(k, state.carts[k]), 0);
@@ -627,7 +662,7 @@
   const FEATURED = [
     { from: DEVILED_EGGS, id: '12-pack', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
     { from: DEVILED_EGGS, id: '2-pack', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
-    { from: DEVILED_EGGS, id: '6-pack-6-flavors', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
+    { from: DEVILED_EGGS, id: '6-pack', keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
     { from: PLATTERS, id: '24-count', keyPrefix: 'platter', cartCategory: 'Party platter' },
     { from: EGG_SALADS, id: 'whole-pint', keyPrefix: 'saladcup', cartCategory: 'Egg salad' },
     { from: PROTEIN_BOWLS, id: 'avo-chick-blt', keyPrefix: 'bowl', cartCategory: 'Protein bowl' },
@@ -658,7 +693,7 @@
 
       li.insertAdjacentHTML('beforeend', `
         <span class="featured-name">${item.name}</span>
-        <span class="featured-meta"><span class="featured-price">${money(item.price)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>`);
+        <span class="featured-meta"><span class="featured-price">${priceLabel(item)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>`);
 
       const activate = () => openMenuItem(item, f.keyPrefix, f.cartCategory);
       btn.addEventListener('click', activate);
@@ -699,7 +734,7 @@
       body.innerHTML = `
         <span class="shop-card-name">${item.name}</span>
         <span class="shop-card-meta">
-          <span class="shop-card-price">${money(item.price)}</span>
+          <span class="shop-card-price">${priceLabel(item)}</span>
           ${item.note ? `<span aria-hidden="true">•</span><span class="shop-card-note">${item.note}</span>` : ''}
         </span>
         ${item.desc ? `<span class="shop-card-desc">${item.desc}</span>` : ''}
@@ -803,27 +838,6 @@
     document.title = orderPageTitle();
   }
 
-  // TEMP: card-style switcher for comparing the three product-card variants. Remove once one is chosen.
-  const CARD_VARIANTS = [['0', 'Current'], ['1', 'Photo grid'], ['2', 'Tile'], ['3', 'Menu list']];
-  function setCardVariant(v) {
-    document.getElementById('order-rows').dataset.cards = v;
-    try { localStorage.setItem('deg-card-variant', v); } catch (e) { /* storage unavailable */ }
-    document.querySelectorAll('#card-variant-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
-  }
-  (function initCardSwitch() {
-    let v = '1';
-    try { v = localStorage.getItem('deg-card-variant') || '1'; } catch (e) { /* storage unavailable */ }
-    const bar = document.createElement('div');
-    bar.id = 'card-variant-switch';
-    bar.className = 'card-variant-switch';
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Product card style');
-    bar.innerHTML = CARD_VARIANTS.map(([k, label]) => `<button type="button" data-v="${k}">${label}</button>`).join('');
-    bar.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setCardVariant(b.dataset.v); });
-    document.getElementById('order-rows').before(bar);
-    setCardVariant(v);
-  })();
-
   function renderOrderRows(g) {
     const list = document.getElementById('order-rows');
     list.innerHTML = '';
@@ -832,18 +846,18 @@
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'order-row';
-      row.setAttribute('aria-label', `${(item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'} ${item.name}`);
+      row.setAttribute('aria-label', `${(g.catering || item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'} ${item.name}`);
       row.innerHTML = `
         <span class="order-row-media"></span>
         <span class="order-row-text">
           <span class="order-row-name">${item.name}</span>
-          <span class="order-row-meta"><span class="order-row-price">${money(item.price)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>
+          <span class="order-row-meta"><span class="order-row-price">${priceLabel(item)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${item.note}</span>` : ''}</span>
           ${item.desc ? `<span class="order-row-desc">${item.desc}</span>` : ''}
         </span>
-        <span class="order-row-add" aria-hidden="true">${ADD_ICON}</span>
-        <span class="order-row-cta" aria-hidden="true">${(item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'}</span>`;
+        <span class="order-row-add" aria-hidden="true">${ADD_ICON}</span>`;
       row.querySelector('.order-row-media').appendChild(productThumb(item));
-      row.addEventListener('click', () => openMenuItem(item, g.keyPrefix, g.cartCategory));
+      // A catering row opens the catering modal, adding to the pickup or delivery bag the customer is on.
+      row.addEventListener('click', () => (g.catering ? openCateringItem(item.id) : openMenuItem(item, g.keyPrefix, g.cartCategory)));
       li.appendChild(row);
       list.appendChild(li);
     });
@@ -1184,6 +1198,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (fbSheetOpen()) { closeSheet(); return; }
     const openGroup = navGroupBtns.find((b) => b.getAttribute('aria-expanded') === 'true');
     if (openGroup && !navInnerEl.classList.contains('nav-compact')) { setNavGroup(openGroup, false); openGroup.focus(); return; }
     if (navToggle.getAttribute('aria-expanded') === 'true') setNavOpen(false);
@@ -1363,11 +1378,419 @@
     if (reopen) row.scrollIntoView({ block: 'nearest', behavior: flavorReduceMotion.matches ? 'auto' : 'smooth' });
   }
 
+  // ---------- TEMP: large-video flavor layouts ----------
+  // Layouts compared with a switcher above the list: Current; Pair (two square clips across); and three ways to
+  // expand a Big thumb row (A grows it in place, B opens a bottom sheet, C widens it to the full card). Remove the
+  // ones that lose, and this switcher, once one is chosen.
+  const FLAVOR_VARIANTS = [['0', 'Current'], ['2', 'Pair'], ['4', 'A · Grow'], ['5', 'B · Sheet'], ['6', 'C · Wide']];
+  const BIG_MODES = { 4: 'a', 5: 'b', 6: 'c' };
+  let flavorVariant = '0';
+  try { flavorVariant = localStorage.getItem('deg-flavor-variant') || '0'; } catch (e) { /* storage unavailable */ }
+  if (!FLAVOR_VARIANTS.some(([k]) => k === flavorVariant)) flavorVariant = '0';
+  const bigMode = () => BIG_MODES[flavorVariant] || null;
+  const fv = { key: null, root: null, tiles: {}, observer: null };
+  const FV_MINUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+  const FV_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12M12 6v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+
+  const flavorVariantAvailable = () => activeProduct.total > 1 && !activeProduct.fixedFlavors && flavorList().every((f) => FLAVOR_MEDIA[f.id]);
+  const flavorStat = (f) => { const m = FLAVOR_MEDIA[f.id]; return f.desc || (m && m.cal ? `${m.cal} cal · ${m.protein}g protein each` : ''); };
+
+  (function initFlavorSwitch() {
+    const bar = document.createElement('div');
+    bar.id = 'flavor-variant-switch';
+    bar.className = 'card-variant-switch flavor-variant-switch';
+    bar.hidden = true;
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Flavor layout');
+    bar.innerHTML = FLAVOR_VARIANTS.map(([k, label]) => `<button type="button" data-v="${k}">${label}</button>`).join('');
+    bar.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      flavorVariant = b.dataset.v;
+      try { localStorage.setItem('deg-flavor-variant', flavorVariant); } catch (err) { /* storage unavailable */ }
+      renderFlavorGrid();
+    });
+    document.getElementById('flavor-grid').before(bar);
+  })();
+
+  function fvDispose() {
+    if (fv.observer) fv.observer.disconnect();
+    if (fv.root) fv.root.querySelectorAll('video').forEach((v) => v.pause());
+    Object.assign(fv, { key: null, root: null, tiles: {}, observer: null });
+  }
+
+  // A clip starts only while it is on screen (and never for someone who asked for less motion), and is fetched the
+  // first time it does; the poster stands in until then.
+  function fvPlay(video) {
+    if (video.dataset.userPaused === '1') return;
+    if (flavorReduceMotion.matches && video.dataset.userPlayed !== '1') return;
+    if (!video.querySelector('source')) {
+      const src = document.createElement('source');
+      src.src = video.dataset.src;
+      src.type = 'video/mp4';
+      video.appendChild(src);
+      video.load();
+    }
+    video.play().catch(() => {});
+  }
+
+  function fvMedia(f) {
+    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
+    const wrap = document.createElement('div');
+    wrap.className = 'fv-media is-paused';
+    wrap.innerHTML = `<video muted loop playsinline preload="none" poster="${file}.jpg" data-src="${file}.mp4" aria-hidden="true" tabindex="-1"></video>
+      <button class="fv-play" type="button" aria-label="Play the ${escapeHTML(f.label)} video"><span class="fv-play-icon" aria-hidden="true">${PLAY_ICON}</span></button>`;
+    const video = wrap.querySelector('video');
+    const button = wrap.querySelector('.fv-play');
+    wrap.dataset.label = f.label;
+    const paint = () => {
+      wrap.classList.toggle('is-paused', video.paused);
+      button.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${wrap.dataset.label} video`);
+    };
+    video.addEventListener('play', paint);
+    video.addEventListener('pause', paint);
+    button.addEventListener('click', () => {
+      if (video.paused) { video.dataset.userPaused = '0'; video.dataset.userPlayed = '1'; fvPlay(video); } else { video.dataset.userPaused = '1'; video.pause(); }
+    });
+    if (fv.observer) fv.observer.observe(wrap);
+    return wrap;
+  }
+
+  // The observer only reports a clip when it crosses the line, so a clip already on screen when the layout is built
+  // is started by hand, once the browser has laid it out.
+  function fvKick() {
+    requestAnimationFrame(() => {
+      const scroller = document.querySelector('#item-modal .item-modal-scroll');
+      if (!fv.root || !scroller) return;
+      const box = scroller.getBoundingClientRect();
+      fv.root.querySelectorAll('.fv-media').forEach((m) => {
+        const r = m.getBoundingClientRect();
+        const seen = Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top);
+        if (r.height > 0 && seen / r.height >= 0.55) fvPlay(m.querySelector('video'));
+      });
+    });
+  }
+
+  // What every layout does when a stepper is pressed: change the mix, then redraw whatever shows it.
+  function fvChange(f, dir) {
+    const step = activeProduct.step;
+    const current = state.modalFlavorQty[f.id] || 0;
+    if (dir < 0) {
+      if (current <= 0) return;
+      const next = current - step;
+      if (next <= 0) { delete state.modalFlavorQty[f.id]; delete state.modalExclusions[f.id]; } else state.modalFlavorQty[f.id] = next;
+    } else {
+      if (dozenAllocated() >= activeProduct.total) return;
+      state.modalFlavorQty[f.id] = current + step;
+    }
+    if (fv.root) updateFlavorVariant(); else renderFlavorGrid();
+    renderModalFooter();
+    if (fbSheetOpen()) paintSheet();
+  }
+
+  function fvStepper(getFlavor) {
+    const el = document.createElement('div');
+    el.className = 'fv-stepper';
+    el.innerHTML = `<button class="fv-step" type="button" data-d="-1">${FV_MINUS}</button><span class="fv-qty">0</span><button class="fv-step" type="button" data-d="1">${FV_PLUS}</button>`;
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest('.fv-step');
+      if (b) fvChange(getFlavor(), Number(b.dataset.d));
+    });
+    return el;
+  }
+
+  function fvSyncStepper(el, f, qty, allocated) {
+    const { step, total } = activeProduct;
+    const [minus, plus] = el.querySelectorAll('.fv-step');
+    el.querySelector('.fv-qty').textContent = String(qty);
+    minus.disabled = qty <= 0;
+    plus.disabled = allocated >= total;
+    minus.setAttribute('aria-label', `Remove ${step} ${f.label} ${eggWord(step)}`);
+    plus.setAttribute('aria-label', `Add ${step} ${f.label} ${eggWord(step)}`);
+  }
+
+  // "Remove ingredients" chips for a flavor that has some, shown once it is in the mix.
+  function fvSyncExclusions(box, f, qty) {
+    const show = qty > 0 && f.exclusions && f.exclusions.length > 0;
+    box.hidden = !show;
+    if (!show) { box.innerHTML = ''; box.dataset.for = ''; return; }
+    if (box.dataset.for !== f.id) {
+      box.dataset.for = f.id;
+      box.innerHTML = `<span class="flavor-exclusions-label">Remove ingredients</span><div class="chip-row">${
+        f.exclusions.map((ing) => `<button class="chip exclude-chip" type="button">NO: ${ing}</button>`).join('')}</div>`;
+      box.querySelectorAll('.exclude-chip').forEach((chip, i) => chip.addEventListener('click', () => {
+        const ing = f.exclusions[i];
+        const set = state.modalExclusions[f.id] || new Set();
+        if (set.has(ing)) set.delete(ing); else set.add(ing);
+        state.modalExclusions[f.id] = set;
+        chip.classList.toggle('active', set.has(ing));
+      }));
+    }
+    const excluded = state.modalExclusions[f.id] || new Set();
+    box.querySelectorAll('.exclude-chip').forEach((chip, i) => chip.classList.toggle('active', excluded.has(f.exclusions[i])));
+  }
+
+  // Pair: one square clip per flavor, two across, the stepper under the name. Built once, updated in place.
+  function fvBuildTile(f) {
+    const el = document.createElement('div');
+    el.className = 'fv-tile';
+    el.dataset.flavor = f.id;
+    const media = fvMedia(f);
+    const badge = document.createElement('span');
+    badge.className = 'fv-badge';
+    badge.setAttribute('aria-hidden', 'true');
+    media.appendChild(badge);
+    const stepper = fvStepper(() => f);
+    const body = document.createElement('div');
+    body.className = 'fv-body';
+    const stat = flavorStat(f);
+    body.innerHTML = `<span class="fv-name">${escapeHTML(f.label)}</span>${stat ? `<span class="fv-stat">${escapeHTML(stat)}</span>` : ''}`;
+    body.appendChild(stepper);
+    const excl = document.createElement('div');
+    excl.className = 'flavor-exclusions fv-excl';
+    excl.hidden = true;
+    el.append(media, body, excl);
+    fv.tiles[f.id] = { el, badge, stepper, excl };
+    return el;
+  }
+
+  function updateFlavorVariant() {
+    const allocated = dozenAllocated();
+    const total = activeProduct.total;
+    flavorList().forEach((f) => {
+      const qty = state.modalFlavorQty[f.id] || 0;
+      const t = fv.tiles[f.id];
+      t.el.classList.toggle('selected', qty > 0);
+      t.el.classList.toggle('at-limit', qty <= 0 && allocated >= total);
+      t.badge.textContent = String(qty);
+      fvSyncStepper(t.stepper, f, qty, allocated);
+      fvSyncExclusions(t.excl, f, qty);
+    });
+    renderFlavorGuidance(allocated);
+  }
+
+  function renderFlavorVariant(grid) {
+    const key = `${flavorVariant}|${activeProduct.id}|${activeProduct.optionId || ''}`;
+    if (!(fv.root && fv.key === key && grid.contains(fv.root))) {
+      fvDispose();
+      grid.innerHTML = '';
+      fv.key = key;
+      fv.root = grid;
+      fv.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        const video = entry.target.querySelector('video');
+        if (entry.intersectionRatio >= 0.55) fvPlay(video); else video.pause();
+      }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
+      flavorList().forEach((f) => grid.appendChild(fvBuildTile(f)));
+      updateFlavorVariant();
+      fvKick();
+      return;
+    }
+    updateFlavorVariant();
+  }
+
+  // ----- Big thumb rows (A, B, C): the Current list with each thumbnail 2.5× larger and playing. -----
+  // The thumbnails outlive the list's redraws (every + / − rebuilds the rows), so they are kept in `fb` and put
+  // back into each new row; a clip is never reloaded by a tap. `fb.open` is the row A or C has expanded and
+  // `fb.sheet` the flavor B's sheet shows.
+  const fb = { thumbs: {}, observer: null, open: null, sheet: null, hold: false };
+
+  function fbDispose() {
+    if (fb.observer) fb.observer.disconnect();
+    Object.values(fb.thumbs).forEach((t) => t.querySelector('video').pause());
+    Object.assign(fb, { thumbs: {}, observer: null, open: null, hold: false });
+    closeSheet(true);
+  }
+
+  function fbThumb(f) {
+    if (fb.thumbs[f.id]) return fb.thumbs[f.id];
+    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'flavor-thumb flavor-thumb-big';
+    // The name button beside it is the one control for screen readers and the keyboard; this is its bigger twin.
+    btn.tabIndex = -1;
+    btn.setAttribute('aria-hidden', 'true');
+    btn.innerHTML = `<video muted loop playsinline preload="none" poster="${file}.jpg" data-src="${file}.mp4" aria-hidden="true" tabindex="-1"></video>`;
+    btn.addEventListener('click', () => toggleBig(f.id));
+    if (!fb.observer) {
+      fb.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        const video = entry.target.querySelector('video');
+        if (entry.intersectionRatio >= 0.55 && !fb.hold) fvPlay(video); else video.pause();
+      }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
+    }
+    fb.observer.observe(btn);
+    fb.thumbs[f.id] = btn;
+    return btn;
+  }
+
+  // A thumbnail put back after a redraw is paused by the move; start the ones on screen again.
+  function fbKick() {
+    requestAnimationFrame(() => {
+      const scroller = document.querySelector('#item-modal .item-modal-scroll');
+      if (!scroller || fb.hold) return;
+      const box = scroller.getBoundingClientRect();
+      Object.values(fb.thumbs).forEach((t) => {
+        const r = t.getBoundingClientRect();
+        const seen = Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top);
+        if (r.height > 0 && seen / r.height >= 0.55) fvPlay(t.querySelector('video'));
+      });
+    });
+  }
+
+  function renderBigRows(grid, mode) {
+    grid.innerHTML = '';
+    const allocated = dozenAllocated();
+    flavorList().forEach((f) => {
+      const qty = state.modalFlavorQty[f.id] || 0;
+      const atLimit = qty <= 0 && allocated >= activeProduct.total;
+      const open = mode !== 'b' && fb.open === f.id;
+      const row = document.createElement('div');
+      row.className = 'flavor-row dozen-flavor-row flavor-row-big' + (open ? ' is-open' : '') + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
+      row.dataset.flavor = f.id;
+      const stat = flavorStat(f);
+      row.innerHTML = `
+        <div class="fb-head">
+          <span class="fb-thumb-slot"></span>
+          <div class="fb-main">
+            <button class="fb-open" type="button" aria-expanded="${open}" ${mode === 'b' ? 'aria-haspopup="dialog"' : `aria-controls="fb-details-${f.id}"`}>
+              <span class="fb-name">${escapeHTML(f.label)}</span>
+              ${stat ? `<small class="fb-stat">${escapeHTML(stat)}</small>` : ''}
+              <span class="fb-link">${open ? 'Less' : 'Details'}</span>
+            </button>
+            <span class="fb-step-slot"></span>
+          </div>
+        </div>
+        ${open ? `<div class="fb-details" id="fb-details-${f.id}"><p class="fb-desc">${escapeHTML(FLAVOR_MEDIA[f.id].desc)}</p></div>` : ''}
+        <div class="flavor-exclusions fv-excl" hidden></div>`;
+      const thumb = fbThumb(f);
+      thumb.classList.toggle('open', open);
+      thumb.querySelector('video').dataset.userPaused = '0';
+      row.querySelector('.fb-thumb-slot').replaceWith(thumb);
+      const stepper = fvStepper(() => f);
+      fvSyncStepper(stepper, f, qty, allocated);
+      row.querySelector('.fb-step-slot').replaceWith(stepper);
+      fvSyncExclusions(row.querySelector('.fv-excl'), f, qty);
+      row.querySelector('.fb-open').addEventListener('click', () => toggleBig(f.id));
+      grid.appendChild(row);
+    });
+    renderFlavorGuidance(allocated);
+    fbKick();
+  }
+
+  // A and C: expand or fold a row. The thumbnail is the same element before and after, so it is moved from where it
+  // was to where it is now (a FLIP), and its clip keeps playing.
+  function toggleBig(id) {
+    const mode = bigMode();
+    if (mode === 'b') { openSheet(id); return; }
+    const prev = fb.open;
+    const next = prev === id ? null : id;
+    const first = {};
+    [prev, next].filter(Boolean).forEach((k) => { if (fb.thumbs[k]) first[k] = fb.thumbs[k].getBoundingClientRect(); });
+    fb.open = next;
+    renderFlavorGrid();
+    const row = document.querySelector(`#flavor-grid [data-flavor="${id}"]`);
+    if (next && row) row.scrollIntoView({ block: 'nearest' });
+    if (!flavorReduceMotion.matches) {
+      Object.keys(first).forEach((k) => {
+        const t = fb.thumbs[k];
+        const a = first[k];
+        const b = t && t.getBoundingClientRect();
+        if (!b || !b.width || !b.height) return;
+        t.animate([
+          { transformOrigin: '0 0', transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})` },
+          { transformOrigin: '0 0', transform: 'none' },
+        ], { duration: 260, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+      });
+    }
+    if (row) row.querySelector('.fb-open').focus({ preventScroll: true });
+  }
+
+  // B: a bottom sheet over the list, stopping at the footer so the egg counter and the action stay in view.
+  let fbSheetEl = null;
+  const fbSheetOpen = () => !!fbSheetEl && !fbSheetEl.hidden && fb.sheet !== null;
+
+  function ensureSheet() {
+    if (fbSheetEl) return fbSheetEl;
+    const el = document.createElement('div');
+    el.className = 'fs-layer';
+    el.hidden = true;
+    el.innerHTML = `<div class="fs-backdrop"></div>
+      <div class="fs-sheet" role="dialog" aria-modal="true" aria-labelledby="fs-title">
+        <div class="fs-media"></div>
+        <button class="fs-close" type="button" aria-label="Close details"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <div class="fs-body">
+          <div class="fs-head"><h3 class="fs-title" id="fs-title"></h3><div class="fs-step-slot"></div></div>
+          <p class="fs-stat"></p>
+          <p class="fs-desc"></p>
+          <div class="flavor-exclusions fv-excl" hidden></div>
+        </div>
+      </div>`;
+    document.querySelector('#item-modal .item-modal-inner').appendChild(el);
+    el.querySelector('.fs-backdrop').addEventListener('click', () => closeSheet());
+    el.querySelector('.fs-close').addEventListener('click', () => closeSheet());
+    el.querySelector('.fs-step-slot').replaceWith(Object.assign(fvStepper(() => flavorList().find((x) => x.id === fb.sheet)), { className: 'fv-stepper fs-stepper' }));
+    fbSheetEl = el;
+    return el;
+  }
+
+  function paintSheet() {
+    const f = flavorList().find((x) => x.id === fb.sheet);
+    if (!f) return;
+    const el = ensureSheet();
+    const qty = state.modalFlavorQty[f.id] || 0;
+    el.querySelector('.fs-title').textContent = f.label;
+    el.querySelector('.fs-stat').textContent = flavorStat(f);
+    el.querySelector('.fs-desc').textContent = FLAVOR_MEDIA[f.id].desc;
+    fvSyncStepper(el.querySelector('.fs-stepper'), f, qty, dozenAllocated());
+    fvSyncExclusions(el.querySelector('.fv-excl'), f, qty);
+  }
+
+  function openSheet(id) {
+    const f = flavorList().find((x) => x.id === id);
+    const el = ensureSheet();
+    fb.sheet = id;
+    fb.hold = true;
+    Object.values(fb.thumbs).forEach((t) => t.querySelector('video').pause());
+    const media = fvMedia(f);
+    media.classList.add('fs-media-inner');
+    el.querySelector('.fs-media').replaceChildren(media);
+    paintSheet();
+    el.style.setProperty('--fs-bottom', `${document.querySelector('#item-modal .item-modal-footer').offsetHeight}px`);
+    el.hidden = false;
+    el.getBoundingClientRect();
+    el.classList.add('is-open');
+    el.querySelector('.fs-body').scrollTop = 0;
+    fvPlay(media.querySelector('video'));
+    el.querySelector('.fs-close').focus({ preventScroll: true });
+  }
+
+  function closeSheet(quiet = false) {
+    if (!fbSheetEl || fbSheetEl.hidden) return;
+    const id = fb.sheet;
+    fb.sheet = null;
+    fb.hold = false;
+    fbSheetEl.classList.remove('is-open');
+    const media = fbSheetEl.querySelector('video');
+    if (media) media.pause();
+    const done = () => { fbSheetEl.hidden = true; fbSheetEl.querySelector('.fs-media').replaceChildren(); };
+    if (quiet || flavorReduceMotion.matches) done(); else window.setTimeout(done, 280);
+    if (!quiet) {
+      fbKick();
+      const row = document.querySelector(`#flavor-grid [data-flavor="${id}"] .fb-open`);
+      if (row) row.focus({ preventScroll: true });
+    }
+  }
+
   function renderFlavorGrid() {
     const grid = document.getElementById('flavor-grid');
     const single = activeProduct.total === 1;
     grid.classList.toggle('addon-list', single);
     if (single) {
+      document.getElementById('flavor-variant-switch').hidden = true;
+      delete grid.dataset.variant;
+      delete grid.dataset.big;
+      fvDispose();
+      fbDispose();
       grid.setAttribute('role', 'radiogroup');
       grid.setAttribute('aria-label', 'Flavor');
       renderSingleFlavorRadios(grid);
@@ -1375,6 +1798,26 @@
     }
     grid.removeAttribute('role');
     grid.removeAttribute('aria-label');
+    const variantOn = flavorVariant === '2' && flavorVariantAvailable();
+    const mode = flavorVariantAvailable() ? bigMode() : null;
+    if (!mode) fbDispose();
+    document.getElementById('flavor-variant-switch').hidden = !flavorVariantAvailable();
+    document.querySelectorAll('#flavor-variant-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === flavorVariant)));
+    if (mode) {
+      delete grid.dataset.variant;
+      fvDispose();
+      grid.dataset.big = mode;
+      renderBigRows(grid, mode);
+      return;
+    }
+    delete grid.dataset.big;
+    if (variantOn) {
+      grid.dataset.variant = flavorVariant;
+      renderFlavorVariant(grid);
+      return;
+    }
+    delete grid.dataset.variant;
+    fvDispose();
     grid.innerHTML = '';
     const allocated = dozenAllocated();
     flavorList().forEach((f) => {
@@ -1493,16 +1936,62 @@
         : `Choose ${activeProduct.total - allocated} ${allocated === 0 ? '' : 'more '}${eggWord(activeProduct.total - allocated)} to continue`;
   }
 
+  // The product as the modal uses it: with the chosen option applied, and the picker's size worked out.
+  function buildActiveProduct(product, optionId) {
+    const resolved = resolveOption(product, optionId);
+    // A fixed-flavor kit (the sampler) has nothing to allocate: no picker config.
+    const picker = resolved.pickerConfig || { total: 0, maxFlavors: 1 };
+    return { ...resolved, total: picker.total, maxFlavors: picker.maxFlavors, step: picker.total / picker.maxFlavors };
+  }
+  let activeBase = null;
+
+  // The parts of the modal that follow the chosen option (the 6 Pack's 3 or 6 flavors).
+  function paintOption() {
+    document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
+    document.getElementById('dozen-modal-image').src = activeProduct.image;
+    document.getElementById('dozen-modal-desc').textContent = activeProduct.desc || '';
+    document.getElementById('flavor-section-title').textContent = activeProduct.maxFlavors === 1 ? 'Choose your flavor' : 'Choose your flavors';
+  }
+
+  function renderOptionPicker(note = '') {
+    const block = document.getElementById('option-block');
+    block.hidden = !activeBase.options;
+    if (!activeBase.options) return;
+    document.getElementById('option-title').textContent = activeBase.optionsTitle || 'Choose one';
+    document.getElementById('option-hint').textContent = note || activeBase.optionsHint || '';
+    const grid = document.getElementById('option-grid');
+    grid.innerHTML = activeBase.options.map((o) => radioChoiceHTML({
+      group: 'product-option', value: o.id, label: o.label, note: money(o.price), selected: o.id === activeProduct.optionId,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => setOption(input.value));
+    });
+  }
+
+  // Changing the option changes how many flavors the mix may use. Picks that still fit stay; if they do not fit the
+  // new size, they are cleared and the line under the title says so.
+  function setOption(optionId) {
+    if (optionId === activeProduct.optionId) return;
+    activeProduct = buildActiveProduct(activeBase, optionId);
+    const picked = Object.entries(state.modalFlavorQty).filter(([, n]) => n > 0);
+    const fits = picked.length <= activeProduct.maxFlavors && picked.every(([, n]) => n % activeProduct.step === 0);
+    let note = '';
+    if (!fits) {
+      state.modalFlavorQty = {};
+      state.modalExclusions = {};
+      note = `Your flavors were cleared. Pick up to ${activeProduct.maxFlavors}.`;
+    }
+    paintOption();
+    renderOptionPicker(note);
+    renderFlavorGrid();
+    renderModalFooter();
+    document.querySelector(`#option-grid .radio-choice-input[value="${optionId}"]`).focus();
+  }
+
   function openDozenModal(product, line = null) {
     lastFocusedEl = document.activeElement;
-    // A fixed-flavor kit (the sampler) has nothing to allocate: no picker config.
-    const picker = product.pickerConfig || { total: 0, maxFlavors: 1 };
-    activeProduct = {
-      ...product,
-      total: picker.total,
-      maxFlavors: picker.maxFlavors,
-      step: picker.total / picker.maxFlavors,
-    };
+    activeBase = product;
+    activeProduct = buildActiveProduct(product, line && line.edit.optionId);
     stopFlavorWatch();
     state.modalFlavorQty = {};
     state.modalExclusions = {};
@@ -1519,18 +2008,14 @@
       document.getElementById('item-note').value = e.note || '';
     }
 
-    document.getElementById('dozen-modal-title').textContent = activeProduct.name;
-    document.getElementById('dozen-modal-price').textContent = money(activeProduct.price);
-    document.getElementById('dozen-modal-image').src = activeProduct.image;
-    // Catering cutouts sit in the same compact panel as the box modal's, not stretched to a 420px photo.
-    itemModal.querySelector('.item-modal-media').classList.toggle('item-modal-media-cutout', !!activeProduct.cutout);
+    document.getElementById('dozen-modal-title').textContent = activeBase.name;
+    renderOptionPicker();
     // The item's own authored description, not a generated sentence — this
     // modal now also serves the egg salads (a tub, not "deviled eggs"), so
     // a hardcoded "N deviled eggs, hand piped fresh daily" no longer fits
     // every product that opens it.
-    document.getElementById('dozen-modal-desc').textContent = activeProduct.desc || '';
-    document.getElementById('flavor-section-title').textContent = activeProduct.maxFlavors === 1 ? 'Choose your flavor' : 'Choose your flavors';
-    itemModal.querySelector('.item-modal-header-title').textContent = activeProduct.name;
+    paintOption();
+    itemModal.querySelector('.item-modal-header-title').textContent = activeBase.name;
 
     // Kit extras: what's in the box, the fixed flavor lineup, the shipping note.
     document.getElementById('dozen-modal-desc').hidden = !activeProduct.desc;
@@ -1539,6 +2024,8 @@
     document.getElementById('dozen-modal-info-label').textContent = activeProduct.detailsLabel || "What's included";
     document.getElementById('dozen-modal-details').innerHTML = (activeProduct.details || []).map((d) => `<li>${escapeHTML(d)}</li>`).join('');
     document.getElementById('flavor-block').hidden = !!activeProduct.fixedFlavors;
+    // The count of eggs chosen lives in the footer, above the button; a fixed kit has nothing to count.
+    document.getElementById('flavor-meter').hidden = !!activeProduct.fixedFlavors;
     document.getElementById('fixed-flavors').hidden = !activeProduct.fixedFlavors;
     document.getElementById('fixed-flavors-list').innerHTML = (activeProduct.fixedFlavors || []).map((f) => `<li>${escapeHTML(f)}</li>`).join('');
     const notice = document.getElementById('dozen-modal-notice');
@@ -1564,6 +2051,8 @@
   function closeDozenModal() {
     endLineEdit();
     stopFlavorWatch();
+    fvDispose();
+    fbDispose();
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
     updateInert();
@@ -1599,7 +2088,7 @@
     // What Edit needs to reopen this line: the choices themselves, not the sentence above. A fixed-kit has none.
     if (!activeProduct.fixedFlavors) {
       entry.edit = {
-        type: 'dozen', productId: activeProduct.id, flavorQty: { ...state.modalFlavorQty },
+        type: 'dozen', productId: activeProduct.id, optionId: activeProduct.optionId, flavorQty: { ...state.modalFlavorQty },
         exclusions: Object.fromEntries(Object.entries(state.modalExclusions).map(([id, set]) => [id, [...set]])),
         note, bagelPreset: activeProduct.bagelPresets ? state.bagelPreset : undefined,
       };
@@ -1608,6 +2097,7 @@
     addToCart({
       ...entry,
       cart: activeProduct.cart || orderKind(),
+      ...(activeProduct.catering ? { catering: true } : {}),
       key: activeProduct.id + '-' + flavorLabels.join('-') + (note ? '-' + note : '') + '-' + Date.now(),
     });
     celebrateAdd(itemModal, closeDozenModal, activeProduct.image, state.modalQty);
@@ -1754,8 +2244,8 @@
   });
 
   // ---------- Bowl customization modal ----------
-  // Add-Ons are paid (priced per item) and multi-select, like Free Eggstras
-  // and the exclusion list — none of the four sections are mutually
+  // Add-Ons are paid (priced per item) and multi-select, like the exclusion
+  // list — none of the sections are mutually
   // exclusive or required, so unlike the dozen/bagel modals there is no
   // allocation gate: Add to order is always enabled.
   const bowlModalBackdrop = document.getElementById('bowl-modal-backdrop');
@@ -1796,21 +2286,6 @@
     renderAddOnRows(document.getElementById('bowl-addons-picker'), activeBowl.addOns, state.bowlAddOns, renderBowlModalFooter);
   }
 
-  function renderBowlEggstras() {
-    const container = document.getElementById('bowl-eggstras-picker');
-    container.innerHTML = activeBowl.freeEggstras.map((label) => `
-      <button class="chip${state.bowlEggstras.has(label) ? ' active' : ''}" type="button" data-value="${label}">${label}</button>
-    `).join('');
-    container.querySelectorAll('.chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const value = chip.dataset.value;
-        if (state.bowlEggstras.has(value)) state.bowlEggstras.delete(value);
-        else state.bowlEggstras.add(value);
-        chip.classList.toggle('active');
-      });
-    });
-  }
-
   function renderBowlExclusions() {
     const container = document.getElementById('bowl-no-picker');
     container.innerHTML = activeBowl.exclusions.map((label) => `
@@ -1844,7 +2319,6 @@
     activeBowl = bowl;
     editingLine = line;
     state.bowlAddOns = new Set(line ? line.edit.addOns : []);
-    state.bowlEggstras = new Set(line ? line.edit.eggstras : []);
     state.bowlExclusions = new Set(line ? line.edit.exclusions : []);
     state.bowlOptions = new Set(line ? line.edit.options : []);
     state.bowlQty = line ? line.qty : 1;
@@ -1858,7 +2332,6 @@
     document.querySelectorAll('#bowl-options-picker .chip').forEach((b) => b.classList.toggle('active', state.bowlOptions.has(b.dataset.value)));
 
     renderBowlAddOns();
-    renderBowlEggstras();
     renderBowlExclusions();
     renderBowlModalFooter();
     bowlModal.querySelector('.item-modal-scroll').scrollTop = 0;
@@ -1902,7 +2375,6 @@
     const addOnLabels = Array.from(state.bowlAddOns).map((i) => activeBowl.addOns[i].label);
     const parts = [];
     if (addOnLabels.length) parts.push(addOnLabels.join(', '));
-    if (state.bowlEggstras.size) parts.push(Array.from(state.bowlEggstras).join(', '));
     if (state.bowlExclusions.size) parts.push('No ' + Array.from(state.bowlExclusions).join(', ').toLowerCase());
     if (state.bowlOptions.size) parts.push(Array.from(state.bowlOptions).join(', '));
     const unitPrice = activeBowl.price + bowlAddOnsTotal();
@@ -1913,7 +2385,7 @@
       qty: state.bowlQty,
       image: activeBowl.image,
       edit: {
-        type: 'bowl', productId: activeBowl.id, addOns: Array.from(state.bowlAddOns), eggstras: Array.from(state.bowlEggstras),
+        type: 'bowl', productId: activeBowl.id, addOns: Array.from(state.bowlAddOns),
         exclusions: Array.from(state.bowlExclusions), options: Array.from(state.bowlOptions),
       },
     };
@@ -1921,7 +2393,7 @@
     addToCart({
       ...entry,
       key: 'bowl-' + activeBowl.id + '-' + JSON.stringify({
-        a: Array.from(state.bowlAddOns), e: Array.from(state.bowlEggstras),
+        a: Array.from(state.bowlAddOns),
         x: Array.from(state.bowlExclusions), o: Array.from(state.bowlOptions),
       }) + '-' + Date.now(),
     });
@@ -2098,6 +2570,7 @@
     const { keyPrefix, cartCategory } = activeQuickview.cartMeta;
     addToCart({
       cart: activeQuickview.cartMeta.cart || orderKind(),
+      ...(activeQuickview.cartMeta.catering ? { catering: true } : {}),
       key: keyPrefix + '-' + activeQuickview.id,
       name: activeQuickview.name,
       sub: cartCategory,
@@ -2130,52 +2603,80 @@
 
   const CATERING_ITEMS = {
     classic: {
-      kind: 'box', id: 'classic', name: 'The Classic Choice', price: 10, minQty: 10, image: 'assets/catering/classic.png',
+      kind: 'box', id: 'classic', name: 'The Classic Choice', price: 10, minQty: 10, image: 'assets/catering/classic.jpg',
       desc: 'Choose sandwich or bowl, up to 2 flavors, then a side.',
       included: ['Kettle Cooked Chips'],
       sides: [SIDE_COOKIE, SIDE_PICKLE, { id: 'eggs-2pack', label: '2-Pack of Gourmet Deviled Eggs', price: 4, flavor: true }, SIDE_EGG_SALAD],
     },
     allin: {
-      kind: 'box', id: 'allin', name: 'The "All In" Power Lunch', price: 12.5, minQty: 10, image: 'assets/catering/allin.png',
+      kind: 'box', id: 'allin', name: 'The "All In" Power Lunch', price: 12.5, minQty: 10, image: 'assets/catering/allin.jpg',
       desc: 'Choose sandwich or bowl, up to 2 flavors, then pick your sides.',
       included: ['Kettle Cooked Chips', 'Cookie'],
       sides: [{ id: 'eggs-2pack', label: 'Gourmet 2-Pack of Deviled Eggs', price: 4, flavor: true }, SIDE_PICKLE, SIDE_EGG_SALAD, { id: 'bag-chips', label: 'Bag of Chips', price: 2 }],
       drinks: CATERING_DRINKS,
     },
     'power-pair': {
-      kind: 'bundle', id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, image: 'assets/catering/power-pair.png',
+      kind: 'bundle', id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, image: 'assets/catering/power-pair.jpg',
       desc: 'Serves 10 People',
       details: ['10 Signature 2-Pack Gourmet Deviled Eggs (20 eggs total)', CATERING_COFFEE_NOTE],
       flavors: CATERING_EGGS, unit: ['two-pack', 'two-packs'],
     },
     'bagel-brew': {
-      kind: 'bundle', id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, image: 'assets/catering/bagel-brew.png',
+      kind: 'bundle', id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, image: 'assets/catering/bagel-brew.jpg',
       desc: 'Serves 10 People',
       details: ['Bagel Box: 5 Plain Bagels | 5 Everything Bagels', 'Choice of 2 Signature Egg Spreads, Toppings, or Cream Cheese', CATERING_COFFEE_NOTE],
       flavors: CATERING_EGGS, unit: ['spread', 'spreads'], bagelPresets: BAGEL_PRESETS,
     },
     'hungry-team': {
-      kind: 'bundle', id: 'hungry-team', name: 'The "Hungry Team"', price: 99.99, image: 'assets/catering/light-lunch.png',
+      kind: 'bundle', id: 'hungry-team', name: 'The "Hungry Team"', price: 99.99, image: 'assets/catering/light-lunch.jpg',
       desc: 'Serves 10 People: Best Value For a Full Meal',
       details: ['10 Signature Full-Sandwiches | Choose Up To 2 Flavors', CATERING_COFFEE_NOTE],
       flavors: CATERING_SANDWICHES, unit: ['sandwich', 'sandwiches'],
     },
     'light-lunch': {
-      kind: 'bundle', id: 'light-lunch', name: 'The "Light Lunch"', price: 69.99, image: 'assets/catering/light-lunch.png',
+      kind: 'bundle', id: 'light-lunch', name: 'The "Light Lunch"', price: 69.99, image: 'assets/catering/light-lunch.jpg',
       desc: 'Serves 10 People',
       details: ['10 Signature Half-Sandwiches | Choose Up To 2 Flavors', CATERING_COFFEE_NOTE],
       flavors: CATERING_SANDWICHES, unit: ['sandwich', 'sandwiches'],
     },
     'coffee-bar': {
-      kind: 'simple', id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, icon: 'coffee',
+      kind: 'simple', id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, image: 'assets/catering/coffee-bar.jpg',
       desc: 'Serves 10-12 People: 96oz Hardy Coffee, Cream, Sugar & Sweeteners, and setup: Cups, Lids & Stirrers.',
     },
   };
 
+  // A catering item goes into the bag the customer is ordering on, Pickup or Delivery, with its notice and fee rules
+  // (see cateringLead). That is the same whether it is added from the order page or from the Catering page, where
+  // orderKind() cannot tell (neither order view is showing), so the mode decides.
+  const cateringCart = () => (state.orderMode === 'delivery' ? 'delivery' : 'pickup');
+  // A catering line saved earlier keeps the photo path it was added with, which breaks when a photo is renamed or
+  // replaced: point every saved catering line at its item's current photo.
+  CART_KINDS.forEach((kind) => state.carts[kind].forEach((line) => {
+    const item = line.catering && (CATERING_ITEMS[line.config && line.config.itemId] || Object.values(CATERING_ITEMS).find((i) => i.name === line.name));
+    if (item && item.image) line.image = item.image;
+  }));
+  // The catering items also have a tile on the pickup and delivery order page. (Added here because the catering data is
+  // defined here; the tiles are drawn again once it is in.)
+  const CATERING_ORDER_IDS = ['classic', 'allin', 'power-pair', 'bagel-brew', 'hungry-team', 'light-lunch', 'coffee-bar'];
+  ORDER_GROUPS.push({
+    id: 'catering', name: 'Catering', image: 'assets/catering/power-pair.jpg', catering: true,
+    items: CATERING_ORDER_IDS.map((id) => {
+      const c = CATERING_ITEMS[id];
+      return {
+        id, name: c.name, price: c.price, image: c.image, icon: c.icon,
+        note: c.kind === 'box' ? 'per box · 10-box minimum' : c.kind === 'bundle' ? 'Serves 10' : 'Serves 10–12',
+        desc: c.kind === 'bundle' ? (c.details && c.details[0]) || '' : c.desc,
+      };
+    }),
+  });
+  renderOrderTiles();
+
   function openCateringItem(id) {
+    // From the Catering page with no pickup or delivery chosen yet, ask where first, then open the item.
+    if (gateCatering(() => openCateringItem(id))) return;
     const item = CATERING_ITEMS[id];
     if (item.kind === 'box') { openBoxModal(item); return; }
-    if (item.kind === 'simple') { openQuickviewModal(item, { keyPrefix: 'catering', cartCategory: 'Catering · Add-on station · Serves 10-12', cart: 'catering' }); return; }
+    if (item.kind === 'simple') { openQuickviewModal(item, { keyPrefix: 'catering', cartCategory: 'Catering · Add-on station · Serves 10-12', cart: cateringCart(), catering: true }); return; }
     openDozenModal(cateringBundleProduct(item));
   }
 
@@ -2184,8 +2685,8 @@
   function cateringBundleProduct(item) {
     return {
       ...item,
-      cart: 'catering',
-      cutout: true,
+      cart: cateringCart(),
+      catering: true,
       pickerConfig: { total: 10, maxFlavors: 2 },
       hintTail: ' Every bundle gets the same mix.',
     };
@@ -2449,7 +2950,7 @@
     boxModal.hidden = true;
     updateInert();
     // Cancelling an edit returns to the drawer it came from.
-    if (box.editing) { box.editing = null; openCart('catering'); return; }
+    if (box.editing) { box.editing = null; openCart(editingKind); return; }
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
@@ -2491,16 +2992,19 @@
   function findDozenProduct(id) {
     const bundle = CATERING_ITEMS[id];
     if (bundle && bundle.kind === 'bundle') return cateringBundleProduct(bundle);
-    return [...DEVILED_EGGS, ...EGG_SALADS, ...PLATTERS, ...SHIPPING_KITS].find((p) => p.id === id);
+    return [...DEVILED_EGGS, ...EGG_SALADS, ...PLATTERS, ...SHIPPING_KITS].find((p) => p.id === (LEGACY_OPTION[id] ? LEGACY_OPTION[id][0] : id));
   }
   // A line added before Edit existed saved only a sentence. If its product can be customized, Edit still
   // reopens that product's modal, starting blank, and saving replaces the line.
   function blankEditSpec(line) {
     const dozen = [...DEVILED_EGGS, ...EGG_SALADS, ...PLATTERS, ...SHIPPING_KITS, ...Object.values(CATERING_ITEMS).filter((i) => i.kind === 'bundle')]
-      .find((p) => p.name === line.name && !p.fixedFlavors && (p.pickerConfig || p.kind === 'bundle'));
-    if (dozen) return { type: 'dozen', productId: dozen.id, flavorQty: {}, exclusions: {}, note: '', blank: true };
+      .find((p) => (p.name === line.name || (p.options || []).some((o) => o.name === line.name)) && !p.fixedFlavors && (p.pickerConfig || p.kind === 'bundle'));
+    if (dozen) {
+      const option = (dozen.options || []).find((o) => o.name === line.name);
+      return { type: 'dozen', productId: dozen.id, optionId: option && option.id, flavorQty: {}, exclusions: {}, note: '', blank: true };
+    }
     const bowl = PROTEIN_BOWLS.find((b) => b.name === line.name);
-    if (bowl) return { type: 'bowl', productId: bowl.id, addOns: [], eggstras: [], exclusions: [], options: [], blank: true };
+    if (bowl) return { type: 'bowl', productId: bowl.id, addOns: [], exclusions: [], options: [], blank: true };
     if (line.name === 'Full Size Bagel') return { type: 'bagel', toast: 'Not Toasted', bagelType: 'Plain', flavor: null, options: [], blank: true };
     const wrap = SANDWICH_WRAP.find((w) => w.name === line.name);
     if (wrap) return { type: 'wrap', productId: wrap.id, flavor: null, addOns: [], blank: true };
@@ -2514,6 +3018,7 @@
     if (line.config) { editCateringLine(line); return; }
     if (!line.edit) line.edit = blankEditSpec(line);
     const e = line.edit;
+    if (LEGACY_OPTION[e.productId] && !e.optionId) e.optionId = LEGACY_OPTION[e.productId][1];
     if (e.type === 'dozen') openDozenModal(findDozenProduct(e.productId), line);
     else if (e.type === 'bowl') openBowlModal(PROTEIN_BOWLS.find((b) => b.id === e.productId), line);
     else if (e.type === 'bagel') openBagelModal(line);
@@ -2553,7 +3058,8 @@
       return;
     }
     addToCart({
-      cart: 'catering',
+      cart: cateringCart(),
+      catering: true,
       key: `box-${box.item.id}-${Date.now()}`,
       name: box.item.name,
       minQty: box.item.minQty,
@@ -2572,7 +3078,7 @@
   // (or the one a checkout's back link names); if that one is empty it opens
   // on the first cart that has something in it.
   function defaultDrawerCart() {
-    const here = !views.shipping.hidden ? 'shipping' : !views.catering.hidden ? 'catering' : orderKind();
+    const here = !views.shipping.hidden ? 'shipping' : !views.catering.hidden ? cateringCart() : orderKind();
     if (state.carts[here].length) return here;
     return CART_KINDS.find((k) => state.carts[k].length) || here;
   }
@@ -2622,18 +3128,15 @@
   const DRAWER_EMPTY = {
     pickup: 'Your cart is empty. Add something delicious from the menu.',
     shipping: 'No shipping kits yet. Add one from Nationwide Shipping.',
-    catering: 'No catering items yet. Add one from Catering.',
     delivery: 'Your cart is empty. Add something delicious from the menu.',
   };
   const DRAWER_NOTE = {
     shipping: 'Shipping is added at checkout.',
-    catering: 'Delivery fee and tax are added at checkout.',
     delivery: 'Delivery fee, tip and tax are added at checkout.',
   };
 
   function drawerContextHTML(kind) {
     if (kind === 'shipping') return 'Ships nationwide · order Mon–Wed for week-of arrival';
-    if (kind === 'catering') return 'Catering · box meals are a 10-box minimum';
     if (kind === 'delivery') return state.delivery && state.delivery.street ? `Delivering to <strong>${escapeHTML(deliveryLabel())}</strong>` : 'Delivery';
     return `Pickup at <strong>${state.location}</strong>`;
   }
@@ -2785,8 +3288,9 @@
     const note = document.getElementById('drawer-total-note');
     // Delivery has a minimum: below it the note says how much is missing, and checkout waits.
     const short = kind === 'delivery' ? Math.max(0, DELIVERY_MINIMUM - cartSubtotal('delivery')) : 0;
-    note.hidden = isPickup || items.length === 0;
-    note.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : DRAWER_NOTE[kind] || '';
+    const cateringNote = kind === 'pickup' || kind === 'delivery' ? cateringBagNote(kind) : '';
+    note.hidden = (isPickup && !cateringNote) || items.length === 0;
+    note.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : cateringNote || DRAWER_NOTE[kind] || '';
 
     const totalQty = cartCount(kind);
     document.getElementById('drawer-item-count').textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
@@ -2807,13 +3311,12 @@
     shipping: document.getElementById('view-shipping'),
     catering: document.getElementById('view-catering'),
     'ship-checkout': document.getElementById('view-ship-checkout'),
-    'cater-checkout': document.getElementById('view-cater-checkout'),
     'delivery-checkout': document.getElementById('view-delivery-checkout'),
   };
   // Each cart checks out on its own page; all of them swap the site header for the checkout header.
-  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'cater-checkout', 'delivery-checkout'];
-  const CHECKOUT_VIEW_FOR = { pickup: 'checkout', delivery: 'delivery-checkout', shipping: 'ship-checkout', catering: 'cater-checkout' };
-  const PAGE_FOR_CART = { pickup: 'order', delivery: 'order', shipping: 'shipping', catering: 'catering' };
+  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'delivery-checkout'];
+  const CHECKOUT_VIEW_FOR = { pickup: 'checkout', delivery: 'delivery-checkout', shipping: 'ship-checkout' };
+  const PAGE_FOR_CART = { pickup: 'order', delivery: 'order', shipping: 'shipping' };
 
   // Each page names itself in the browser tab (and to screen readers when the page changes).
   const SITE_NAME = 'Deviled Egg Co.';
@@ -2827,7 +3330,6 @@
     'delivery-checkout': `Secure Checkout, Delivery — ${SITE_NAME}`,
     checkout: `Secure Checkout — ${SITE_NAME}`,
     'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
-    'cater-checkout': `Secure Checkout, Catering — ${SITE_NAME}`,
     confirmation: `Order confirmed — ${SITE_NAME}`,
   };
 
@@ -2877,10 +3379,10 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'cater-checkout', 'delivery-checkout', 'confirmation'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
-  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'cater-checkout': '#checkout/catering', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
+  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
   function syncPageHash(name) {
     if (!PAGE_VIEWS.includes(name)) return;
     // #order/<group> is the order page too (see openOrderGroup).
@@ -2944,6 +3446,15 @@
     if (chosen) return false;
     pendingStoreOpen = resume;
     openWhere('pickup', { returnTo: 'store', store: state.viewStore || currentStoreId() });
+    return true;
+  }
+  // The Catering page is open to everyone, but its items go into the pickup or delivery bag: with none chosen yet, the
+  // "where" modal opens first and the item opens once it is done.
+  function gateCatering(resume) {
+    const chosen = state.orderMode === 'delivery' ? deliverySessionValid() : pickupSessionValid();
+    if (chosen || views.catering.hidden) return false;
+    pendingStoreOpen = resume;
+    openWhere(state.orderMode === 'delivery' ? 'delivery' : 'pickup', { returnTo: 'store' });
     return true;
   }
   function resumeStorePage() {
@@ -3053,6 +3564,18 @@
       if (moved) announceCheckout('Your order moved to pickup.');
       return;
     }
+    landOnOrderPage();
+  }
+
+  // The funnel's last step: the order page, opened on the Catering group for a customer who came in to order catering.
+  function landOnOrderPage() {
+    intentBeforeFunnel = null;
+    if (cateringIntent) {
+      history.replaceState(null, '', '#order/catering');
+      showView('order');
+      openOrderGroup('catering', { push: false });
+      return;
+    }
     history.replaceState(null, '', '#order');
     showView('order');
   }
@@ -3072,7 +3595,12 @@
   }
 
   function goFromHome(path) {
-    if (path === 'shipping' || path === 'catering') {
+    // Catering starts the same funnel as Pickup (the "where" modal), with catering's notice applied; it ends on the
+    // order page's Catering group.
+    intentBeforeFunnel = cateringIntent;
+    if (path === 'catering') { setCateringIntent(true); startFunnel('pickup'); return; }
+    setCateringIntent(false);
+    if (path === 'shipping') {
       history.replaceState(null, '', '#' + path);
       showView(path);
       return;
@@ -3106,7 +3634,7 @@
   navLinksEl.addEventListener('click', (e) => {
     // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
     // "Pickup & Delivery" opens the "where" modal, like the Home tiles, on the tab it was last on.
-    if (e.target.closest('[data-open-where]')) { e.preventDefault(); openWhere(wm.tab); return; }
+    if (e.target.closest('[data-open-where]')) { e.preventDefault(); intentBeforeFunnel = cateringIntent; setCateringIntent(false); openWhere(wm.tab); return; }
     const link = e.target.closest('a[data-view]');
     if (!link) return;
     e.preventDefault();
@@ -3132,7 +3660,7 @@
     if (base === '#delivery') { showView('home'); startDelivery(); return; }
     if (base === '#store') { showStorePage(group); return; }
     let view = PAGE_HASHES[base] || 'home';
-    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'catering' ? 'cater-checkout' : group === 'delivery' ? 'delivery-checkout' : 'checkout';
+    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'delivery' ? 'delivery-checkout' : 'checkout';
     if (CHECKOUT_VIEWS.includes(view)) { openCheckoutFromLink(view); return; }
     showView(view);
     if (view === 'order' && group) openOrderGroup(group, { push: false });
@@ -3191,11 +3719,12 @@
     checkoutCart = kind;
     // A delivery whose chosen time has passed asks for a new one first, then comes back here.
     if (kind === 'delivery' && !deliverySessionValid()) { startDelivery({ returnTo: 'checkout' }); return; }
+    // Catering in the bag needs notice: a time that is too soon (or ASAP) is changed before paying.
+    if ((kind === 'pickup' || kind === 'delivery') && !slotMeetsCateringNotice(kind)) { askCateringTime(kind); return; }
     if (kind === 'delivery') setOrderMode('delivery');
     if (kind === 'pickup') renderCheckout();
     else if (kind === 'delivery') renderDeliveryCheckout();
-    else if (kind === 'shipping') renderShipCheckout();
-    else renderCaterCheckout();
+    else renderShipCheckout();
     showView(CHECKOUT_VIEW_FOR[kind]);
   }
   // An address that points at a checkout (a bookmark, Back, a shared link) only opens it when there is something to
@@ -3422,7 +3951,38 @@
     return rounded;
   }
 
-  function buildTimeSlots(dateKeyValue) {
+  // ----- Catering inside a pickup or delivery bag -----
+  // A bag with a catering item needs notice, whatever else is in it: about two hours for pickup, a day for delivery, so
+  // ASAP and the nearest slots are not offered; delivery also follows the catering fee (a flat fee, free over a threshold).
+  const CATERING_NOTICE_MIN = { pickup: 120, delivery: 24 * 60 };
+  const bagHasCatering = (kind) => (state.carts[kind] || []).some((line) => line.catering);
+  // The notice the "where" modal asks for: a catering item in the bag, or a customer who came in to order catering.
+  const cateringLead = (kind) => (bagHasCatering(kind) || cateringIntent ? CATERING_NOTICE_MIN[kind] || 0 : 0);
+  const cateringNoticeText = (kind) => (kind === 'delivery' ? "a day's notice" : '2 hours\' notice');
+  const cateringBagNote = (kind) => (bagHasCatering(kind)
+    ? `Catering in your bag needs ${cateringNoticeText(kind)}${kind === 'delivery' ? `, and delivery is ${money(CATERING_DELIVERY_FEE)} (free over ${money(CATERING_FREE_DELIVERY_AT)})` : ''}.` : '');
+  // The chosen slot's start as a time, or null for ASAP (which is "now").
+  function chosenSlotStart(kind) {
+    const sess = kind === 'delivery' ? state.delivery : { dateKey: state.pickupDateKey, timeId: state.pickupTimeId };
+    if (!sess.dateKey || !sess.timeId || sess.timeId === ASAP_ID) return null;
+    const [y, m, d] = sess.dateKey.split('-').map(Number);
+    return new Date(y, m - 1, d, Number(String(sess.timeId).slice(0, 2)), Number(String(sess.timeId).slice(2)));
+  }
+  // Checked at checkout, so it follows the bag alone: an order with no catering in it needs no notice.
+  function slotMeetsCateringNotice(kind) {
+    const lead = bagHasCatering(kind) ? CATERING_NOTICE_MIN[kind] || 0 : 0;
+    if (!lead) return true;
+    const start = chosenSlotStart(kind);
+    return !!start && start.getTime() >= Date.now() + lead * 60000;
+  }
+  // Re-opens the day and time step so a slot that is too soon can be moved out.
+  function askCateringTime(kind) {
+    if (kind === 'delivery') { openLocationDetails(null, { edit: true, kind: 'delivery' }); return; }
+    const st = PICKUP_STORES.find((x) => storeName(x) === state.location);
+    if (st) openLocationDetails(st, { edit: true });
+  }
+
+  function buildTimeSlots(dateKeyValue, leadMin = 0) {
     const now = new Date();
     const isToday = dateKeyValue === dateKey(now);
     let cursor;
@@ -3440,14 +4000,17 @@
     const close = new Date(now);
     close.setHours(PICKUP_CLOSE_HOUR, 0, 0, 0);
     const slots = [];
+    const [ky, km, kd] = dateKeyValue.split('-').map(Number);
     while (cursor.getTime() + 30 * 60000 <= close.getTime()) {
       const start = new Date(cursor);
       const end = new Date(cursor.getTime() + 30 * 60000);
+      cursor = end;
+      // With notice required, a slot that starts sooner than that is not on offer.
+      if (leadMin && new Date(ky, km - 1, kd, start.getHours(), start.getMinutes()).getTime() < now.getTime() + leadMin * 60000) continue;
       slots.push({
         id: `${pad2(start.getHours())}${pad2(start.getMinutes())}`,
         label: `${formatClock(start.getHours(), start.getMinutes())} – ${formatClock(end.getHours(), end.getMinutes())}`,
       });
-      cursor = end;
     }
     return slots;
   }
@@ -3557,6 +4120,7 @@
 
   function clearPickupSession() {
     state.pickupChosen = false;
+    setCateringIntent(false);
     try { localStorage.removeItem(PICKUP_SESSION_KEY); } catch (e) { /* ignore */ }
     syncPickerSaved();
     renderNavWhere();
@@ -3595,7 +4159,10 @@
   }
 
   function ldTimeOptions(key) {
-    const slots = buildTimeSlots(key);
+    const lead = ld ? cateringLead(ld.kind === 'delivery' ? 'delivery' : 'pickup') : 0;
+    const slots = buildTimeSlots(key, lead);
+    // A bag with catering needs notice, so there is no ASAP.
+    if (lead) return slots;
     // Delivery takes longer, so its ASAP closes an hour before the store does, not half an hour.
     if (ld && ld.kind === 'delivery') {
       const now = new Date();
@@ -3694,7 +4261,10 @@
     }
     document.getElementById('ld-title').textContent = delivery ? `Deliver to ${deliveryLabel()}` : name;
     document.getElementById('ld-address').textContent = delivery ? deliveryAddressLine() : STORE_ADDRESSES[name];
-    document.getElementById('ld-hours').textContent = delivery ? 'Delivery hours: 10:00 AM – 8:00 PM' : 'Pickup hours: 10:00 AM – 8:00 PM';
+    const hoursText = delivery ? 'Delivery hours: 10:00 AM – 8:00 PM' : 'Pickup hours: 10:00 AM – 8:00 PM';
+    const noticeKind = delivery ? 'delivery' : 'pickup';
+    document.getElementById('ld-hours').textContent = bagHasCatering(noticeKind) ? `${hoursText}. Catering in your bag needs ${cateringNoticeText(noticeKind)}.`
+      : cateringIntent ? `${hoursText}. Catering orders need ${cateringNoticeText(noticeKind)}.` : hoursText;
     document.getElementById('ld-change').textContent = delivery ? 'Change address' : 'Change store';
     renderLdDates();
     renderLdTimes();
@@ -3799,6 +4369,7 @@
   }
   // Placing an order ends the session (the day and time); the address and contact stay for the next order.
   function endDeliverySession() {
+    setCateringIntent(false);
     Object.assign(state.delivery, { chosen: false, dateKey: null, timeId: null, timeLabel: null });
     saveDeliverySession();
   }
@@ -3850,12 +4421,11 @@
   const daBackdrop = document.getElementById('da-backdrop');
   const daModal = document.getElementById('da-modal');
   const daAddress = document.getElementById('da-address');
-  const daZip = document.getElementById('da-zip');
   const daResult = document.getElementById('da-result');
   const DA_ICON = '<svg class="da-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h11v9H3V7ZM14 10h4l3 3v3h-7" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="7.5" cy="17.5" r="1.8" fill="var(--deg-cream)" stroke="currentColor" stroke-width="1.4"/><circle cx="17.5" cy="17.5" r="1.8" fill="var(--deg-cream)" stroke="currentColor" stroke-width="1.4"/></svg>';
 
   // What the modal knows right now. `sel` is the suggestion chosen on the Delivery tab; `store` the store chosen on Pickup.
-  const wm = { tab: 'pickup', sel: null, store: null, point: null, geoDown: false, suggestions: [], active: -1, origin: null, nav: false };
+  const wm = { seq: 0, geoReason: '', tab: 'pickup', sel: null, store: null, point: null, geoDown: false, suggestions: [], active: -1, origin: null, nav: false };
   // Opened from a checkout, the modal is about changing that order: `origin` is that checkout's path. On the same path
   // it only changes the place (a different store, with the day and time kept); on the other path it carries the order
   // over (see moveCart) once the new path's steps are done.
@@ -3953,9 +4523,11 @@
         window.L.circleMarker([wm.point.lat, wm.point.lng], { radius: 7, className: 'wm-here', interactive: false }).addTo(wmPinLayer);
       }
       if (fit) {
-        const near = wm.store ? [storeById(wm.store)] : sortedStores().slice(0, wm.point ? 2 : 4);
+        const near = wm.store ? [storeById(wm.store)] : nearbyStores().slice(0, wm.point ? 2 : 4);
         const pts = near.map((st) => [st.lat, st.lng]).concat(wm.point ? [[wm.point.lat, wm.point.lng]] : []);
-        mapMove((animate) => map.fitBounds(pts, { padding: [48, 48], maxZoom: 13, animate }));
+        // A place with no store in reach is shown on its own, wide enough to see where it is.
+        if (wm.point && !near.length) mapMove((animate) => map.setView([wm.point.lat, wm.point.lng], 7, { animate }));
+        else mapMove((animate) => map.fitBounds(pts, { padding: [48, 48], maxZoom: 13, animate }));
       }
     } else {
       if (map.hasLayer(wmStoreLayer)) map.removeLayer(wmStoreLayer);
@@ -4004,6 +4576,8 @@
   }
   function closeWhere() {
     pendingStoreOpen = null;
+    // Cancelling a funnel started from Home puts the catering flag back as it was.
+    if (intentBeforeFunnel !== null) { setCateringIntent(intentBeforeFunnel); intentBeforeFunnel = null; }
     closeWhereQuietly();
     if (lastFocusedEl) lastFocusedEl.focus();
   }
@@ -4044,15 +4618,22 @@
   document.getElementById('wm-zoom-out').addEventListener('click', () => wmMap && wmMap.zoomOut());
 
   // ----- the geocoder (Photon) -----
-  let geoAbort = null;
-  async function geocode(q) {
-    if (geoAbort) geoAbort.abort();
-    geoAbort = new AbortController();
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en&lat=33.2&lon=-96.6&location_bias_scale=0.6`;
-    const res = await fetch(url, { signal: geoAbort.signal });
-    if (!res.ok) throw new Error('geocoder ' + res.status);
-    const data = await res.json();
-    return (data.features || [])
+  // The public geocoder can take several seconds, so a request is never cancelled by the next keystroke (that left slow
+  // typists with no answer at all): each one runs to completion, the newest one wins, and one that takes too long gives up.
+  const geoCache = new Map();
+  async function geocode(q, { timeoutMs = 10000 } = {}) {
+    const key = q.toLowerCase();
+    if (geoCache.has(key)) return geoCache.get(key);
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(() => ctrl.abort(), timeoutMs);
+    let data;
+    try {
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en&lat=33.2&lon=-96.6&location_bias_scale=0.6`;
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error('geocoder ' + res.status);
+      data = await res.json();
+    } finally { window.clearTimeout(timer); }
+    const found = (data.features || [])
       .filter((f) => f.properties && f.properties.countrycode === 'US' && f.geometry)
       .map((f) => {
         const p = f.properties;
@@ -4063,6 +4644,8 @@
           city: p.city || p.district || p.locality || '', stateName: p.state || '', zip: p.postcode || '', lat, lng,
         };
       });
+    geoCache.set(key, found);
+    return found;
   }
 
   // ----- Delivery tab -----
@@ -4078,7 +4661,6 @@
     wm.sel = from ? { street: from.street, zip: from.zip, city: from.city, lat: from.lat, lng: from.lng } : null;
     wm.geoDown = false;
     daAddress.value = from ? `${from.street}${from.city ? ', ' + from.city : ''}` : '';
-    daZip.value = '';
     document.getElementById('da-clear').hidden = !daAddress.value;
     hideSuggestions();
   }
@@ -4101,18 +4683,21 @@
     renderDeliveryResult();
   }
 
-  // What the fields say right now: nothing yet, a deliverable address, or one outside the area.
+  // The ZIP the customer typed at the end of their address ("123 Main St, McKinney TX 75069"), for when the address search
+  // cannot place it. There is no separate ZIP field.
+  const zipFromText = (text) => ((text.match(/\b(\d{5})(?:-\d{4})?\s*$/) || [])[1] || '');
+
+  // What the address says right now: nothing yet, a place being checked, a deliverable address, or one outside the area.
   function renderDeliveryResult() {
     const sel = wm.sel;
-    const zipTyped = daZip.value.trim();
-    const needZip = (sel && !sel.zip) || (!sel && wm.geoDown);
-    document.getElementById('da-zip-wrap').hidden = !needZip;
-    const street = sel ? sel.street : wm.geoDown ? daAddress.value.trim() : '';
-    const zip = sel && sel.zip ? sel.zip : zipTyped;
+    const typed = daAddress.value.trim();
+    const street = sel ? sel.street : wm.geoDown ? typed.replace(/[,\s]+(?:TX|Texas)?[,\s]*\d{5}(?:-\d{4})?\s*$/i, '') : '';
+    const zip = sel ? sel.zip : wm.geoDown ? zipFromText(typed) : '';
     if (street.length < 3 || !isZip(zip)) {
       deliveryChecked = null;
-      const message = needZip && wm.geoDown ? "Address search isn't available right now. Enter your street address and ZIP code."
-        : needZip ? 'Add your ZIP code to see if we deliver there.'
+      const message = sel && !sel.zip && sel.zipLookup !== 'failed' ? 'Checking that address…'
+        : sel ? `We couldn't confirm that address's ZIP code. Try the full address with the ZIP code at the end, like "${sel.street}, ${sel.city || 'McKinney'} TX 75069".`
+        : wm.geoDown ? (wm.geoReason === 'none' ? 'We couldn\'t find that address. Check the spelling, or type it with the ZIP code at the end, like "123 Main St, McKinney TX 75069".' : 'Address search isn\'t available right now. Type your full address with the ZIP code at the end, like "123 Main St, McKinney TX 75069".')
         : `Search for your street address to see if we deliver there. A ${money(DELIVERY_FEE)} delivery fee applies.`;
       daResult.className = 'delivery-result is-idle';
       daResult.innerHTML = `${DA_ICON}<p class="delivery-result-note">${message}</p>
@@ -4161,9 +4746,24 @@
     daAddress.value = `${sg.street}${sg.city ? ', ' + sg.city : ''}`;
     document.getElementById('da-clear').hidden = false;
     hideSuggestions();
-    daZip.value = '';
     renderDeliveryResult();
     syncMap();
+    if (!wm.sel.zip) lookupZip(wm.sel);
+  }
+  // A suggestion with no ZIP gets it from where it is on the map, so the customer is never asked for it.
+  async function lookupZip(sel) {
+    try {
+      const res = await fetch(`https://photon.komoot.io/reverse?lon=${sel.lng}&lat=${sel.lat}&lang=en`);
+      if (!res.ok) throw new Error('reverse ' + res.status);
+      const data = await res.json();
+      const zip = ((data.features || []).map((f) => f.properties && f.properties.postcode).find(Boolean) || '').slice(0, 5);
+      if (wm.sel !== sel) return; // the address changed while this was out
+      if (isZip(zip)) sel.zip = zip; else sel.zipLookup = 'failed';
+    } catch (e) {
+      if (wm.sel !== sel) return;
+      sel.zipLookup = 'failed';
+    }
+    renderDeliveryResult();
   }
   let suggestTimer = null;
   daAddress.addEventListener('input', () => {
@@ -4172,12 +4772,16 @@
     // Changing the text makes the chosen address stale.
     if (wm.sel) { wm.sel = null; renderDeliveryResult(); syncMap({ fit: false }); }
     const q = daAddress.value.trim();
-    if (q.length < 4) { hideSuggestions(); if (wm.geoDown) renderDeliveryResult(); return; }
+    if (q.length < 4) { hideSuggestions(); document.getElementById('da-search-note').textContent = ''; if (wm.geoDown) renderDeliveryResult(); return; }
     if (wm.geoDown) { renderDeliveryResult(); }
+    const note = document.getElementById('da-search-note');
     suggestTimer = window.setTimeout(async () => {
+      const seq = ++wm.seq;
+      note.textContent = 'Searching…';
       try {
         const found = await geocode(q);
-        wm.geoDown = false;
+        if (seq !== wm.seq) return; // a newer search is on its way: it decides what shows
+        note.textContent = '';
         // Street addresses first; a street with no number still helps, a place name does not.
         // The street data often lacks the house number the customer typed; it is kept, on the street's position.
         const typedNumber = (q.match(/^\s*(\d+[A-Za-z]?)\b/) || [])[1];
@@ -4189,17 +4793,27 @@
           .filter((f) => { const k = `${f.street}|${f.zip}`; if (seen.has(k)) return false; seen.add(k); return true; })
           .slice(0, 5);
         wm.active = -1;
-        renderSuggestions();
-        document.getElementById('da-zip-wrap').hidden = true;
+        if (wm.suggestions.length) {
+          wm.geoDown = false;
+          wm.geoReason = '';
+          renderSuggestions();
+        } else {
+          // Nothing matched: say so and offer the ZIP route, so the customer is never left typing into a field that answers nothing.
+          wm.geoDown = true;
+          wm.geoReason = 'none';
+          hideSuggestions();
+          renderDeliveryResult();
+        }
       } catch (e) {
-        if (e.name === 'AbortError') return;
+        if (seq !== wm.seq) return;
+        note.textContent = '';
         wm.geoDown = true;
+        wm.geoReason = 'down';
         hideSuggestions();
         renderDeliveryResult();
       }
-    }, 350);
+    }, 500);
   });
-  daZip.addEventListener('input', renderDeliveryResult);
   daAddress.addEventListener('keydown', (e) => {
     const open = !suggestEl.hidden;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -4225,7 +4839,6 @@
   daAddress.addEventListener('blur', () => window.setTimeout(hideSuggestions, 120));
   document.getElementById('da-clear').addEventListener('click', () => {
     daAddress.value = '';
-    daZip.value = '';
     wm.sel = null;
     hideSuggestions();
     document.getElementById('da-clear').hidden = true;
@@ -4256,9 +4869,17 @@
   document.getElementById('da-change-time').addEventListener('click', () => { closeWhereQuietly(); openLocationDetails(null, { edit: true, kind: 'delivery' }); });
 
   // ----- Pickup tab -----
+  // How far a customer can sensibly be from the store they pick up at. A searched place with no store inside it gets
+  // the "no stores near that location" answer instead of a list of stores hours away. A placeholder, until approved.
+  const PICKUP_RADIUS_MILES = 50;
   function sortedStores() {
     const list = PICKUP_STORES.map((st) => ({ ...st, miles: wm.point ? milesBetween(wm.point, st) : null }));
     return wm.point ? list.sort((a, b) => a.miles - b.miles) : list.sort((a, b) => a.city.localeCompare(b.city));
+  }
+  // The stores worth showing: all four with no place searched, otherwise only those within reach of it.
+  function nearbyStores() {
+    const list = sortedStores();
+    return wm.point ? list.filter((st) => st.miles <= PICKUP_RADIUS_MILES) : list;
   }
   function resetPickupTab() {
     // From the pickup checkout the current store starts chosen: the modal is only there to change it.
@@ -4289,8 +4910,14 @@
     const list = document.getElementById('wm-stores');
     const storeOnly = wm.origin === 'pickup';
     const current = storeOnly ? currentStoreId() : null;
+    const shown = nearbyStores();
+    const none = !!wm.point && !shown.length;
     document.getElementById('wm-pk-title').textContent = wm.point ? 'Nearby' : 'Our stores';
-    list.innerHTML = sortedStores().map((st) => `
+    document.getElementById('wm-pk-title').hidden = none;
+    list.hidden = none;
+    document.getElementById('wm-pk-empty').hidden = !none;
+    if (none) document.getElementById('wm-pk-note').textContent = '';
+    list.innerHTML = shown.map((st) => `
       <li><div class="radio-choice wm-store${wm.store === st.id ? ' selected' : ''}">
         <label class="radio-choice-row">
           <input class="radio-choice-input" type="radio" name="wm-store" value="${st.id}"${wm.store === st.id ? ' checked' : ''}>
@@ -4307,7 +4934,7 @@
     const pick = document.getElementById('wm-pk-pick');
     pick.textContent = storeOnly ? 'Update pickup location' : 'Pick up here';
     pick.disabled = storeOnly && wm.store === current;
-    document.getElementById('wm-pk-actions').hidden = !wm.store;
+    document.getElementById('wm-pk-actions').hidden = !wm.store || none;
   }
   function selectStore(id, { fromMap = false } = {}) {
     wm.store = id;
@@ -4321,6 +4948,12 @@
       if (row) row.closest('li').scrollIntoView({ block: 'nearest' });
     }
   }
+  // "No stores near that location": the way on is a different search, or having eggs shipped.
+  document.getElementById('wm-pk-ship').addEventListener('click', () => {
+    closeWhere();
+    history.pushState(null, '', '#shipping');
+    showView('shipping');
+  });
   document.getElementById('wm-pk-pick').addEventListener('click', () => {
     const st = storeById(wm.store);
     if (!st) return;
@@ -4360,10 +4993,112 @@
     syncMap();
   }
   const pkInput = document.getElementById('wm-pk-q');
-  pkInput.addEventListener('input', () => { document.getElementById('wm-pk-clear').hidden = !pkInput.value; });
+  const pkSuggest = document.getElementById('wm-pk-suggest');
+  const pk = { suggestions: [], active: -1, seq: 0, timer: null };
+  const PK_PIN = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="2"/></svg>';
+  function hidePkSuggestions() {
+    pkSuggest.hidden = true;
+    pkInput.setAttribute('aria-expanded', 'false');
+    pkInput.removeAttribute('aria-activedescendant');
+    pk.active = -1;
+  }
+  function renderPkSuggestions() {
+    if (!pk.suggestions.length) { hidePkSuggestions(); return; }
+    pkSuggest.innerHTML = pk.suggestions.map((sg, i) => `
+      <li role="option" id="wm-pk-opt-${i}" class="wm-option" data-i="${i}" aria-selected="${i === pk.active}">
+        <span class="wm-option-pin" aria-hidden="true">${PK_PIN}</span>
+        <span class="wm-option-text"><strong>${escapeHTML(sg.title)}</strong>${sg.sub ? `<span>${escapeHTML(sg.sub)}</span>` : ''}</span>
+      </li>`).join('');
+    pkSuggest.hidden = false;
+    pkInput.setAttribute('aria-expanded', 'true');
+  }
+  // Places for the typed text: a ZIP we deliver in is answered at once; anything else asks the geocoder, and keeps the
+  // cities, states and ZIP codes (a street result stands for its town).
+  async function placeSuggestions(q) {
+    if (/^\d{5}$/.test(q)) {
+      const known = deliveryAreaFor(q);
+      if (known) {
+        const near = PICKUP_STORES.find((st) => storeName(st) === known.store);
+        return [{ title: `${known.city}, TX ${q}`, sub: '', label: `${known.city}, TX ${q}`, lat: near.lat, lng: near.lng }];
+      }
+    }
+    const found = await geocode(q);
+    const places = ['city', 'district', 'locality', 'county', 'state', 'suburb', 'borough'];
+    const seen = new Set();
+    const out = [];
+    found.forEach((f) => {
+      const isPlace = places.includes(f.type);
+      const name = isPlace ? (f.name || f.city) : f.city;
+      if (!name) return;
+      const title = f.type === 'state' ? name : [name, f.stateName].filter(Boolean).join(', ');
+      const zip = /^\d/.test(q) && f.zip ? f.zip : '';
+      const key = `${title}|${zip}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ title: zip ? `${title} ${zip}` : title, sub: '', label: zip ? `${title} ${zip}` : title, lat: f.lat, lng: f.lng });
+    });
+    return out.slice(0, 5);
+  }
+  function choosePkSuggestion(i) {
+    const sg = pk.suggestions[i];
+    if (!sg) return;
+    window.clearTimeout(pk.timer);
+    pk.seq += 1;
+    pkInput.value = sg.label;
+    document.getElementById('wm-pk-clear').hidden = false;
+    hidePkSuggestions();
+    showPickupPoint({ lat: sg.lat, lng: sg.lng }, sg.label);
+  }
+  pkInput.addEventListener('input', () => {
+    document.getElementById('wm-pk-clear').hidden = !pkInput.value;
+    window.clearTimeout(pk.timer);
+    const q = pkInput.value.trim();
+    const note = document.getElementById('wm-pk-note');
+    if (q.length < 3) { pk.seq += 1; hidePkSuggestions(); if (note.textContent === 'Searching…') note.textContent = ''; return; }
+    pk.timer = window.setTimeout(async () => {
+      const seq = ++pk.seq;
+      note.textContent = 'Searching…';
+      try {
+        const list = await placeSuggestions(q);
+        if (seq !== pk.seq) return; // a newer search is on its way: it decides what shows
+        pk.suggestions = list;
+        pk.active = -1;
+        if (list.length) { note.textContent = ''; renderPkSuggestions(); } else { hidePkSuggestions(); note.textContent = "We couldn't find that place. Try a city, state or ZIP code."; }
+      } catch (err) {
+        if (seq !== pk.seq) return;
+        hidePkSuggestions();
+        note.textContent = "Search isn't available right now. Our four stores are listed below.";
+      }
+    }, 450);
+  });
+  pkInput.addEventListener('keydown', (e) => {
+    const open = !pkSuggest.hidden;
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && open) {
+      e.preventDefault();
+      const n = pk.suggestions.length;
+      pk.active = (pk.active + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
+      pkSuggest.querySelectorAll('.wm-option').forEach((li, i) => li.setAttribute('aria-selected', String(i === pk.active)));
+      pkInput.setAttribute('aria-activedescendant', 'wm-pk-opt-' + pk.active);
+    } else if (e.key === 'Enter' && open && pk.active >= 0) {
+      e.preventDefault();
+      choosePkSuggestion(pk.active);
+    } else if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      hidePkSuggestions();
+    }
+  });
+  pkSuggest.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus in the field
+  pkSuggest.addEventListener('click', (e) => {
+    const li = e.target.closest('.wm-option');
+    if (li) choosePkSuggestion(Number(li.dataset.i));
+  });
+  pkInput.addEventListener('blur', () => window.setTimeout(hidePkSuggestions, 120));
   document.getElementById('wm-pk-clear').addEventListener('click', () => {
     pkInput.value = '';
     document.getElementById('wm-pk-clear').hidden = true;
+    window.clearTimeout(pk.timer);
+    pk.seq += 1;
+    hidePkSuggestions();
     wm.point = null;
     wm.store = wm.origin === 'pickup' ? currentStoreId() : null;
     document.getElementById('wm-pk-note').textContent = '';
@@ -4375,6 +5110,9 @@
     e.preventDefault();
     const q = pkInput.value.trim();
     const note = document.getElementById('wm-pk-note');
+    window.clearTimeout(pk.timer);
+    pk.seq += 1;
+    hidePkSuggestions();
     if (q.length < 2) return;
     // A ZIP in our delivery area is answered without the network.
     const known = /^\d{5}$/.test(q) ? deliveryAreaFor(q) : null;
@@ -4554,8 +5292,7 @@
       return;
     }
     renderDrawer();
-    history.replaceState(null, '', '#order');
-    showView('order');
+    landOnOrderPage();
   }
 
   // Payment methods are data: the two saved ones plus any card added in the
@@ -4634,11 +5371,14 @@
       row.appendChild(body);
       list.appendChild(row);
     });
-    const totalQty = items === state.carts.catering ? items.length : items.reduce((sum, item) => sum + item.qty, 0);
+    const totalQty = unitsIn(null, items);
     countEl.textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
   }
 
   function renderCheckout() {
+    const pkNote = document.getElementById('co-catering-note');
+    pkNote.textContent = cateringBagNote('pickup');
+    pkNote.hidden = !pkNote.textContent;
     renderSummaryItems(document.getElementById('checkout-items'), document.getElementById('checkout-item-count'), state.carts.pickup);
     renderCheckoutTotals();
     renderPayNote();
@@ -4658,8 +5398,8 @@
     toggle.setAttribute('aria-expanded', String(open));
     toggle.nextElementSibling.classList.toggle('collapsed', !open);
   }
-  // The shipping, catering and delivery checkouts collapse their summaries the same way.
-  ['sc', 'cc', 'dc'].forEach((p) => {
+  // The shipping and delivery checkouts collapse their summaries the same way.
+  ['sc', 'dc'].forEach((p) => {
     const toggle = document.getElementById(p + '-toggle-summary');
     toggle.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -4700,7 +5440,9 @@
     const subtotal = cartSubtotal('delivery');
     const tax = subtotal * TAX_RATE;
     const tip = state.dTipPct === 'custom' ? state.dTipCustom : subtotal * (state.dTipPct / 100);
-    return { subtotal, fee: DELIVERY_FEE, tax, tip, total: subtotal + DELIVERY_FEE + tax + tip };
+    // Catering in the bag brings the catering delivery fee: a flat fee, free over the threshold.
+    const fee = bagHasCatering('delivery') ? (subtotal >= CATERING_FREE_DELIVERY_AT ? 0 : CATERING_DELIVERY_FEE) : DELIVERY_FEE;
+    return { subtotal, fee, tax, tip, total: subtotal + fee + tax + tip };
   }
 
   function renderDeliveryTotals() {
@@ -4729,6 +5471,9 @@
     document.getElementById('dc-dropoff-line').textContent = deliveryDropoffText() + (d.notes ? ` · ${d.notes}` : '');
     document.getElementById('dc-time-summary').textContent = d.chosen ? deliveryWhenText() : '';
     renderDeliveryEta();
+    const dlNote = document.getElementById('dc-catering-note');
+    dlNote.textContent = cateringBagNote('delivery');
+    dlNote.hidden = !dlNote.textContent;
     if (!views['delivery-checkout'].hidden) renderCheckoutMap('delivery');
     // The name and number were asked for with the address, so they arrive filled in; typing over them is fine.
     [['dc-name', d.name], ['dc-phone', d.phone], ['dc-email', d.email]].forEach(([id, value]) => {
@@ -4854,6 +5599,7 @@
   document.getElementById('dc-place-order').addEventListener('click', () => {
     if (state.carts.delivery.length === 0 || placingOrder) return;
     if (cartSubtotal('delivery') < DELIVERY_MINIMUM) return;
+    if (!slotMeetsCateringNotice('delivery')) { askCateringTime('delivery'); return; }
     // The day and time chosen on the way in can pass while the customer fills in the form.
     if (!deliverySessionValid()) { startDelivery({ returnTo: 'checkout' }); return; }
     if (!validateFields([
@@ -4981,6 +5727,7 @@
 
   document.getElementById('place-order').addEventListener('click', () => {
     if (state.carts.pickup.length === 0 || placingOrder) return;
+    if (!slotMeetsCateringNotice('pickup')) { askCateringTime('pickup'); return; }
     // The store calls this number if something is wrong, and the receipt goes to the email, so all three fields are required.
     if (!validateFields([
       [document.getElementById('co-name'), present, 'Enter the name for this order.'],
@@ -5151,128 +5898,6 @@
       items, total,
       cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
       backLabel: '← Back to Nationwide Shipping', backView: 'shipping',
-    });
-  });
-
-  // ---------- Catering checkout ----------
-  // Rules and figures are the live catering order form's own: pickup is free
-  // and can be same-day (2 hours' notice); delivery is a $20 flat fee, free at
-  // $200, and needs a day's notice; tax is 8.25%.
-  const CATERING_DELIVERY_FEE = 20;
-  const CATERING_FREE_DELIVERY_AT = 200;
-  const CATERING_LOCATIONS = [
-    { id: 'denison', name: 'Denison', address: '231 W Main St, Denison, TX 75020', desc: 'Historic Downtown · Full-service dine-in' },
-    { id: 'mckinney', name: 'McKinney', address: '111 W Virginia St, McKinney, TX 75069', desc: 'Downtown on the Square · Carry-out' },
-    { id: 'rockwall', name: 'Rockwall', address: '2065 Summer Lee Drive, Rockwall, TX 75032', desc: 'At The Harbor' },
-    { id: 'coppell', name: 'Coppell', address: '3001 Olympus Blvd, Suite 100, Coppell, TX 75019', desc: 'Cypress Waters · Carry-out & catering' },
-  ];
-  const cater = { fulfilment: 'pickup', location: 'mckinney' };
-
-  function caterTotals() {
-    const subtotal = cartSubtotal('catering');
-    const fee = cater.fulfilment === 'delivery' && subtotal < CATERING_FREE_DELIVERY_AT ? CATERING_DELIVERY_FEE : 0;
-    const tax = subtotal * TAX_RATE;
-    return { subtotal, fee, tax, total: subtotal + fee + tax };
-  }
-
-  function renderCaterTotals() {
-    const { subtotal, fee, tax, total } = caterTotals();
-    const delivery = cater.fulfilment === 'delivery';
-    document.getElementById('cc-subtotal').textContent = money(subtotal);
-    document.getElementById('cc-delivery-fee').textContent = !delivery ? 'Pickup · Free' : fee ? money(fee) : 'Free';
-    document.getElementById('cc-tax').textContent = money(tax);
-    document.getElementById('cc-total').textContent = money(total);
-    return total;
-  }
-
-  // Pickup can be today; delivery needs a day's notice. Both live in the date
-  // field's min, so an impossible date can't be picked.
-  function syncCaterDate() {
-    const delivery = cater.fulfilment === 'delivery';
-    const input = document.getElementById('cc-date');
-    input.min = delivery ? addDaysISO(todayISO(), 1) : todayISO();
-    if (input.value && input.value < input.min) input.value = '';
-    document.getElementById('cc-date-help').textContent = delivery
-      ? 'Delivery: 24–48 hours lead time required.'
-      : 'Pickup: same-day OK · please give us at least 2 hours.';
-  }
-
-  function renderCaterLocations() {
-    const list = document.getElementById('cc-locations');
-    list.innerHTML = CATERING_LOCATIONS.map((loc) => radioChoiceHTML({
-      group: 'cc-location', value: loc.id, label: loc.name, note: `${loc.address} · ${loc.desc}`, selected: loc.id === cater.location,
-    })).join('');
-    list.querySelectorAll('.radio-choice-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        cater.location = input.value;
-        list.querySelectorAll('.radio-choice').forEach((row) => {
-          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
-        });
-      });
-    });
-  }
-
-  function setCaterFulfilment(kind) {
-    cater.fulfilment = kind;
-    document.querySelectorAll('#cc-fulfilment .chip').forEach((chip) => {
-      const on = chip.dataset.value === kind;
-      chip.classList.toggle('active', on);
-      chip.setAttribute('aria-checked', String(on));
-    });
-    document.getElementById('cc-pickup').hidden = kind !== 'pickup';
-    document.getElementById('cc-delivery').hidden = kind !== 'delivery';
-    syncCaterDate();
-    renderCaterTotals();
-  }
-
-  document.getElementById('cc-fulfilment').addEventListener('click', (e) => {
-    const chip = e.target.closest('.chip');
-    if (chip) setCaterFulfilment(chip.dataset.value);
-  });
-
-  function renderCaterCheckout() {
-    renderSummaryItems(document.getElementById('cc-items'), document.getElementById('cc-item-count'), state.carts.catering);
-    renderCaterLocations();
-    setCaterFulfilment(cater.fulfilment);
-    renderPaymentPickers();
-  }
-
-  document.getElementById('cc-place-order').addEventListener('click', () => {
-    if (state.carts.catering.length === 0) return;
-    const f = (id) => document.getElementById('cc-' + id);
-    const delivery = cater.fulfilment === 'delivery';
-    const rows = [
-      [f('date'), (v) => v !== '' && v >= f('date').min, delivery ? 'Pick a date at least a day from now.' : 'Pick the date of your event.'],
-    ];
-    if (delivery) {
-      rows.push([f('address'), present, 'Enter the address to deliver to.'], [f('zip'), isZip, 'Enter a 5-digit ZIP code.'], [f('delivery-time'), present, 'Choose a delivery time.']);
-    } else {
-      rows.push([f('pickup-time'), present, 'Choose a pickup time.']);
-    }
-    rows.push(
-      [f('name'), present, 'Enter your name.'],
-      [f('phone'), isPhone, 'Enter a phone number with area code.'],
-      [f('email'), isEmail, 'Enter a valid email so we can confirm your order.'],
-    );
-    if (!validateFields(rows)) return;
-
-    const { fee } = caterTotals();
-    const total = renderCaterTotals();
-    const items = recapLines(state.carts.catering);
-    if (delivery) items.push({ label: 'Delivery', amount: fee ? money(fee) : 'Free' });
-    items.push({ label: 'Tax', amount: money(caterTotals().tax) });
-    const when = `${longDate(f('date').value)} at <strong>${clockLabel(delivery ? f('delivery-time').value : f('pickup-time').value)}</strong>`;
-    const loc = CATERING_LOCATIONS.find((l) => l.id === cater.location);
-    const where = delivery ? escapeHTML(f('address').value.trim()) : `${loc.name} · ${loc.address}`;
-
-    clearCart('catering');
-    showConfirmation({
-      number: orderNumber(),
-      subHTML: `Order {number} · We'll confirm by phone within an hour. ${delivery ? 'Delivery' : 'Pickup'} on ${when}.`,
-      steps: ['Confirming', delivery ? 'Delivered' : 'Ready'],
-      items, total,
-      cardHTML: `${PIN_ICON}<span>${where}</span>`,
-      backLabel: '← Back to Catering', backView: 'catering',
     });
   });
 
