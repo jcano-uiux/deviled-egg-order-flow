@@ -489,181 +489,86 @@
 
 <main id="view-catering" class="view page-view" hidden>
 
-  <section class="cater-hero" aria-labelledby="cater-title">
-    <div class="cater-hero-copy">
-      <h1 id="cater-title">Make <span>Protein</span> the Star of Your Event</h1>
-      <p class="cater-lead">Now serving protein bowls, signature sandwiches, bundles, and 20 deviled egg &amp; bagel spread flavors. From boardrooms to backyards, we bring the wow.</p>
-      <a class="pill-btn primary cater-cta" href="#boxed-lunches" data-scroll="boxed-lunches">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-    </div>
-    <div class="cater-hero-art" aria-hidden="true">
-      <img src="assets/catering/power-pair.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
-      <img src="assets/catering/allin.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
-      <img src="assets/catering/bagel-brew.jpg" width="216" height="244" alt="" loading="lazy" decoding="async">
-    </div>
-  </section>
+  <!-- The Catering page follows the location pages: a banner, a sidebar with the name and the categories, and sections of
+       the same product cards the menu uses. The cards are drawn from the catering items in app.js and each opens the
+       catering modal, adding to the pickup or delivery bag. -->
+  <div class="store-hero catering-hero" aria-hidden="true">
+    <img src="assets/catering/classic.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/allin.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/power-pair.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/bagel-brew.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/light-lunch.jpg" alt="" loading="lazy" decoding="async">
+  </div>
 
-  <section class="page-section" id="boxed-lunches" aria-labelledby="cater-boxes-title">
-    <div class="page-section-head">
-      <h2 id="cater-boxes-title">Protein Box Meals</h2>
-      <p>Each box serves 1 · minimum 10 boxes per order.</p>
-    </div>
-    <ul class="cater-grid">
-      <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/classic.jpg" width="216" height="244" alt="Bowls of chicken salad, greens and buffalo chicken on a black tray" loading="lazy">
-          <p class="cater-tag">Everyday delicious</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">The Classic Choice</h3>
-          <p class="cater-price"><strong>$10</strong> <span>/ box</span></p>
-          <p class="cater-min">Minimum 10 boxes · from $100</p>
-          <p class="cater-list-label">What's Included:</p>
-          <ul class="cater-list">
-            <li>Lunch Bowl or Sandwich</li>
-            <li>Kettle Cooked Chips</li>
-          </ul>
-          <p class="cater-list-label">Add Additional Side:</p>
-          <ul class="cater-list">
-            <li>Chocolate Chip Cookie (+$2.00)</li>
-            <li>Kosher Dill Pickle (+$1.00)</li>
-            <li>2-Pack of Gourmet Deviled Eggs (+$4.00)</li>
-            <li>4oz Side of House-Made Egg Salad (+$2.00)</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="classic" data-cater-label="The Classic Choice">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-      <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/allin.jpg" width="216" height="244" alt="A grilled wrap cut in half beside two deviled eggs and chips" loading="lazy">
-          <p class="cater-tag">Fuel the whole team</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">The "All In" Power Lunch</h3>
-          <p class="cater-price"><strong>$12.50</strong> <span>/ box</span></p>
-          <p class="cater-min">Minimum 10 boxes · from $125</p>
-          <p class="cater-list-label">What's Included:</p>
-          <ul class="cater-list">
-            <li>Signature Full Sandwich or Lunch Size Bowl</li>
-            <li>Kettle Cooked Chips</li>
-            <li>Cookie</li>
-          </ul>
-          <p class="cater-list-label">Add Additional Side:</p>
-          <ul class="cater-list">
-            <li>Gourmet 2-Pack of Deviled Eggs (+$4.00)</li>
-            <li>Kosher Dill Pickle (+$1.00)</li>
-            <li>4oz Side of House-Made Egg Salad (+$2.00)</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="allin" data-cater-label="The “All In” Power Lunch">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-    </ul>
+  <div class="menu-layout">
 
-    <div class="cater-addons">
-      <div class="cater-addons-list">
-        <h3>Egg-Stra Add Ons</h3>
-        <ul>
-          <li><span>Cookie</span><strong>$2.00</strong></li>
-          <li><span>Bottled drink (soda, water, tea)</span><strong>$3.00</strong></li>
-          <li><span>Side pickle</span><strong>$0.50</strong></li>
-          <li><span>Bag of chips</span><strong>$2.00</strong></li>
-          <li><span>Smoked salmon upgrade</span><strong>$2.99</strong></li>
-        </ul>
-        <p class="cater-note"><strong>Drinks:</strong> Fiji Water, Coke, Coke Zero, Dr Pepper, Sweet Tea, Unsweet Tea, RedBull +$1.00</p>
+    <aside class="store-sidebar" aria-label="Catering details and categories">
+      <div class="store-card">
+        <a class="store-back" id="cater-back" href="#home">← Home</a>
+        <h1 class="store-name">Catering</h1>
+        <p class="store-address">Box meals, bundles and a coffee bar for 10 or more. Order ahead for pickup or delivery.</p>
       </div>
-      <div class="cater-coffee">
-        <div class="cater-coffee-media"><img src="assets/catering/coffee-bar.jpg" width="1024" height="1024" alt="Cream poured into an iced coffee in a Devil's Coffee cup, on a yellow banquette" loading="lazy" decoding="async"></div>
-        <div class="cater-coffee-head">
-          <h3 class="cater-name">Catering Coffee Bar</h3>
-          <p class="cater-tag">Add-on station</p>
-        </div>
-        <p class="cater-price"><strong>$24.99</strong> <span>/ service</span></p>
-        <p class="cater-list-label">Serves 10-12 People:</p>
-        <ul class="cater-list">
-          <li>96oz Hardy Coffee</li>
-          <li>Cream, Sugar &amp; Sweeteners</li>
-          <li>Setup: Cups, Lids &amp; Stirrers</li>
-        </ul>
-        <button class="pill-btn dark full cater-order" type="button" data-cater-order="coffee-bar" data-cater-label="Catering Coffee Bar">Add Coffee Bar<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-menu-head">
+        <span class="sidebar-menu-label">Menu</span>
+        <span class="sidebar-menu-hours">2 hours' notice for pickup, a day for delivery</span>
       </div>
-    </div>
-  </section>
+      <nav class="drawer-nav" aria-label="Catering categories">
+        <button class="category-item active" type="button" data-target="cater-section-boxes">Protein Box Meals</button>
+        <button class="category-item" type="button" data-target="cater-section-mornings">Mornings &amp; Meetings</button>
+        <button class="category-item" type="button" data-target="cater-section-brunch">Executive Brunch Bundles</button>
+        <button class="category-item" type="button" data-target="cater-section-coffee">Coffee Bar</button>
+        <button class="category-item" type="button" data-target="cater-section-addons">Add-Ons</button>
+      </nav>
+    </aside>
 
-  <section class="page-section" aria-labelledby="cater-morning-title">
-    <div class="page-section-head">
-      <h2 id="cater-morning-title">Mornings &amp; Meetings</h2>
-      <p>Each bundle serves 10. Perfect for breakfast meetings or midday energy boosts. Coffee Bar included.</p>
-    </div>
-    <ul class="cater-grid">
-      <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/power-pair.jpg" width="216" height="244" alt="Two deviled eggs topped with seasoning in a clear tray" loading="lazy">
-          <p class="cater-tag">Serves 10</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">Power Pair Bundle</h3>
-          <p class="cater-price"><strong>$59.99</strong> <span>/ bundle</span></p>
-          <p class="cater-list-label">Serves 10 People</p>
-          <ul class="cater-list">
-            <li>10 Signature 2-Pack Gourmet Deviled Eggs</li>
-            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="power-pair" data-cater-label="Power Pair Bundle">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-      <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/bagel-brew.jpg" width="216" height="244" alt="A bagel piled with smoked salmon egg spread" loading="lazy">
-          <p class="cater-tag">Serves 10 • Fan favorite</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">Bagel &amp; Brew Bundle</h3>
-          <p class="cater-price"><strong>$69.99</strong> <span>/ bundle</span></p>
-          <p class="cater-list-label">Serves 10 People</p>
-          <ul class="cater-list">
-            <li>Bagel Box: 5 Plain Bagels | 5 Everything Bagels</li>
-            <li>Choice of 2 Signature Egg Spreads, Toppings, or Cream Cheese</li>
-            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="bagel-brew" data-cater-label="Bagel &amp; Brew Bundle">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-    </ul>
-  </section>
+    <div class="menu-content" id="catering-top">
 
-  <section class="page-section" aria-labelledby="cater-brunch-title">
-    <div class="page-section-head">
-      <h2 id="cater-brunch-title">Executive Brunch Bundles</h2>
-      <p>Each bundle serves 10. A crowd-pleasing brunch spread, ready to serve and enjoy. Coffee Bar included.</p>
+      <nav class="drawer-nav-mobile" aria-label="Catering categories">
+        <button class="category-item active" type="button" data-target="cater-section-boxes">Protein Box Meals</button>
+        <button class="category-item" type="button" data-target="cater-section-mornings">Mornings &amp; Meetings</button>
+        <button class="category-item" type="button" data-target="cater-section-brunch">Executive Brunch Bundles</button>
+        <button class="category-item" type="button" data-target="cater-section-coffee">Coffee Bar</button>
+        <button class="category-item" type="button" data-target="cater-section-addons">Add-Ons</button>
+      </nav>
+
+      <section class="menu-section" id="cater-section-boxes">
+        <h2>Protein Box Meals</h2>
+        <p class="menu-section-sub">Each box serves 1 · minimum 10 boxes per order.</p>
+        <div class="shop-grid" id="cater-boxes-grid"></div>
+      </section>
+
+      <section class="menu-section" id="cater-section-mornings">
+        <h2>Mornings &amp; Meetings</h2>
+        <p class="menu-section-sub">Each bundle serves 10. Perfect for breakfast meetings or midday energy boosts. Coffee Bar included.</p>
+        <div class="shop-grid" id="cater-mornings-grid"></div>
+      </section>
+
+      <section class="menu-section" id="cater-section-brunch">
+        <h2>Executive Brunch Bundles</h2>
+        <p class="menu-section-sub">Each bundle serves 10. A crowd-pleasing brunch spread, ready to serve and enjoy. Coffee Bar included.</p>
+        <div class="shop-grid" id="cater-brunch-grid"></div>
+      </section>
+
+      <section class="menu-section" id="cater-section-coffee">
+        <h2>Coffee Bar</h2>
+        <p class="menu-section-sub">An add-on station for any order. Serves 10–12 people: 96oz Hardy Coffee, cream, sugar and sweeteners, and cups, lids and stirrers.</p>
+        <div class="shop-grid" id="cater-coffee-grid"></div>
+      </section>
+
+      <section class="menu-section" id="cater-section-addons">
+        <h2>Egg-Stra Add-Ons</h2>
+        <p class="menu-section-sub">Choose these inside a box meal.</p>
+        <div class="cater-addons-list">
+          <ul>
+            <li><span>Cookie</span><strong>$2.00</strong></li>
+            <li><span>Bottled drink (soda, water, tea)</span><strong>$3.00</strong></li>
+            <li><span>Side pickle</span><strong>$0.50</strong></li>
+            <li><span>Bag of chips</span><strong>$2.00</strong></li>
+            <li><span>Smoked salmon upgrade</span><strong>$2.99</strong></li>
+          </ul>
+          <p class="cater-note"><strong>Drinks:</strong> Fiji Water, Coke, Coke Zero, Dr Pepper, Sweet Tea, Unsweet Tea, RedBull +$1.00</p>
+        </div>
+      </section>
+
     </div>
-    <ul class="cater-grid">
-      <li class="cater-card is-featured">
-        <div class="cater-media"><img src="assets/catering/light-lunch.jpg" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
-          <p class="cater-tag">Serves 10 • Top pick</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">The "Hungry Team"</h3>
-          <p class="cater-price"><strong>$99.99</strong> <span>/ bundle</span></p>
-          <p class="cater-list-label">Serves 10 People: Best Value For a Full Meal</p>
-          <ul class="cater-list">
-            <li>10 Signature Full-Sandwiches | Choose Up To 2 Flavors</li>
-            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="hungry-team" data-cater-label="The “Hungry Team”">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-      <li class="cater-card">
-        <div class="cater-media"><img src="assets/catering/light-lunch.jpg" width="216" height="244" alt="A sliced chicken salad wrap on a yellow background" loading="lazy">
-          <p class="cater-tag">Serves 10</p>
-        </div>
-        <div class="cater-body">
-          <h3 class="cater-name">The "Light Lunch"</h3>
-          <p class="cater-price"><strong>$69.99</strong> <span>/ bundle</span></p>
-          <p class="cater-list-label">Serves 10 People</p>
-          <ul class="cater-list">
-            <li>10 Signature Half-Sandwiches | Choose Up To 2 Flavors</li>
-            <li>The Coffee Bar Included | See Coffee Bar Catring</li>
-          </ul>
-          <button class="pill-btn dark full cater-order" type="button" data-cater-order="light-lunch" data-cater-label="The “Light Lunch”">Order Now<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-      </li>
-    </ul>
-  </section>
+  </div>
 
   <section class="page-signup" aria-labelledby="cater-signup-title">
     <div class="page-signup-copy">
@@ -1112,7 +1017,7 @@
           </label>
           <label class="field-group qty-field">
             Qty
-            <select id="qty-select" class="qty-select"></select>
+            <select id="qty-select" class="qty-select" aria-label="Quantity"></select>
           </label>
         </div>
       </div>
@@ -1150,20 +1055,19 @@
           <p class="modal-desc" id="bagel-modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
           <div class="divider thick"></div>
 
-          <div class="field-group">
-            <span class="field-label">Toast</span>
-            <div class="chip-row" id="bagel-toast-picker">
-              <button class="chip active" data-value="Not Toasted" type="button">Not Toasted</button>
-              <button class="chip" data-value="Toasted" type="button">Toasted</button>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Toast</span>
             </div>
+            <div class="addon-list" id="bagel-toast-picker" role="radiogroup" aria-label="Toast"></div>
           </div>
 
-          <div class="field-group">
-            <span class="field-label">Bagel Type</span>
-            <div class="chip-row" id="bagel-type-picker">
-              <button class="chip active" data-value="Plain" type="button">Plain</button>
-              <button class="chip" data-value="Everything" type="button">Everything</button>
+          <div class="divider"></div>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Bagel Type</span>
             </div>
+            <div class="addon-list" id="bagel-type-picker" role="radiogroup" aria-label="Bagel type"></div>
           </div>
 
           <div class="divider"></div>
@@ -1172,16 +1076,15 @@
               <span class="modal-section-title">Yolk Spread Flavor</span>
               <span class="modal-section-sub">Pick 1 flavor.</span>
             </div>
-            <div class="addon-list" id="bagel-flavor-grid" role="radiogroup" aria-label="Yolk spread flavor"></div>
+            <div class="flavor-grid" id="bagel-flavor-grid" role="radiogroup" aria-label="Yolk spread flavor"></div>
           </div>
 
           <div class="divider"></div>
-          <div class="field-group">
-            <span class="field-label">Options</span>
-            <div class="chip-row" id="bagel-options-picker">
-              <button class="chip" data-value="Sauce on Side" type="button">Sauce on Side</button>
-              <button class="chip" data-value="Light Yolk Spread" type="button">Light Yolk Spread</button>
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Options</span>
             </div>
+            <div class="addon-list" id="bagel-options-picker" role="group" aria-label="Options"></div>
           </div>
 
           <label class="field-group qty-field">
@@ -1284,6 +1187,15 @@
           <p class="modal-desc" id="wrap-modal-desc"></p>
           <div class="divider thick"></div>
 
+          <div>
+            <div class="modal-section-head">
+              <span class="modal-section-title">Wrap or meal</span>
+              <span class="modal-section-sub">A meal adds chips and a bottled drink.</span>
+            </div>
+            <div class="addon-list" id="wrap-meal-picker" role="radiogroup" aria-label="Wrap or meal"></div>
+          </div>
+
+          <div class="divider"></div>
           <div>
             <div class="modal-section-head">
               <span class="modal-section-title">Sandwich Flavor</span>

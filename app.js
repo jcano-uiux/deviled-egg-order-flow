@@ -45,6 +45,10 @@
   // existing :disabled dimming) still drives the icon exactly like the
   // text characters did.
   const STEP_MINUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
+  // The flavor thumbnail's corner icon: expand (open the video and description) and, once open, collapse.
+  const FLAVOR_EXPAND_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const FLAVOR_INFO_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 11v6.500" stroke="currentColor" stroke-width="2.400" stroke-linecap="round"/><circle cx="12" cy="6.800" r="1.500" fill="currentColor"/></svg>';
+  const FLAVOR_COLLAPSE_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const STEP_PLUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
   const eggThumb = () => {
@@ -91,13 +95,13 @@
     // One card for both 6 Packs: the modal asks 3 flavors or 6 (a different price, photo and number of flavors, the
     // same six eggs). The card shows the entry price; `pickerConfig` here only marks it as a flavor picker.
     {
-      id: '6-pack', name: '6 Pack', price: 12.99, note: '420 Cal.', image: 'assets/products/6-pack-6-flavors.jpg',
+      id: '6-pack', name: '6 Pack Deviled Egg', price: 12.99, note: '420 Cal.', image: 'assets/products/6-pack-6-flavors.jpg',
       desc: 'Six deviled eggs, in three flavors or all six. A great way to sample our most popular creations.',
       pickerConfig: { total: 6, maxFlavors: 3 }, optionsTitle: 'How many flavors?', optionsHint: 'Six deviled eggs either way.',
       options: [
-        { id: '3-flavors', label: '3 flavors', name: '6 Pack – 3 Flavors', price: 12.99, image: 'assets/products/6-pack-3-flavors.jpg',
+        { id: '3-flavors', label: '3 flavors', name: '6 Pack Deviled Egg – 3 Flavors', price: 12.99, image: 'assets/products/6-pack-3-flavors.jpg',
           desc: 'Six deviled eggs in three delicious flavors — a great way to sample our most popular creations.', pickerConfig: { total: 6, maxFlavors: 3 } },
-        { id: '6-flavors', label: '6 flavors', name: '6 Pack – 6 Flavors', price: 14.99, image: 'assets/products/6-pack-6-flavors.jpg',
+        { id: '6-flavors', label: '6 flavors', name: '6 Pack Deviled Egg – 6 Flavors', price: 14.99, image: 'assets/products/6-pack-6-flavors.jpg',
           desc: 'Six deviled eggs, each a different flavor — try them all and find your favorite.', pickerConfig: { total: 6, maxFlavors: 6 } },
       ],
     },
@@ -209,21 +213,27 @@
   const WRAP_PRICE = 9.99;
   const WRAP_IMAGE = 'assets/products/eggceptional-wraps.jpg';
   const WRAP_DESC = 'Fresh-pressed flatbread wraps built from our signature deviled egg flavors — pick your filling, then add sides.';
-  // Sourced verbatim from deviledeggco.com/product/eggceptional-wraps: each
-  // flavor's own ingredient line, shown once that flavor is selected — this
-  // product has no "NO:" exclusion toggles like the deviled egg flavors do.
+  // Sourced verbatim from deviledeggco.com/product/eggceptional-wraps: each flavor's own ingredient line.
+  // `photo` is the matching deviled egg flavor's still (assets/flavors): the wraps have no photos of their own.
+  // `exclusions` are the ingredients a customer can leave out, read off that line; the yolk or crab mix is the
+  // base of the filling and stays (the live page lists no "NO:" toggles for this product, so confirm these).
   const WRAP_FLAVORS = [
-    { id: 'blte', label: 'BLTE', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch' },
-    { id: 'cali-roll', label: 'Cali Roll', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame' },
-    { id: 'the-caesar', label: 'The Caesar', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch' },
-    { id: 'buffalo-chicken', label: 'Buffalo Chicken', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch' },
+    { id: 'blte', label: 'BLTE', photo: 'BTLE', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+      exclusions: ['Bacon', 'Cheddar cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
+    { id: 'cali-roll', label: 'Cali Roll', photo: 'Cali-Roll', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame',
+      exclusions: ['Sriracha aioli', 'Avocado', 'Cucumber', 'Teriyaki', 'Black sesame'] },
+    { id: 'the-caesar', label: 'The Caesar', photo: 'The-Caesar', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+      exclusions: ['Grilled chicken', 'Bacon', 'Parmesan cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
+    { id: 'buffalo-chicken', label: 'Buffalo Chicken', photo: 'Buffalo-Chicken', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch',
+      exclusions: ['Grilled chicken', 'Red onion', 'Buffalo sauce', 'Lettuce', 'Creamy ranch'] },
   ];
   // "Make it a Meal" is its own highlighted toggle on the live site, but it
   // shares the exact {label, price, note} shape the bowl modal's own addOns
   // already use, so it gets Add-Ons' existing chip UI for free as the first
   // entry here instead of a one-off toggle component built for one row.
+  // "Make it a Meal" is its own choice in the modal (wrap or meal), not one of the add-ons.
+  const WRAP_MEAL = { label: 'Make it a meal', price: 3.49, note: 'Chips & a bottled drink' };
   const WRAP_ADDONS = [
-    { label: 'Make it a Meal', price: 3.49, note: 'Chips & a bottled drink' },
     { label: 'Cookie', price: 2.00 },
     { label: 'Gourmet 2-Pack of Deviled Eggs', price: 2.00 },
     { label: '4oz House-Made Egg Salad', price: 2.00 },
@@ -238,9 +248,14 @@
   // allocation across a shared 19-flavor list, so rather than bend either
   // existing modal to fit, this gets its own small dedicated one
   // (openWrapModal) — see "Wrap customization modal" below.
-  const SANDWICH_WRAP = [
-    { id: 'eggceptional-wraps', name: 'Eggceptional Wraps', price: WRAP_PRICE, desc: WRAP_DESC, image: WRAP_IMAGE, wrapFlavors: WRAP_FLAVORS, addOns: WRAP_ADDONS },
-  ];
+  // The one product the modal builds (its photo, price, meal and add-ons); the menu shows it as one card per sandwich.
+  const WRAP_PRODUCT = { id: 'eggceptional-wraps', name: 'Eggceptional Wraps', price: WRAP_PRICE, desc: WRAP_DESC, image: WRAP_IMAGE, wrapFlavors: WRAP_FLAVORS, meal: WRAP_MEAL, addOns: WRAP_ADDONS };
+  // Sandwich/Wrap in the menu is a grid of the four sandwiches. Each card opens the wrap modal with its flavor already chosen
+  // (the flavor can still be changed there). The photo is the matching deviled egg flavor's still; the wraps have none of their own.
+  const SANDWICH_WRAP = WRAP_FLAVORS.map((f) => ({
+    id: 'wrap-' + f.id, name: f.label, price: WRAP_PRICE, note: 'Wrap', desc: f.ingredients,
+    image: `assets/flavors/${f.photo}.jpg`, wrapFlavors: WRAP_FLAVORS, wrapProduct: WRAP_PRODUCT, wrapFlavorId: f.id,
+  }));
 
   const BAGEL_FLAVORS = [
     'Traditional', 'Buffalo Chicken', 'Buffalo Blue Cheese', 'Walking Taco', 'South of the Border',
@@ -403,7 +418,7 @@
   // so an existing cart self-heals instead of staying stuck on the
   // placeholder icon until the user manually clears it.
   const PRODUCT_IMAGE_BY_NAME = {};
-  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, ...SANDWICH_WRAP].forEach((p) => {
+  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, WRAP_PRODUCT].forEach((p) => {
     if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
   });
   // A product with options (the 6 Pack) is saved in the bag under the chosen option's own name.
@@ -644,7 +659,7 @@
   function openMenuItem(item, keyPrefix, cartCategory) {
     if (gateFulfillment(() => openMenuItem(item, keyPrefix, cartCategory))) return;
     if (item.wrapFlavors) {
-      openWrapModal(item);
+      openWrapModal(item.wrapProduct, null, item.wrapFlavorId);
     } else if (item.pickerConfig || item.fixedFlavors) {
       openDozenModal(item);
     } else if (item.addOns) {
@@ -722,12 +737,13 @@
     sync();
   }
 
-  function renderShopGrid(gridId, items, keyPrefix, cartCategory) {
+  // `open` replaces the menu's own modal choice (the catering cards open the catering modal); such items always customize.
+  function renderShopGrid(gridId, items, keyPrefix, cartCategory, open = null) {
     const grid = document.getElementById(gridId);
     grid.innerHTML = '';
     items.forEach((item) => {
       const card = document.createElement('div');
-      card.className = 'shop-card';
+      card.className = 'shop-card' + (open ? ' shop-card-cater' : '');
 
       const body = document.createElement('div');
       body.className = 'shop-card-body';
@@ -747,9 +763,9 @@
       const btn = document.createElement('button');
       btn.className = 'add-btn';
       btn.type = 'button';
-      btn.setAttribute('aria-label', (item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize ' + item.name : 'View ' + item.name);
+      btn.setAttribute('aria-label', (open || item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize ' + item.name : 'View ' + item.name);
       btn.innerHTML = ADD_ICON;
-      const activate = () => openMenuItem(item, keyPrefix, cartCategory);
+      const activate = open ? () => open(item) : () => openMenuItem(item, keyPrefix, cartCategory);
       btn.addEventListener('click', activate);
       media.appendChild(btn);
       card.appendChild(media);
@@ -1077,7 +1093,9 @@
   document.querySelectorAll('.category-item[data-target]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const targetId = btn.dataset.target;
-      document.querySelectorAll('.category-item').forEach((b) => {
+      // Each page (the menu, Catering) has its own category lists; only that page's pills change.
+      const page = btn.closest('main.view');
+      page.querySelectorAll('.category-item').forEach((b) => {
         b.classList.toggle('active', b.dataset.target === targetId);
       });
 
@@ -1087,7 +1105,7 @@
       // Keep the newly active pill visible within the mobile horizontal
       // scroller — block:'nearest' keeps this from also nudging the
       // page's own vertical scroll.
-      const mobileTwin = document.querySelector(`.drawer-nav-mobile .category-item[data-target="${targetId}"]`);
+      const mobileTwin = page.querySelector(`.drawer-nav-mobile .category-item[data-target="${targetId}"]`);
       if (mobileTwin) mobileTwin.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     });
   });
@@ -1096,9 +1114,7 @@
   // scrolling; this adds the same "grab and drag" affordance for mouse
   // pointers, which have no native equivalent. Gated to pointerType
   // 'mouse' so it never fights a real touchscreen's own scrolling.
-  (() => {
-    const scroller = document.querySelector('.drawer-nav-mobile');
-    if (!scroller) return;
+  document.querySelectorAll('.drawer-nav-mobile').forEach((scroller) => {
     let mouseIsDown = false;
     let dragging = false;
     let startX = 0;
@@ -1159,23 +1175,28 @@
         moved = false;
       }
     }, true);
-  })();
+  });
 
   // Mobile-only: the category pill bar stays hidden (see the ≤640px CSS — position:fixed, opacity:0) until the
   // user has scrolled about halfway down the featured-item card, then fades in as a floating bar. A no-op on
   // wider screens: the bar is display:none there regardless, so toggling a class on it does nothing visible.
-  const drawerNavMobile = document.querySelector('.drawer-nav-mobile');
-  const featureCard = document.getElementById('featured-items');
+  // One bar per page that has one: the menu (revealed past its featured card) and Catering (past its first section).
+  const REVEAL_BARS = [
+    { view: document.getElementById('view-menu'), bar: document.querySelector('#view-menu .drawer-nav-mobile'), anchor: document.getElementById('featured-items') },
+    { view: document.getElementById('view-catering'), bar: document.querySelector('#view-catering .drawer-nav-mobile'), anchor: document.getElementById('cater-section-boxes') },
+  ];
   const REVEAL_LINE_PX = 69;
   let revealTicking = false;
   function updateBarReveal() {
     revealTicking = false;
-    if (!drawerNavMobile || !featureCard) return;
-    // A hidden menu has no layout (its rect is all zeros), which would read as "scrolled past the featured card".
-    if (document.getElementById('view-menu').hidden) { drawerNavMobile.classList.remove('is-revealed'); return; }
-    const rect = featureCard.getBoundingClientRect();
-    const midpoint = rect.top + rect.height / 2;
-    drawerNavMobile.classList.toggle('is-revealed', midpoint <= REVEAL_LINE_PX);
+    REVEAL_BARS.forEach(({ view, bar, anchor }) => {
+      if (!bar || !anchor) return;
+      // A hidden page has no layout (its rect is all zeros), which would read as "scrolled past the anchor".
+      if (view.hidden) { bar.classList.remove('is-revealed'); return; }
+      const rect = anchor.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      bar.classList.toggle('is-revealed', midpoint <= REVEAL_LINE_PX);
+    });
   }
   function onScrollForReveal() {
     if (revealTicking) return;
@@ -1185,6 +1206,7 @@
   window.addEventListener('scroll', onScrollForReveal, { passive: true });
   window.addEventListener('resize', onScrollForReveal);
   updateBarReveal();
+  document.getElementById('cater-back').addEventListener('click', (e) => { e.preventDefault(); goHome(); });
 
   // ---------- Overlay focus management ----------
   const pageRoot = document.getElementById('page-root');
@@ -1198,7 +1220,6 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (fbSheetOpen()) { closeSheet(); return; }
     const openGroup = navGroupBtns.find((b) => b.getAttribute('aria-expanded') === 'true');
     if (openGroup && !navInnerEl.classList.contains('nav-compact')) { setNavGroup(openGroup, false); openGroup.focus(); return; }
     if (navToggle.getAttribute('aria-expanded') === 'true') setNavOpen(false);
@@ -1226,6 +1247,54 @@
   // (e.g. "Remove ingredients" chips) goes in the sibling .radio-choice-extra,
   // because interactive controls can't live inside a label.
   const escapeHTML = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // A small line glyph for each ingredient a customer can leave out (wraps and packs), drawn on a 24px grid in the current text color.
+  const WRAP_ICON_SVG = (body) => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  const WRAP_ICONS = {
+    bacon: WRAP_ICON_SVG('<path d="M3 8c3-3 5 3 9 0s6 3 9 0v8c-3 3-6-3-9 0s-6 3-9 0z"/><path d="M3 12c3-3 5 3 9 0s6 3 9 0"/>'),
+    cheese: WRAP_ICON_SVG('<path d="M3 11 13 5l8 3v10H3z"/><path d="M3 11l10 3 8-6M13 14v4"/><circle cx="7.500" cy="15.500" r=".9"/><circle cx="17" cy="14.500" r=".9"/>'),
+    lettuce: WRAP_ICON_SVG('<path d="M5 19C4 11 9 5 19 5c0 10-6 15-14 14z"/><path d="M5 19 14 10"/>'),
+    tomato: WRAP_ICON_SVG('<circle cx="12" cy="13.500" r="7.500"/><path d="M12 6.500 9.500 4M12 6.500 14.500 4M12 6.500 8 7.500M12 6.500 16 7.500"/><path d="M7.500 14a4.500 4.500 0 0 1 2.500-4"/>'),
+    sauce: WRAP_ICON_SVG('<path d="M12 3.500c3.500 4.500 6 7.200 6 10.300a6 6 0 0 1-12 0c0-3.100 2.500-5.800 6-10.300z"/><path d="M9.500 14a2.500 2.500 0 0 0 2 2.500"/>'),
+    flame: WRAP_ICON_SVG('<path d="M12 3c1 3.500 5.500 5.500 5.500 11a5.500 5.500 0 0 1-11 0c0-2.500 1-4 2.500-5.500.2 1.700.8 2.700 2 3 .1-3 .2-5.500 1-8.500z"/>'),
+    avocado: WRAP_ICON_SVG('<path d="M12 3c3.500 0 5 3.500 5.500 7 .6 4 2 6.500-1 9.200a7.500 7.500 0 0 1-9 0C4.500 16.500 6 14 6.500 10 7 6.500 8.500 3 12 3z"/><circle cx="12" cy="14" r="2.800"/>'),
+    cucumber: WRAP_ICON_SVG('<circle cx="12" cy="12" r="8.500"/><circle cx="12" cy="12" r="5"/><path d="M12 9v.01M9.500 13v.01M14.500 13v.01"/>'),
+    sesame: WRAP_ICON_SVG('<ellipse cx="8" cy="8.500" rx="2.200" ry="1.200" transform="rotate(-35 8 8.500)"/><ellipse cx="16" cy="9" rx="2.200" ry="1.200" transform="rotate(35 16 9)"/><ellipse cx="12" cy="14" rx="2.200" ry="1.200" transform="rotate(-10 12 14)"/><ellipse cx="7.500" cy="17" rx="2.200" ry="1.200" transform="rotate(30 7.500 17)"/><ellipse cx="16.500" cy="17" rx="2.200" ry="1.200" transform="rotate(-30 16.500 17)"/>'),
+    chicken: WRAP_ICON_SVG('<ellipse cx="15" cy="9" rx="6" ry="5" transform="rotate(-40 15 9)"/><path d="M11.500 12.500 6.500 17.500"/><circle cx="5.200" cy="16.800" r="1.600"/><circle cx="7.200" cy="19" r="1.600"/>'),
+    meat: WRAP_ICON_SVG('<path d="M5 9c0-3 4-4.500 8-4.500S20 6 20 10c0 5-3 9-8 9s-7-3-7-5.500c0-1.800.5-3 .5-4.500z"/><circle cx="11" cy="11" r="1.600"/>'),
+    pickle: WRAP_ICON_SVG('<rect x="8" y="3" width="8" height="18" rx="4" transform="rotate(25 12 12)"/><path d="M10 9v.01M13 11.500v.01M11 14.500v.01"/>'),
+    pepper: WRAP_ICON_SVG('<path d="M14 6c1-2 2.500-2.500 4-2.500M14 6c-5 0-9 4-9 9 0 2.500 2 4.500 4 4.500 5 0 8-5 8-10 0-1.500-1.500-2.500-3-3.500z"/>'),
+    fish: WRAP_ICON_SVG('<path d="M3 12c3-4.500 8-6 12-3.500l5-2.500v12l-5-2.500C11 18 6 16.500 3 12z"/><circle cx="8" cy="11" r=".9"/>'),
+    chips: WRAP_ICON_SVG('<path d="M12 4 21 19H3z"/><path d="M9 14v.01M13 15v.01M12 10.500v.01"/>'),
+    waffle: WRAP_ICON_SVG('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9.300 4v16M14.700 4v16M4 9.300h16M4 14.700h16"/>'),
+    egg: WRAP_ICON_SVG('<ellipse cx="12" cy="12" rx="6.500" ry="8"/><circle cx="12" cy="13" r="2.500"/>'),
+    bean: WRAP_ICON_SVG('<path d="M7 7c3-3 9-2 10 3s-3 11-8 10-5-10-2-13z"/><path d="M10 10c1 0 2 1 2 3"/>'),
+    plain: WRAP_ICON_SVG('<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.500"/>'),
+    onion: WRAP_ICON_SVG('<path d="M12 3c0 3 5.500 5 5.500 10.500a5.500 5.500 0 0 1-11 0C6.500 8 12 6 12 3z"/><path d="M12 8c-1.800 3.500-1.800 8.500 0 12M12 8c1.800 3.500 1.800 8.500 0 12"/>'),
+  };
+  // The glyph is picked from the ingredient's own words, first match wins.
+  const ING_ICON_RULES = [
+    [/bacon/, 'bacon'], [/egg white/, 'egg'], [/cheese|cheddar|parmesan/, 'cheese'], [/lettuce|romaine/, 'lettuce'], [/tomato/, 'tomato'],
+    [/avocado|avo-/, 'avocado'], [/cucumber/, 'cucumber'], [/pickled jal|jalape|pepper|paprika/, 'pepper'], [/pickle/, 'pickle'],
+    [/onion/, 'onion'], [/sesame|seasoning|caper/, 'sesame'], [/chicken(?! sauce)/, 'chicken'],
+    [/brisket|beef|hamburger|frank|patty/, 'meat'], [/crab|salmon/, 'fish'], [/chips|doritos|wonton/, 'chips'], [/waffle/, 'waffle'],
+    [/bean/, 'bean'], [/buffalo|sriracha|chipotle|cholula/, 'flame'],
+    [/sauce|dressing|ranch|ketchup|mustard|aioli|teriyaki|syrup|caesar|sour cream/, 'sauce'],
+  ];
+  const ingredientIcon = (name) => {
+    const n = name.toLowerCase();
+    const hit = ING_ICON_RULES.find(([re]) => re.test(n));
+    return WRAP_ICONS[hit ? hit[1] : 'plain'];
+  };
+  // The "leave it out" mark at the right of each row: a circle with a slash, grey until chosen, then red.
+  const WRAP_NO_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.600 5.600l12.800 12.800"/></svg>';
+
+  // "Remove ingredients" as a list: one row per ingredient, the whole row a toggle button. `excluded` is the Set of names left out.
+  const exclusionListHTML = (items, excluded) => `<ul class="excl-list">${items.map((ing) => `<li><button class="excl${excluded.has(ing) ? ' active' : ''}" type="button" aria-pressed="${excluded.has(ing)}" aria-label="No ${escapeHTML(ing.toLowerCase())}"><span class="excl-icon">${ingredientIcon(ing)}</span><span class="excl-name">${escapeHTML(ing)}</span><span class="excl-no">${WRAP_NO_SVG}</span></button></li>`).join('')}</ul>`;
+  const paintExclusionList = (box, items, excluded) => box.querySelectorAll('.excl').forEach((b, i) => {
+    b.classList.toggle('active', excluded.has(items[i]));
+    b.setAttribute('aria-pressed', String(excluded.has(items[i])));
+  });
+
   const radioChoiceHTML = ({ group, value, label, note, selected }) => `
     <div class="radio-choice${selected ? ' selected' : ''}">
       <label class="radio-choice-row">
@@ -1291,17 +1360,15 @@
     extra.innerHTML = `
       <div class="flavor-exclusions">
         <span class="flavor-exclusions-label">Remove ingredients</span>
-        <div class="chip-row">
-          ${flavor.exclusions.map((ing) => `<button class="chip exclude-chip${excluded.has(ing) ? ' active' : ''}" type="button">NO: ${ing}</button>`).join('')}
-        </div>
+        ${exclusionListHTML(flavor.exclusions, excluded)}
       </div>`;
-    extra.querySelectorAll('.exclude-chip').forEach((chip, i) => {
-      chip.addEventListener('click', () => {
+    extra.querySelectorAll('.excl').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
         const ing = flavor.exclusions[i];
         const set = state.modalExclusions[flavor.id] || new Set();
         if (set.has(ing)) set.delete(ing); else set.add(ing);
         state.modalExclusions[flavor.id] = set;
-        chip.classList.toggle('active', set.has(ing));
+        paintExclusionList(extra, flavor.exclusions, set);
       });
     });
   }
@@ -1371,19 +1438,19 @@
     const reopen = flavorWatch.id !== id;
     stopFlavorWatch();
     if (reopen) flavorWatch = { id, wrap: null, playing: !flavorReduceMotion.matches };
-    renderFlavorGrid();
-    const row = document.querySelector(`#flavor-grid [data-flavor="${id}"]`);
+    const inBagel = !bagelModal.hidden;
+    if (inBagel) renderBagelFlavors(); else renderFlavorGrid();
+    const row = document.querySelector(`${inBagel ? '#bagel-flavor-grid' : '#flavor-grid'} [data-flavor="${id}"]`);
     if (!row) return;
     row.querySelector('.flavor-thumb').focus({ preventScroll: true });
     if (reopen) row.scrollIntoView({ block: 'nearest', behavior: flavorReduceMotion.matches ? 'auto' : 'smooth' });
   }
 
   // ---------- TEMP: large-video flavor layouts ----------
-  // Layouts compared with a switcher above the list: Current; Pair (two square clips across); and three ways to
-  // expand a Big thumb row (A grows it in place, B opens a bottom sheet, C widens it to the full card). Remove the
-  // ones that lose, and this switcher, once one is chosen.
-  const FLAVOR_VARIANTS = [['0', 'Current'], ['2', 'Pair'], ['4', 'A · Grow'], ['5', 'B · Sheet'], ['6', 'C · Wide']];
-  const BIG_MODES = { 4: 'a', 5: 'b', 6: 'c' };
+  // Layouts compared with a switcher above the list: Distilled (the picker); Pair (two square clips across); and Grow,
+  // the Big thumb row that expands in place. Remove the ones that lose, and this switcher, once one is chosen.
+  const FLAVOR_VARIANTS = [['0', 'Distilled'], ['2', 'Pair'], ['4', 'Grow']];
+  const BIG_MODES = { 4: 'a' };
   let flavorVariant = '0';
   try { flavorVariant = localStorage.getItem('deg-flavor-variant') || '0'; } catch (e) { /* storage unavailable */ }
   if (!FLAVOR_VARIANTS.some(([k]) => k === flavorVariant)) flavorVariant = '0';
@@ -1452,9 +1519,75 @@
     button.addEventListener('click', () => {
       if (video.paused) { video.dataset.userPaused = '0'; video.dataset.userPlayed = '1'; fvPlay(video); } else { video.dataset.userPaused = '1'; video.pause(); }
     });
+    // The corner "i": the whole clip, uncropped, with the flavor's description, in a sheet of its own.
+    const info = document.createElement('button');
+    info.type = 'button';
+    info.className = 'fv-info';
+    info.setAttribute('aria-label', `About ${f.label}: watch the full video and read the description`);
+    info.setAttribute('aria-haspopup', 'dialog');
+    info.innerHTML = FLAVOR_INFO_ICON;
+    info.addEventListener('click', (e) => { e.stopPropagation(); openFlavorInfo(f, info); });
+    wrap.appendChild(info);
     if (fv.observer) fv.observer.observe(wrap);
     return wrap;
   }
+
+  // ----- Flavor info sheet (Pair): the full clip and the description over the open modal. -----
+  let flavorInfo = null;
+
+  function openFlavorInfo(f, opener) {
+    closeFlavorInfo(false);
+    const media = FLAVOR_MEDIA[f.id];
+    const file = `assets/flavors/${media.file}`;
+    const stat = flavorStat(f);
+    const root = document.createElement('div');
+    root.className = 'flavor-info';
+    root.innerHTML = `
+      <div class="flavor-info-backdrop"></div>
+      <div class="flavor-info-sheet" role="dialog" aria-modal="true" aria-labelledby="flavor-info-title">
+        <button class="close-btn flavor-info-close" type="button" aria-label="Close">${document.getElementById('close-modal').innerHTML}</button>
+        <button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>
+        <div class="flavor-info-copy">
+          <h2 id="flavor-info-title">${escapeHTML(f.label)}</h2>
+          ${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}
+          <p>${escapeHTML(media.desc)}</p>
+        </div>
+      </div>`;
+    document.body.appendChild(root);
+    itemModal.inert = true;
+    itemModal.classList.add('is-under');
+    const player = root.querySelector('.flavor-info-media');
+    const video = player.querySelector('video');
+    const paint = () => {
+      player.classList.toggle('is-paused', video.paused);
+      player.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${f.label} video`);
+    };
+    video.addEventListener('play', paint);
+    video.addEventListener('pause', paint);
+    player.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
+    paint();
+    if (!flavorReduceMotion.matches) video.play().catch(() => {});
+    root.querySelector('.flavor-info-backdrop').addEventListener('click', () => closeFlavorInfo());
+    root.querySelector('.flavor-info-close').addEventListener('click', () => closeFlavorInfo());
+    flavorInfo = { root, video, opener };
+    root.querySelector('.flavor-info-close').focus();
+  }
+
+  function closeFlavorInfo(restoreFocus = true) {
+    if (!flavorInfo) return;
+    const { root, video, opener } = flavorInfo;
+    flavorInfo = null;
+    video.pause();
+    itemModal.inert = false;
+    itemModal.classList.remove('is-under');
+    // It slides back down (at once when the modal itself is closing or motion is reduced).
+    if (restoreFocus && !flavorReduceMotion.matches) { root.classList.add('is-closing'); window.setTimeout(() => root.remove(), 220); } else root.remove();
+    if (restoreFocus && opener && opener.isConnected) opener.focus();
+  }
+  // Escape closes the sheet and nothing under it.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && flavorInfo) { e.stopPropagation(); closeFlavorInfo(); }
+  }, true);
 
   // The observer only reports a clip when it crosses the line, so a clip already on screen when the layout is built
   // is started by hand, once the browser has laid it out.
@@ -1485,7 +1618,6 @@
     }
     if (fv.root) updateFlavorVariant(); else renderFlavorGrid();
     renderModalFooter();
-    if (fbSheetOpen()) paintSheet();
   }
 
   function fvStepper(getFlavor) {
@@ -1510,24 +1642,23 @@
   }
 
   // "Remove ingredients" chips for a flavor that has some, shown once it is in the mix.
-  function fvSyncExclusions(box, f, qty) {
+  function fvSyncExclusions(box, f, qty, onChange = null) {
     const show = qty > 0 && f.exclusions && f.exclusions.length > 0;
     box.hidden = !show;
     if (!show) { box.innerHTML = ''; box.dataset.for = ''; return; }
     if (box.dataset.for !== f.id) {
       box.dataset.for = f.id;
-      box.innerHTML = `<span class="flavor-exclusions-label">Remove ingredients</span><div class="chip-row">${
-        f.exclusions.map((ing) => `<button class="chip exclude-chip" type="button">NO: ${ing}</button>`).join('')}</div>`;
-      box.querySelectorAll('.exclude-chip').forEach((chip, i) => chip.addEventListener('click', () => {
+      box.innerHTML = `<span class="flavor-exclusions-label">Remove ingredients</span>${exclusionListHTML(f.exclusions, state.modalExclusions[f.id] || new Set())}`;
+      box.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => {
         const ing = f.exclusions[i];
         const set = state.modalExclusions[f.id] || new Set();
         if (set.has(ing)) set.delete(ing); else set.add(ing);
         state.modalExclusions[f.id] = set;
-        chip.classList.toggle('active', set.has(ing));
+        paintExclusionList(box, f.exclusions, set);
+        if (onChange) onChange();
       }));
     }
-    const excluded = state.modalExclusions[f.id] || new Set();
-    box.querySelectorAll('.exclude-chip').forEach((chip, i) => chip.classList.toggle('active', excluded.has(f.exclusions[i])));
+    paintExclusionList(box, f.exclusions, state.modalExclusions[f.id] || new Set());
   }
 
   // Pair: one square clip per flavor, two across, the stepper under the name. Built once, updated in place.
@@ -1536,21 +1667,26 @@
     el.className = 'fv-tile';
     el.dataset.flavor = f.id;
     const media = fvMedia(f);
-    const badge = document.createElement('span');
-    badge.className = 'fv-badge';
-    badge.setAttribute('aria-hidden', 'true');
-    media.appendChild(badge);
     const stepper = fvStepper(() => f);
     const body = document.createElement('div');
     body.className = 'fv-body';
     const stat = flavorStat(f);
     body.innerHTML = `<span class="fv-name">${escapeHTML(f.label)}</span>${stat ? `<span class="fv-stat">${escapeHTML(stat)}</span>` : ''}`;
     body.appendChild(stepper);
+    // As in Distilled and Grow: a chosen flavor shows a "Customize" link, and the ingredient list opens only when it is tapped.
+    const custom = document.createElement('div');
+    custom.className = 'fd-custom fv-custom';
+    custom.hidden = true;
+    custom.innerHTML = `<button class="fd-custom-btn" type="button" aria-expanded="false" aria-label="Customize ${escapeHTML(f.label)}">Customize</button><span class="fd-custom-sum"></span>`;
+    custom.querySelector('.fd-custom-btn').addEventListener('click', () => {
+      if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
+      updateFlavorVariant();
+    });
     const excl = document.createElement('div');
     excl.className = 'flavor-exclusions fv-excl';
     excl.hidden = true;
-    el.append(media, body, excl);
-    fv.tiles[f.id] = { el, badge, stepper, excl };
+    el.append(media, body, custom, excl);
+    fv.tiles[f.id] = { el, stepper, excl, custom };
     return el;
   }
 
@@ -1562,9 +1698,17 @@
       const t = fv.tiles[f.id];
       t.el.classList.toggle('selected', qty > 0);
       t.el.classList.toggle('at-limit', qty <= 0 && allocated >= total);
-      t.badge.textContent = String(qty);
       fvSyncStepper(t.stepper, f, qty, allocated);
-      fvSyncExclusions(t.excl, f, qty);
+      const hasExcl = qty > 0 && f.exclusions && f.exclusions.length > 0;
+      const open = hasExcl && fd.custom.has(f.id);
+      const paintSum = () => {
+        const ex = state.modalExclusions[f.id];
+        t.custom.querySelector('.fd-custom-sum').textContent = ex && ex.size ? `No ${[...ex].join(', ').toLowerCase()}` : '';
+      };
+      t.custom.hidden = !hasExcl;
+      t.custom.querySelector('.fd-custom-btn').setAttribute('aria-expanded', String(open));
+      paintSum();
+      fvSyncExclusions(t.excl, f, open ? qty : 0, paintSum);
     });
     renderFlavorGuidance(allocated);
   }
@@ -1590,15 +1734,13 @@
 
   // ----- Big thumb rows (A, B, C): the Current list with each thumbnail 2.5× larger and playing. -----
   // The thumbnails outlive the list's redraws (every + / − rebuilds the rows), so they are kept in `fb` and put
-  // back into each new row; a clip is never reloaded by a tap. `fb.open` is the row A or C has expanded and
-  // `fb.sheet` the flavor B's sheet shows.
-  const fb = { thumbs: {}, observer: null, open: null, sheet: null, hold: false };
+  // back into each new row; a clip is never reloaded by a tap. `fb.open` is the row A has expanded.
+  const fb = { thumbs: {}, observer: null, open: null };
 
   function fbDispose() {
     if (fb.observer) fb.observer.disconnect();
     Object.values(fb.thumbs).forEach((t) => t.querySelector('video').pause());
-    Object.assign(fb, { thumbs: {}, observer: null, open: null, hold: false });
-    closeSheet(true);
+    Object.assign(fb, { thumbs: {}, observer: null, open: null });
   }
 
   function fbThumb(f) {
@@ -1615,7 +1757,7 @@
     if (!fb.observer) {
       fb.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
         const video = entry.target.querySelector('video');
-        if (entry.intersectionRatio >= 0.55 && !fb.hold) fvPlay(video); else video.pause();
+        if (entry.intersectionRatio >= 0.55) fvPlay(video); else video.pause();
       }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
     }
     fb.observer.observe(btn);
@@ -1627,7 +1769,7 @@
   function fbKick() {
     requestAnimationFrame(() => {
       const scroller = document.querySelector('#item-modal .item-modal-scroll');
-      if (!scroller || fb.hold) return;
+      if (!scroller) return;
       const box = scroller.getBoundingClientRect();
       Object.values(fb.thumbs).forEach((t) => {
         const r = t.getBoundingClientRect();
@@ -1637,13 +1779,14 @@
     });
   }
 
-  function renderBigRows(grid, mode) {
+  function renderBigRows(grid) {
     grid.innerHTML = '';
     const allocated = dozenAllocated();
     flavorList().forEach((f) => {
       const qty = state.modalFlavorQty[f.id] || 0;
       const atLimit = qty <= 0 && allocated >= activeProduct.total;
-      const open = mode !== 'b' && fb.open === f.id;
+      const open = fb.open === f.id;
+      const hasExcl = qty > 0 && f.exclusions && f.exclusions.length > 0;
       const row = document.createElement('div');
       row.className = 'flavor-row dozen-flavor-row flavor-row-big' + (open ? ' is-open' : '') + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
       row.dataset.flavor = f.id;
@@ -1652,7 +1795,7 @@
         <div class="fb-head">
           <span class="fb-thumb-slot"></span>
           <div class="fb-main">
-            <button class="fb-open" type="button" aria-expanded="${open}" ${mode === 'b' ? 'aria-haspopup="dialog"' : `aria-controls="fb-details-${f.id}"`}>
+            <button class="fb-open" type="button" aria-expanded="${open}" aria-controls="fb-details-${f.id}">
               <span class="fb-name">${escapeHTML(f.label)}</span>
               ${stat ? `<small class="fb-stat">${escapeHTML(stat)}</small>` : ''}
               <span class="fb-link">${open ? 'Less' : 'Details'}</span>
@@ -1661,6 +1804,7 @@
           </div>
         </div>
         ${open ? `<div class="fb-details" id="fb-details-${f.id}"><p class="fb-desc">${escapeHTML(FLAVOR_MEDIA[f.id].desc)}</p></div>` : ''}
+        ${hasExcl ? `<div class="fd-custom"><button class="fd-custom-btn" type="button" aria-expanded="${fd.custom.has(f.id)}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button><span class="fd-custom-sum"></span></div>` : ''}
         <div class="flavor-exclusions fv-excl" hidden></div>`;
       const thumb = fbThumb(f);
       thumb.classList.toggle('open', open);
@@ -1669,7 +1813,21 @@
       const stepper = fvStepper(() => f);
       fvSyncStepper(stepper, f, qty, allocated);
       row.querySelector('.fb-step-slot').replaceWith(stepper);
-      fvSyncExclusions(row.querySelector('.fv-excl'), f, qty);
+      // Ingredient choices work as in Distilled: a "Customize" link per selected flavor opens the chips, and a choice already made
+      // shows as a short line beside the link.
+      const sum = row.querySelector('.fd-custom-sum');
+      const paintSum = () => {
+        const ex = state.modalExclusions[f.id];
+        if (sum) sum.textContent = ex && ex.size ? `No ${[...ex].join(', ').toLowerCase()}` : '';
+      };
+      paintSum();
+      if (hasExcl) {
+        row.querySelector('.fd-custom-btn').addEventListener('click', () => {
+          if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
+          renderFlavorGrid();
+        });
+        if (fd.custom.has(f.id)) fvSyncExclusions(row.querySelector('.fv-excl'), f, qty, paintSum);
+      }
       row.querySelector('.fb-open').addEventListener('click', () => toggleBig(f.id));
       grid.appendChild(row);
     });
@@ -1677,11 +1835,9 @@
     fbKick();
   }
 
-  // A and C: expand or fold a row. The thumbnail is the same element before and after, so it is moved from where it
+  // Expand or fold a row. The thumbnail is the same element before and after, so it is moved from where it
   // was to where it is now (a FLIP), and its clip keeps playing.
   function toggleBig(id) {
-    const mode = bigMode();
-    if (mode === 'b') { openSheet(id); return; }
     const prev = fb.open;
     const next = prev === id ? null : id;
     const first = {};
@@ -1705,87 +1861,20 @@
     if (row) row.querySelector('.fb-open').focus({ preventScroll: true });
   }
 
-  // B: a bottom sheet over the list, stopping at the footer so the egg counter and the action stay in view.
-  let fbSheetEl = null;
-  const fbSheetOpen = () => !!fbSheetEl && !fbSheetEl.hidden && fb.sheet !== null;
+  // ----- Distilled: the flavor picker, cut down to adding and reviewing -----
+  // A compact header (the photo is untouched), a two-segment 3-or-6 control, shorter rows with the calorie line cut to one
+  // line and ingredient chips behind a "Customize" link. The "Flavor n" strip is not used here: the footer's list says the same.
+  const fd = { custom: new Set() };
 
-  function ensureSheet() {
-    if (fbSheetEl) return fbSheetEl;
-    const el = document.createElement('div');
-    el.className = 'fs-layer';
-    el.hidden = true;
-    el.innerHTML = `<div class="fs-backdrop"></div>
-      <div class="fs-sheet" role="dialog" aria-modal="true" aria-labelledby="fs-title">
-        <div class="fs-media"></div>
-        <button class="fs-close" type="button" aria-label="Close details"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-        <div class="fs-body">
-          <div class="fs-head"><h3 class="fs-title" id="fs-title"></h3><div class="fs-step-slot"></div></div>
-          <p class="fs-stat"></p>
-          <p class="fs-desc"></p>
-          <div class="flavor-exclusions fv-excl" hidden></div>
-        </div>
-      </div>`;
-    document.querySelector('#item-modal .item-modal-inner').appendChild(el);
-    el.querySelector('.fs-backdrop').addEventListener('click', () => closeSheet());
-    el.querySelector('.fs-close').addEventListener('click', () => closeSheet());
-    el.querySelector('.fs-step-slot').replaceWith(Object.assign(fvStepper(() => flavorList().find((x) => x.id === fb.sheet)), { className: 'fv-stepper fs-stepper' }));
-    fbSheetEl = el;
-    return el;
+  function setDistilledChrome(on) {
+    itemModal.dataset.distilled = on ? '1' : '';
   }
-
-  function paintSheet() {
-    const f = flavorList().find((x) => x.id === fb.sheet);
-    if (!f) return;
-    const el = ensureSheet();
-    const qty = state.modalFlavorQty[f.id] || 0;
-    el.querySelector('.fs-title').textContent = f.label;
-    el.querySelector('.fs-stat').textContent = flavorStat(f);
-    el.querySelector('.fs-desc').textContent = FLAVOR_MEDIA[f.id].desc;
-    fvSyncStepper(el.querySelector('.fs-stepper'), f, qty, dozenAllocated());
-    fvSyncExclusions(el.querySelector('.fv-excl'), f, qty);
-  }
-
-  function openSheet(id) {
-    const f = flavorList().find((x) => x.id === id);
-    const el = ensureSheet();
-    fb.sheet = id;
-    fb.hold = true;
-    Object.values(fb.thumbs).forEach((t) => t.querySelector('video').pause());
-    const media = fvMedia(f);
-    media.classList.add('fs-media-inner');
-    el.querySelector('.fs-media').replaceChildren(media);
-    paintSheet();
-    el.style.setProperty('--fs-bottom', `${document.querySelector('#item-modal .item-modal-footer').offsetHeight}px`);
-    el.hidden = false;
-    el.getBoundingClientRect();
-    el.classList.add('is-open');
-    el.querySelector('.fs-body').scrollTop = 0;
-    fvPlay(media.querySelector('video'));
-    el.querySelector('.fs-close').focus({ preventScroll: true });
-  }
-
-  function closeSheet(quiet = false) {
-    if (!fbSheetEl || fbSheetEl.hidden) return;
-    const id = fb.sheet;
-    fb.sheet = null;
-    fb.hold = false;
-    fbSheetEl.classList.remove('is-open');
-    const media = fbSheetEl.querySelector('video');
-    if (media) media.pause();
-    const done = () => { fbSheetEl.hidden = true; fbSheetEl.querySelector('.fs-media').replaceChildren(); };
-    if (quiet || flavorReduceMotion.matches) done(); else window.setTimeout(done, 280);
-    if (!quiet) {
-      fbKick();
-      const row = document.querySelector(`#flavor-grid [data-flavor="${id}"] .fb-open`);
-      if (row) row.focus({ preventScroll: true });
-    }
-  }
-
   function renderFlavorGrid() {
     const grid = document.getElementById('flavor-grid');
     const single = activeProduct.total === 1;
     grid.classList.toggle('addon-list', single);
     if (single) {
+      setDistilledChrome(false);
       document.getElementById('flavor-variant-switch').hidden = true;
       delete grid.dataset.variant;
       delete grid.dataset.big;
@@ -1800,6 +1889,9 @@
     grid.removeAttribute('aria-label');
     const variantOn = flavorVariant === '2' && flavorVariantAvailable();
     const mode = flavorVariantAvailable() ? bigMode() : null;
+    // The distilled picker is the picker; Pair and Grow are the layouts still being compared against it.
+    const distilled = !(flavorVariant === '2' && flavorVariantAvailable()) && !mode;
+    setDistilledChrome(distilled);
     if (!mode) fbDispose();
     document.getElementById('flavor-variant-switch').hidden = !flavorVariantAvailable();
     document.querySelectorAll('#flavor-variant-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === flavorVariant)));
@@ -1807,7 +1899,7 @@
       delete grid.dataset.variant;
       fvDispose();
       grid.dataset.big = mode;
-      renderBigRows(grid, mode);
+      renderBigRows(grid);
       return;
     }
     delete grid.dataset.big;
@@ -1837,7 +1929,7 @@
       row.dataset.flavor = f.id;
       row.innerHTML = `
         <div class="flavor-row-head">
-          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(f.label)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${PLAY_ICON}</span></button>` : ''}
+          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(f.label)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>` : ''}
           <span class="flavor-row-name">${f.label}${statLine ? `<small class="flavor-row-desc">${escapeHTML(statLine)}</small>` : ''}</span>
           <div class="mini-stepper">
             <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Remove ' + f.label : 'Remove ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
@@ -1854,12 +1946,15 @@
             </div>
           </div>
         ` : ''}
-        ${showExclusions ? `
+        ${showExclusions && distilled ? `
+          <div class="fd-custom">
+            <button class="fd-custom-btn" type="button" aria-expanded="${fd.custom.has(f.id)}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
+            ${excluded.size ? `<span class="fd-custom-sum">No ${escapeHTML([...excluded].join(', ').toLowerCase())}</span>` : ''}
+          </div>` : ''}
+        ${showExclusions && (!distilled || fd.custom.has(f.id)) ? `
           <div class="flavor-exclusions">
             <span class="flavor-exclusions-label">Remove ingredients</span>
-            <div class="chip-row">
-              ${f.exclusions.map((ing) => `<button class="chip exclude-chip${excluded.has(ing) ? ' active' : ''}" type="button">NO: ${ing}</button>`).join('')}
-            </div>
+            ${exclusionListHTML(f.exclusions, excluded)}
           </div>
         ` : ''}
       `;
@@ -1890,9 +1985,15 @@
         renderFlavorGrid();
         renderModalFooter();
       });
+      if (showExclusions && distilled) {
+        row.querySelector('.fd-custom-btn').addEventListener('click', () => {
+          if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
+          renderFlavorGrid();
+        });
+      }
       if (showExclusions) {
-        row.querySelectorAll('.exclude-chip').forEach((chip, i) => {
-          chip.addEventListener('click', () => {
+        row.querySelectorAll('.excl').forEach((btn, i) => {
+          btn.addEventListener('click', () => {
             const ing = f.exclusions[i];
             const set = state.modalExclusions[f.id] || new Set();
             if (set.has(ing)) set.delete(ing); else set.add(ing);
@@ -1924,13 +2025,15 @@
     const total = activeProduct.price * state.modalQty;
     const allocated = dozenAllocated();
     const btn = document.getElementById('add-to-order');
-    const complete = activeProduct.fixedFlavors || allocated === activeProduct.total;
+    const complete = !optionPending() && (activeProduct.fixedFlavors || allocated === activeProduct.total);
     btn.disabled = !complete;
     // total:1 (the egg salads — one flavor for the whole tub) reads oddly
     // through the "Choose N eggs" copy every multi-piece pack uses;
     // singular products get their own natural phrasing instead.
     btn.textContent = complete
       ? `${editingLine ? 'Update order' : `Add ${state.modalQty} to order`} · ${money(total)}`
+      : optionPending()
+        ? 'Choose how many flavors to continue'
       : activeProduct.total === 1
         ? 'Choose a flavor to continue'
         : `Choose ${activeProduct.total - allocated} ${allocated === 0 ? '' : 'more '}${eggWord(activeProduct.total - allocated)} to continue`;
@@ -1938,12 +2041,23 @@
 
   // The product as the modal uses it: with the chosen option applied, and the picker's size worked out.
   function buildActiveProduct(product, optionId) {
-    const resolved = resolveOption(product, optionId);
+    // A product with options opens with none chosen (optionId null): the customer picks 3 or 6 flavors before anything else.
+    const resolved = product.options && !optionId ? { ...product, optionId: null } : resolveOption(product, optionId);
     // A fixed-flavor kit (the sampler) has nothing to allocate: no picker config.
     const picker = resolved.pickerConfig || { total: 0, maxFlavors: 1 };
     return { ...resolved, total: picker.total, maxFlavors: picker.maxFlavors, step: picker.total / picker.maxFlavors };
   }
   let activeBase = null;
+  const optionPending = () => !!(activeBase && activeBase.options && !activeProduct.optionId);
+  // Until the option is chosen the flavors below cannot be used: they are dimmed and out of the tab order.
+  function paintOptionPending() {
+    const block = document.getElementById('flavor-block');
+    const pending = optionPending();
+    block.classList.toggle('is-pending', pending);
+    block.inert = pending;
+    if (pending) document.getElementById('flavor-meter').hidden = true;
+    if (pending) document.getElementById('flavor-hint').textContent = `Choose how many flavors above, then pick your ${activeBase.pickerConfig.total} eggs here.`;
+  }
 
   // The parts of the modal that follow the chosen option (the 6 Pack's 3 or 6 flavors).
   function paintOption() {
@@ -1984,8 +2098,11 @@
     paintOption();
     renderOptionPicker(note);
     renderFlavorGrid();
+    paintOptionPending();
     renderModalFooter();
-    document.querySelector(`#option-grid .radio-choice-input[value="${optionId}"]`).focus();
+    document.querySelector(`#option-grid .radio-choice-input[value="${optionId}"]`).focus({ preventScroll: true });
+    // The next thing to do is pick the flavors: bring that section to the top.
+    document.getElementById('flavor-block').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   }
 
   function openDozenModal(product, line = null) {
@@ -2037,6 +2154,7 @@
     if (activeProduct.bagelPresets) renderBagelPresets();
 
     if (!activeProduct.fixedFlavors) renderFlavorGrid();
+    paintOptionPending();
     renderModalFooter();
     itemModal.querySelector('.item-modal-header-title').classList.remove('visible');
     modalBackdrop.hidden = false;
@@ -2050,9 +2168,12 @@
 
   function closeDozenModal() {
     endLineEdit();
+    closeFlavorInfo(false);
     stopFlavorWatch();
     fvDispose();
     fbDispose();
+    fd.custom.clear();
+    setDistilledChrome(false);
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
     updateInert();
@@ -2123,22 +2244,127 @@
   wireHeaderTitleReveal(itemModal, 'dozen-modal-title');
   wireHeaderTitleReveal(bagelModal, 'bagel-modal-title');
 
-  // Yolk spread: exactly one flavor, as native radios (same row as the wrap and
-  // egg salads). Updated in place on change so keyboard focus survives.
-  function renderBagelFlavorRadios() {
+  // The bagel's yolk spread is the same eleven-plus-eight flavors as the packs, so it gets the pack picker's row: the clip's still
+  // (tap it to watch, as in Distilled), the name, a pick-one radio, and for the chosen flavor a "Customize" link that opens the
+  // "Remove ingredients" list. The bagel menu's own names are kept; each is matched to the pack flavor it is.
+  const BAGEL_FLAVOR_ID = {
+    'Traditional': 'traditional', 'Buffalo Chicken': 'buffalo-chicken-ranch', 'Buffalo Blue Cheese': 'buffalo-blue-cheese',
+    'Walking Taco': 'walking-taco', 'South of the Border': 'south-of-the-border', 'Bacon Wrapped Jalapeño Popper': 'jalapeno-popper',
+    'Everything Bagel': 'everything-seasoning', 'Smoked Salmon': 'smoked-salmon', 'Crab Rangoon': 'crab-rangoon', 'Cali Roll': 'cali-roll',
+    'Cheeseburger': 'cheeseburger', 'Bangin’ Brisket': 'backyard-bbq', 'Chicken ’n a Pickle': 'chicken-pickle-egg',
+    'Chicken Bacon Ranch': 'chicken-bacon-ranch', 'BLTE': 'blte', 'Chicken Caesar Salad': 'chicken-caesar', 'Ball Park': 'ballpark-special',
+    'Sriracha Bacon': 'sriracha-bacon', 'Chicken and Waffle': 'chicken-waffle',
+  };
+  const bagelFlavorData = (name) => {
+    const base = FLAVORS.find((f) => f.id === BAGEL_FLAVOR_ID[name]) || { id: BAGEL_FLAVOR_ID[name], exclusions: [] };
+    return { ...base, label: name };
+  };
+  let bagelExcl = new Set();
+  let bagelCustomOpen = false;
+
+  function renderBagelFlavors() {
     const grid = document.getElementById('bagel-flavor-grid');
-    grid.innerHTML = BAGEL_FLAVORS.map((flavor, i) => radioChoiceHTML({
-      group: 'bagel-flavor', value: i, label: flavor, selected: state.bagelFlavor === flavor,
-    })).join('');
-    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        state.bagelFlavor = BAGEL_FLAVORS[Number(input.value)];
-        grid.querySelectorAll('.radio-choice').forEach((row) => {
-          row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
-        });
+    grid.innerHTML = BAGEL_FLAVORS.map((name) => {
+      const f = bagelFlavorData(name);
+      const media = FLAVOR_MEDIA[f.id];
+      const watching = !!media && flavorWatch.id === f.id;
+      return `
+      <div class="flavor-row dozen-flavor-row bagel-flavor-row" data-flavor="${f.id}" data-name="${escapeHTML(name)}">
+        <div class="flavor-row-head">
+          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(name)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>` : ''}
+          <label class="bagel-pick">
+            <input class="radio-choice-input" type="radio" name="bagel-flavor" value="${escapeHTML(name)}">
+            <span class="flavor-row-name">${escapeHTML(name)}${media ? `<small class="flavor-row-desc">${escapeHTML(media.desc)}</small>` : ''}</span>
+            <span class="radio-choice-ind" aria-hidden="true"></span>
+          </label>
+        </div>
+        ${watching ? `
+        <div class="flavor-watch" id="flavor-watch-${f.id}">
+          <div class="flavor-watch-slot"></div>
+          <div class="flavor-watch-copy">
+            <p>${escapeHTML(media.desc)}</p>
+            <button class="flavor-watch-hide" type="button">Hide video</button>
+          </div>
+        </div>` : ''}
+        <div class="wrap-flavor-extra"></div>
+      </div>`;
+    }).join('');
+    grid.querySelectorAll('.bagel-flavor-row').forEach((row) => {
+      const f = bagelFlavorData(row.dataset.name);
+      const media = FLAVOR_MEDIA[f.id];
+      if (media) row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
+      if (media && flavorWatch.id === f.id) {
+        row.querySelector('.flavor-watch-hide').addEventListener('click', () => toggleFlavorWatch(f.id));
+        row.querySelector('.flavor-watch-slot').replaceWith(flavorWatchMedia(f));
+        if (flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
+      }
+      row.querySelector('.radio-choice-input').addEventListener('change', (e) => {
+        state.bagelFlavor = e.target.value;
+        bagelExcl = new Set();
+        bagelCustomOpen = false;
+        syncBagelFlavorRows();
         renderBagelModalFooter();
       });
     });
+    syncBagelFlavorRows();
+  }
+
+  function syncBagelFlavorRows() {
+    document.querySelectorAll('#bagel-flavor-grid .bagel-flavor-row').forEach((row) => {
+      const f = bagelFlavorData(row.dataset.name);
+      const chosen = state.bagelFlavor === row.dataset.name;
+      row.classList.toggle('selected', chosen);
+      row.querySelector('.radio-choice-input').checked = chosen;
+      const extra = row.querySelector('.wrap-flavor-extra');
+      if (!chosen || !f.exclusions.length) { extra.innerHTML = ''; return; }
+      extra.innerHTML = `
+        <div class="fd-custom">
+          <button class="fd-custom-btn" type="button" aria-expanded="${bagelCustomOpen}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
+          ${bagelExcl.size ? `<span class="fd-custom-sum">No ${escapeHTML([...bagelExcl].join(', ').toLowerCase())}</span>` : ''}
+        </div>
+        ${bagelCustomOpen ? `
+          <div class="flavor-exclusions">
+            <span class="flavor-exclusions-label">Remove ingredients</span>
+            ${exclusionListHTML(f.exclusions, bagelExcl)}
+          </div>` : ''}`;
+      extra.querySelector('.fd-custom-btn').addEventListener('click', () => { bagelCustomOpen = !bagelCustomOpen; syncBagelFlavorRows(); });
+      extra.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => {
+        const ing = f.exclusions[i];
+        if (bagelExcl.has(ing)) bagelExcl.delete(ing); else bagelExcl.add(ing);
+        syncBagelFlavorRows();
+      }));
+    });
+  }
+
+  // Toast and bagel type: two pick-one rows each, the packs' radio rows, updated in place so keyboard focus survives.
+  function renderBagelRadios(gridId, group, choices, current, onPick) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = choices.map((c) => radioChoiceHTML({ group, value: c, label: c, selected: c === current })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        onPick(input.value);
+        grid.querySelectorAll('.radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked));
+      });
+    });
+  }
+
+  // Options can be combined, so these are the checkbox rows the wrap's add-ons use (no price here).
+  const BAGEL_OPTIONS = ['Sauce on Side', 'Light Yolk Spread'];
+  function renderBagelOptions() {
+    const grid = document.getElementById('bagel-options-picker');
+    grid.innerHTML = BAGEL_OPTIONS.map((label, i) => {
+      const on = state.bagelOptions.has(label);
+      return `<button class="addon-row${on ? ' selected' : ''}" type="button" role="checkbox" aria-checked="${on}" data-index="${i}">
+        <span class="addon-row-text"><span class="addon-row-name">${label}</span></span>
+        <span class="addon-row-box" aria-hidden="true">${on ? ADDON_CHECK_ICON : ''}</span>
+      </button>`;
+    }).join('');
+    grid.querySelectorAll('.addon-row').forEach((row) => row.addEventListener('click', () => {
+      const label = BAGEL_OPTIONS[Number(row.dataset.index)];
+      if (state.bagelOptions.has(label)) state.bagelOptions.delete(label); else state.bagelOptions.add(label);
+      renderBagelOptions();
+      grid.querySelector(`.addon-row[data-index="${row.dataset.index}"]`).focus();
+    }));
   }
 
   function renderBagelModalFooter() {
@@ -2160,15 +2386,19 @@
     state.bagelFlavor = null;
     state.bagelOptions = new Set();
     state.bagelQty = 1;
+    bagelExcl = new Set();
     if (line) {
       const e = line.edit;
       Object.assign(state, { bagelToast: e.toast, bagelType: e.bagelType, bagelFlavor: e.flavor, bagelOptions: new Set(e.options), bagelQty: line.qty });
+      bagelExcl = new Set(e.excl || []);
     }
+    bagelCustomOpen = bagelExcl.size > 0;
+    stopFlavorWatch();
     populateQtySelect(document.getElementById('bagel-qty-select'));
-    document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelToast));
-    document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.toggle('active', b.dataset.value === state.bagelType));
-    document.querySelectorAll('#bagel-options-picker .chip').forEach((b) => b.classList.toggle('active', state.bagelOptions.has(b.dataset.value)));
-    renderBagelFlavorRadios();
+    renderBagelRadios('bagel-toast-picker', 'bagel-toast', ['Not Toasted', 'Toasted'], state.bagelToast, (v) => { state.bagelToast = v; });
+    renderBagelRadios('bagel-type-picker', 'bagel-type', ['Plain', 'Everything'], state.bagelType, (v) => { state.bagelType = v; });
+    renderBagelOptions();
+    renderBagelFlavors();
     renderBagelModalFooter();
     bagelModal.querySelector('.item-modal-scroll').scrollTop = 0;
     bagelModal.querySelector('.item-modal-header-title').classList.remove('visible');
@@ -2180,6 +2410,7 @@
 
   function closeBagelModal() {
     endLineEdit();
+    stopFlavorWatch();
     bagelModalBackdrop.hidden = true;
     bagelModal.hidden = true;
     updateInert();
@@ -2189,35 +2420,6 @@
   document.getElementById('close-bagel-modal').addEventListener('click', closeBagelModal);
   bagelModalBackdrop.addEventListener('click', closeBagelModal);
 
-  document.getElementById('bagel-toast-picker').addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
-    if (!btn) return;
-    document.querySelectorAll('#bagel-toast-picker .chip').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.bagelToast = btn.dataset.value;
-  });
-
-  document.getElementById('bagel-type-picker').addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
-    if (!btn) return;
-    document.querySelectorAll('#bagel-type-picker .chip').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.bagelType = btn.dataset.value;
-  });
-
-  document.getElementById('bagel-options-picker').addEventListener('click', (e) => {
-    const btn = e.target.closest('.chip');
-    if (!btn) return;
-    const value = btn.dataset.value;
-    if (state.bagelOptions.has(value)) {
-      state.bagelOptions.delete(value);
-      btn.classList.remove('active');
-    } else {
-      state.bagelOptions.add(value);
-      btn.classList.add('active');
-    }
-  });
-
   document.getElementById('bagel-qty-select').addEventListener('change', (e) => {
     state.bagelQty = Number(e.target.value);
     renderBagelModalFooter();
@@ -2225,7 +2427,7 @@
 
   document.getElementById('add-bagel-to-order').addEventListener('click', () => {
     if (!state.bagelFlavor) return;
-    const parts = [state.bagelType, state.bagelToast, state.bagelFlavor];
+    const parts = [state.bagelType, state.bagelToast, bagelExcl.size ? `${state.bagelFlavor} (no ${[...bagelExcl].join(', ').toLowerCase()})` : state.bagelFlavor];
     if (state.bagelOptions.size) parts.push(Array.from(state.bagelOptions).join(', '));
     const entry = {
       name: 'Full Size Bagel',
@@ -2233,7 +2435,7 @@
       price: BAGEL_PRICE,
       qty: state.bagelQty,
       image: BAGEL_IMAGE,
-      edit: { type: 'bagel', toast: state.bagelToast, bagelType: state.bagelType, flavor: state.bagelFlavor, options: Array.from(state.bagelOptions) },
+      edit: { type: 'bagel', toast: state.bagelToast, bagelType: state.bagelType, flavor: state.bagelFlavor, excl: [...bagelExcl], options: Array.from(state.bagelOptions) },
     };
     if (editingLine) { commitLineEdit(entry, closeBagelModal); return; }
     addToCart({
@@ -2410,17 +2612,75 @@
   let activeWrap = null;
   wireHeaderTitleReveal(wrapModal, 'wrap-modal-title');
 
-  // One flavor, chosen with native radios. Rows are built once per open and
-  // updated in place on change: re-rendering would destroy the focused radio
-  // and break arrow-key navigation within the group.
+  // One flavor, chosen with native radios, in the same rows as the deviled egg picker: a photo, the name and what is on it,
+  // and once chosen a "Customize" link that opens the "NO:" ingredient chips. Rows are built once per open and updated in
+  // place: re-rendering would destroy the focused radio and break arrow-key navigation within the group.
+  let wrapExcl = new Set();
+  let wrapCustomOpen = false;
+
   function renderWrapFlavorGrid() {
     const grid = document.getElementById('wrap-flavor-grid');
-    grid.innerHTML = activeWrap.wrapFlavors.map((f) => radioChoiceHTML({
-      group: 'wrap-flavor', value: f.id, label: f.label, note: f.ingredients, selected: state.wrapFlavor === f.id,
-    })).join('');
+    grid.innerHTML = activeWrap.wrapFlavors.map((f) => `
+      <div class="flavor-row dozen-flavor-row wrap-flavor-row" data-flavor="${f.id}">
+        <label class="flavor-row-head wrap-flavor-label">
+          <input class="radio-choice-input" type="radio" name="wrap-flavor" value="${f.id}">
+          <span class="flavor-thumb" aria-hidden="true"><img src="assets/flavors/${f.photo}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"></span>
+          <span class="flavor-row-name">${escapeHTML(f.label)}<small class="flavor-row-desc">${escapeHTML(f.ingredients)}</small></span>
+          <span class="radio-choice-ind" aria-hidden="true"></span>
+        </label>
+        <div class="wrap-flavor-extra"></div>
+      </div>`).join('');
     grid.querySelectorAll('.radio-choice-input').forEach((input) => {
       input.addEventListener('change', () => {
         state.wrapFlavor = input.value;
+        wrapExcl = new Set();
+        wrapCustomOpen = false;
+        syncWrapFlavorRows();
+        renderWrapModalFooter();
+      });
+    });
+    syncWrapFlavorRows();
+  }
+
+  function syncWrapFlavorRows() {
+    document.querySelectorAll('#wrap-flavor-grid .wrap-flavor-row').forEach((row) => {
+      const f = activeWrap.wrapFlavors.find((w) => w.id === row.dataset.flavor);
+      const chosen = state.wrapFlavor === f.id;
+      row.classList.toggle('selected', chosen);
+      row.querySelector('.radio-choice-input').checked = chosen;
+      const extra = row.querySelector('.wrap-flavor-extra');
+      if (!chosen) { extra.innerHTML = ''; return; }
+      extra.innerHTML = `
+        <div class="fd-custom">
+          <button class="fd-custom-btn" type="button" aria-expanded="${wrapCustomOpen}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
+          ${wrapExcl.size ? `<span class="fd-custom-sum">No ${escapeHTML([...wrapExcl].join(', ').toLowerCase())}</span>` : ''}
+        </div>
+        ${wrapCustomOpen ? `
+          <div class="flavor-exclusions">
+            <span class="flavor-exclusions-label">Remove ingredients</span>
+            ${exclusionListHTML(f.exclusions, wrapExcl)}
+          </div>` : ''}`;
+      extra.querySelector('.fd-custom-btn').addEventListener('click', () => { wrapCustomOpen = !wrapCustomOpen; syncWrapFlavorRows(); });
+      extra.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => {
+        const ing = f.exclusions[i];
+        if (wrapExcl.has(ing)) wrapExcl.delete(ing); else wrapExcl.add(ing);
+        syncWrapFlavorRows();
+        renderWrapModalFooter();
+      }));
+    });
+  }
+
+  // Regular wrap or a meal, as two radio rows with what each costs; updated in place, like the flavor rows.
+  function renderWrapMealPicker() {
+    const grid = document.getElementById('wrap-meal-picker');
+    const options = [
+      { value: 'wrap', label: 'Regular wrap', note: money(activeWrap.price) },
+      { value: 'meal', label: activeWrap.meal.label, note: `${money(activeWrap.price + activeWrap.meal.price)} · ${activeWrap.meal.note}` },
+    ];
+    grid.innerHTML = options.map((o) => radioChoiceHTML({ group: 'wrap-meal', value: o.value, label: o.label, note: o.note, selected: (o.value === 'meal') === state.wrapMeal })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        state.wrapMeal = input.value === 'meal';
         grid.querySelectorAll('.radio-choice').forEach((row) => {
           row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked);
         });
@@ -2434,7 +2694,7 @@
   }
 
   function wrapAddOnsTotal() {
-    let sum = 0;
+    let sum = state.wrapMeal ? activeWrap.meal.price : 0;
     state.wrapAddOns.forEach((i) => { sum += activeWrap.addOns[i].price; });
     return sum;
   }
@@ -2449,12 +2709,17 @@
     btn.textContent = complete ? `${editingLine ? 'Update order' : `Add ${state.wrapQty} to order`} · ${money(total)}` : 'Choose a flavor to continue';
   }
 
-  function openWrapModal(item, line = null) {
+  function openWrapModal(item, line = null, presetFlavor = null) {
     lastFocusedEl = document.activeElement;
     activeWrap = item;
     editingLine = line;
-    state.wrapFlavor = line ? line.edit.flavor : null;
-    state.wrapAddOns = new Set(line ? line.edit.addOns : []);
+    state.wrapFlavor = line ? line.edit.flavor : presetFlavor;
+    wrapExcl = new Set(line && line.edit.excl ? line.edit.excl : []);
+    wrapCustomOpen = wrapExcl.size > 0;
+    // A line saved before the meal became its own choice kept it as add-on 0 ("Make it a Meal"), with the others after it.
+    const legacy = !!line && line.edit.v !== 2;
+    state.wrapMeal = line ? (legacy ? line.edit.addOns.includes(0) : !!line.edit.meal) : false;
+    state.wrapAddOns = new Set(line ? (legacy ? line.edit.addOns.filter((i) => i > 0).map((i) => i - 1) : line.edit.addOns) : []);
     state.wrapQty = line ? line.qty : 1;
     populateQtySelect(document.getElementById('wrap-qty-select'));
 
@@ -2465,6 +2730,7 @@
     document.getElementById('wrap-modal-header-title').textContent = item.name;
 
     renderWrapFlavorGrid();
+    renderWrapMealPicker();
     renderWrapAddOns();
     renderWrapModalFooter();
     wrapModal.querySelector('.item-modal-scroll').scrollTop = 0;
@@ -2495,7 +2761,8 @@
     const flavor = activeWrap.wrapFlavors.find((f) => f.id === state.wrapFlavor);
     if (!flavor) return;
     const addOnLabels = Array.from(state.wrapAddOns).map((i) => activeWrap.addOns[i].label);
-    const parts = [flavor.label];
+    const parts = [wrapExcl.size ? `${flavor.label} (no ${[...wrapExcl].join(', ').toLowerCase()})` : flavor.label];
+    if (state.wrapMeal) parts.push(activeWrap.meal.label);
     if (addOnLabels.length) parts.push(addOnLabels.join(', '));
     const unitPrice = activeWrap.price + wrapAddOnsTotal();
     const entry = {
@@ -2504,12 +2771,12 @@
       price: unitPrice,
       qty: state.wrapQty,
       image: activeWrap.image,
-      edit: { type: 'wrap', productId: activeWrap.id, flavor: flavor.id, addOns: Array.from(state.wrapAddOns) },
+      edit: { type: 'wrap', productId: activeWrap.id, flavor: flavor.id, excl: [...wrapExcl], meal: state.wrapMeal, addOns: Array.from(state.wrapAddOns), v: 2 },
     };
     if (editingLine) { commitLineEdit(entry, closeWrapModal); return; }
     addToCart({
       ...entry,
-      key: 'wrap-' + activeWrap.id + '-' + flavor.id + '-' + JSON.stringify(Array.from(state.wrapAddOns)) + '-' + Date.now(),
+      key: 'wrap-' + activeWrap.id + '-' + flavor.id + '-' + (state.wrapMeal ? 'meal-' : '') + JSON.stringify(Array.from(state.wrapAddOns)) + '-' + Date.now(),
     });
     celebrateAdd(wrapModal, closeWrapModal, activeWrap.image, state.wrapQty);
   });
@@ -2671,6 +2938,21 @@
   });
   renderOrderTiles();
 
+  // The Catering page's cards: the same cards as the menu, each opening the catering modal.
+  const CATERING_PAGE_SECTIONS = {
+    'cater-boxes-grid': ['classic', 'allin'],
+    'cater-mornings-grid': ['power-pair', 'bagel-brew'],
+    'cater-brunch-grid': ['hungry-team', 'light-lunch'],
+    'cater-coffee-grid': ['coffee-bar'],
+  };
+  function renderCateringPage() {
+    const items = Object.fromEntries(ORDER_GROUPS.find((g) => g.id === 'catering').items.map((i) => [i.id, i]));
+    Object.entries(CATERING_PAGE_SECTIONS).forEach(([gridId, ids]) => {
+      renderShopGrid(gridId, ids.map((id) => items[id]), 'catering', 'Catering', (item) => openCateringItem(item.id));
+    });
+  }
+  renderCateringPage();
+
   function openCateringItem(id) {
     // From the Catering page with no pickup or delivery chosen yet, ask where first, then open the item.
     if (gateCatering(() => openCateringItem(id))) return;
@@ -2691,10 +2973,6 @@
       hintTail: ' Every bundle gets the same mix.',
     };
   }
-
-  document.querySelectorAll('[data-cater-order]').forEach((btn) => {
-    btn.addEventListener('click', () => openCateringItem(btn.dataset.caterOrder));
-  });
 
   function renderBagelPresets() {
     const grid = document.getElementById('bagel-preset-grid');
@@ -3006,8 +3284,7 @@
     const bowl = PROTEIN_BOWLS.find((b) => b.name === line.name);
     if (bowl) return { type: 'bowl', productId: bowl.id, addOns: [], exclusions: [], options: [], blank: true };
     if (line.name === 'Full Size Bagel') return { type: 'bagel', toast: 'Not Toasted', bagelType: 'Plain', flavor: null, options: [], blank: true };
-    const wrap = SANDWICH_WRAP.find((w) => w.name === line.name);
-    if (wrap) return { type: 'wrap', productId: wrap.id, flavor: null, addOns: [], blank: true };
+    if (line.name === WRAP_PRODUCT.name) return { type: 'wrap', productId: WRAP_PRODUCT.id, flavor: null, addOns: [], blank: true };
     return null;
   }
   const canEditLine = (line) => !!(line.config || line.edit || blankEditSpec(line));
@@ -3022,7 +3299,7 @@
     if (e.type === 'dozen') openDozenModal(findDozenProduct(e.productId), line);
     else if (e.type === 'bowl') openBowlModal(PROTEIN_BOWLS.find((b) => b.id === e.productId), line);
     else if (e.type === 'bagel') openBagelModal(line);
-    else if (e.type === 'wrap') openWrapModal(SANDWICH_WRAP.find((w) => w.id === e.productId), line);
+    else if (e.type === 'wrap') openWrapModal(WRAP_PRODUCT, line);
   }
 
   // Duplicate puts a copy right under the original, same choices, as its own line so one copy can be changed.

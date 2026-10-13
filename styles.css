@@ -440,7 +440,8 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    customer can watch and add without leaving the row. */
 .flavor-thumb { position: relative; flex: none; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
 .flavor-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
-.flavor-thumb-badge { position: absolute; right: 4px; bottom: 4px; display: grid; place-items: center; width: 22px; height: 22px; padding-left: 1px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; }
+/* The corner icon sits flush in the thumbnail's bottom-right corner, a square with only its top-left corner rounded; the thumbnail's own rounded corner trims the rest. */
+.flavor-thumb-badge { position: absolute; right: 0; bottom: 0; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border-radius: 2px 0 0 0; background: var(--deg-ink-deep); color: #fff; }
 .flavor-thumb.open { box-shadow: 0 0 0 2px var(--deg-ink-deep); }
 .flavor-thumb:focus-visible, .flavor-watch-media:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
 .flavor-watch { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 16px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
@@ -1276,73 +1277,33 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
 
 /* =========================================================================
    Catering page (#view-catering)
-   Shares the content-page scaffolding above (.page-view, .page-section,
-   .page-signup). The hero is the one dark surface: the menu's cutout
-   photography reads best against ink, and gold stays the single accent.
+   Follows the location pages (.store-hero, .menu-layout, .store-sidebar, .menu-section) and draws the same
+   .shop-card as the menu. Only what is its own is here: the banner's photo panels, the section sub-lines and
+   the add-ons list.
    ========================================================================= */
-.cater-hero {
-  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 48px;
-  padding: 56px 48px; border-radius: var(--deg-radius-panel); background: var(--deg-dark); color: var(--deg-cream);
-  overflow: hidden;
-}
-.cater-hero h1 { font-size: 48px; line-height: 52px; letter-spacing: -.01em; text-wrap: balance; }
-.cater-hero h1 span { color: var(--deg-gold-on-dark); }
-.cater-lead { margin-top: 16px; max-width: 52ch; font-size: 18px; line-height: 28px; font-weight: 500; color: rgba(255,247,234,.86); }
-.pill-btn.cater-cta { margin-top: 28px; padding: 16px 32px; font-size: 16px; box-shadow: none; } /* the brand glow reads as a halo on ink; the gold fill is enough */
-.cater-hero-art { display: flex; align-items: center; justify-content: center; }
-.cater-hero-art img { flex: 0 1 216px; min-width: 0; height: auto; margin-left: -28px; border-radius: var(--deg-radius-card); box-shadow: 0 12px 24px rgba(0,0,0,.4); }
-.cater-hero-art img:first-child { margin-left: 0; transform: rotate(-6deg) translateY(14px); }
-.cater-hero-art img:nth-child(2) { position: relative; z-index: 1; transform: translateY(-14px); }
-.cater-hero-art img:last-child { transform: rotate(6deg) translateY(14px); }
-
-.cater-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-:where(.page-view) .cater-grid { list-style: none; margin: 0; padding: 0; }
-.cater-card { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; }
-.cater-media { position: relative; aspect-ratio: 4 / 3; background: var(--deg-cream-cool); }
-.cater-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
-.cater-body { display: flex; flex-direction: column; min-width: 0; padding: 24px; }
-.cater-media .cater-tag { position: absolute; top: 12px; left: 12px; right: 12px; width: max-content; max-width: calc(100% - 24px); white-space: nowrap; background: var(--deg-white); box-shadow: var(--deg-shadow-float); }
-.cater-tag { align-self: flex-start; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--deg-ink-heading); }
-.cater-card.is-featured .cater-tag, .cater-coffee .cater-tag { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
-.cater-name { margin-top: 0; font-size: 22px; line-height: 30px; font-weight: 800; color: var(--deg-ink-heading); text-wrap: balance; }
-.cater-price { margin-top: 4px; margin-bottom: 16px; font-size: 14px; color: var(--deg-ink-muted); }
-.cater-price strong { font-family: var(--deg-font-body); font-size: 26px; line-height: 32px; font-weight: 700; color: var(--deg-ink-deep); }
-.cater-list-label { margin-bottom: 6px; font-size: 13px; line-height: 18px; font-weight: 700; color: var(--deg-ink-heading); }
-.cater-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
-:where(.page-view) .cater-list { list-style: none; padding: 0; }
-.cater-list li { position: relative; padding-left: 16px; }
-.cater-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--deg-gold); }
-.cater-order { margin-top: auto; justify-content: center; }
-.cater-order svg { flex: none; }
-
-.cater-addons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
-.cater-addons-list { padding: 24px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); }
-.cater-addons-list h3 { font-size: 22px; line-height: 30px; color: var(--deg-ink-heading); }
-:where(.page-view) .cater-addons-list ul { list-style: none; margin: 12px 0 0; padding: 0; }
+.catering-hero { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.catering-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.menu-section-sub { margin: -8px 0 16px; max-width: 62ch; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+#catering-top > .menu-section:first-of-type { margin-top: 32px; }
+/* Catering notes are longer than the menu's ("per box · 10-box minimum"): they take their own line under the price. */
+.shop-card-cater .shop-card-meta { flex-wrap: wrap; row-gap: 0; }
+.shop-card-cater .shop-card-meta > [aria-hidden="true"] { display: none; }
+.shop-card-cater .shop-card-note { flex-basis: 100%; white-space: normal; overflow: visible; }
+#catering-top, #cater-section-boxes, #cater-section-mornings, #cater-section-brunch, #cater-section-coffee, #cater-section-addons { scroll-margin-top: 93px; }
+.cater-addons-list { padding: 20px 24px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); }
+:where(.page-view) .cater-addons-list ul { list-style: none; margin: 0; padding: 0; }
 .cater-addons-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deg-border-chip); font-size: 15px; line-height: 22px; }
 .cater-addons-list li strong { flex: none; font-family: var(--deg-font-body); font-size: 17px; font-weight: 700; color: var(--deg-ink-deep); }
 .cater-note { margin-top: 16px; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
 .cater-note strong { color: var(--deg-ink-heading); }
-.cater-coffee-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-.cater-coffee { display: flex; flex-direction: column; padding: 24px; background: var(--deg-cream-deep); border-radius: var(--deg-radius-card); }
-.cater-coffee-media { margin: -24px -24px 20px; aspect-ratio: 4 / 3; overflow: hidden; }
-.cater-coffee-media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 70%; }
-
 @media (max-width: 900px) {
-  .cater-hero { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 40px 32px 32px; }
-  .cater-hero h1 { font-size: 40px; line-height: 44px; }
-  .cater-hero-art { max-width: 520px; justify-self: center; width: 100%; }
-  .cater-grid, .cater-addons { grid-template-columns: minmax(0, 1fr); }
+  #catering-top, #cater-section-boxes, #cater-section-mornings, #cater-section-brunch, #cater-section-coffee, #cater-section-addons { scroll-margin-top: 149px; }
 }
-
 @media (max-width: 640px) {
-  .cater-hero { margin: -24px -16px 0; border-radius: 0; padding: 32px 16px 28px; }
-  .cater-hero h1 { font-size: 32px; line-height: 38px; }
-  .cater-lead { font-size: 16px; line-height: 24px; }
-  .cater-cta { width: 100%; justify-content: center; }
-  .cater-hero-art img { margin-left: -16px; }
-  .cater-body, .cater-addons-list, .cater-coffee { padding: 20px; }
-  .cater-coffee-media { margin: -20px -20px 16px; }
+  .catering-hero { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catering-hero img:nth-child(n+4) { display: none; }
+  #catering-top > .menu-section:first-of-type { margin-top: 24px; }
+  .cater-addons-list { padding: 16px 20px; }
 }
 
 /* Kit modal extras (the dozen-style modal also serves the shipping kits):
@@ -1398,9 +1359,6 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
    Catering order fixes: minimum on the card, compact modal media, quiet
    selection, line editing in the drawer
    ========================================================================= */
-.cater-price { margin-bottom: 8px; }
-.cater-min { display: inline-flex; align-self: flex-start; margin: 0 0 16px; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-heading); }
-:where(.page-view) .cater-min { margin: 0 0 16px; }
 
 /* The box modal's photo fills the top of a compact panel, and the room under it holds a live summary. */
 @media (min-width: 901px) {
@@ -1452,7 +1410,6 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .drawer-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--deg-radius-card); background: var(--deg-ink-deep); color: #FBF3E3; font-size: 14px; line-height: 20px; }
 .drawer-undo .text-btn { color: var(--deg-gold-on-dark); font-weight: 700; padding: 6px 4px; }
 
-.cater-price:not(:has(+ .cater-min)) { margin-bottom: 16px; }
 
 /* =========================================================================
    Homepage hero (#view-home), mobile first
@@ -1701,8 +1658,6 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .fv-play-icon svg { width: 20px; height: 20px; }
 .fv-media.is-paused .fv-play-icon { opacity: 1; }
 .fv-play:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--deg-ink-deep); }
-.fv-badge { position: absolute; top: 10px; left: 10px; display: none; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 999px; background: var(--deg-ink-deep); color: #fff; font-size: 14px; line-height: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.fv-tile.selected .fv-badge, .fv-thumb.selected .fv-badge { display: grid; }
 .fv-body { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 14px; }
 .fv-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 16px; line-height: 22px; color: var(--deg-ink-heading); }
 .fv-stat { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
@@ -1721,11 +1676,13 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 @media (prefers-reduced-motion: reduce) { .fv-tile, .fv-thumb-img, .fv-play-icon { transition: none; } }
 
 
-/* Big thumb rows (A, B, C): the Current list, each thumbnail 140px (2.5× the usual 56px), playing, with no icon on it. */
+/* Big thumb rows (Grow): the flavor list, each thumbnail 140px (2.5× the usual 56px), playing, with no icon on it. */
 .flavor-grid[data-big] { gap: 12px; }
 .flavor-row-big { position: relative; overflow: hidden; }
 .fb-head { display: grid; grid-template-columns: 140px minmax(0, 1fr); column-gap: 12px; align-items: start; }
-.flavor-thumb-big { position: relative; width: 140px; height: 140px; border-radius: 16px; }
+/* The thumbnail's corners are the card's own radius (12px): the card is inset by its stroke and padding (13.5px), more than its radius, so a
+   strictly concentric corner would be square; the same radius reads as one family. */
+.flavor-thumb-big { position: relative; width: 140px; height: 140px; border-radius: var(--deg-radius-card); }
 .flavor-thumb-big video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 .fb-main { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; align-self: stretch; min-width: 0; }
 .fb-open { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; text-align: left; color: inherit; cursor: pointer; touch-action: manipulation; }
@@ -1739,32 +1696,143 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .flavor-row-big .fv-excl { margin: 12px 0 0; }
 .flavor-row-big .fv-excl[hidden] { display: none; }
 
-/* A · Grow: the open row's thumbnail becomes a full-width square above the name, stepper and description. */
+/* Grow: the open row's thumbnail becomes a full-width square above the name, stepper and description. */
 [data-big="a"] .is-open .fb-head { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
 [data-big="a"] .is-open .flavor-thumb-big { width: 100%; height: auto; aspect-ratio: 1; }
 [data-big="a"] .is-open .fb-main { flex-direction: row; align-items: center; justify-content: space-between; align-self: auto; }
 
-/* C · Wide: the open row becomes a full-width card, the clip bleeding to its edges at 4:3. */
-[data-big="c"] .flavor-row-big.is-open { padding-top: 0; border-color: var(--deg-ink-deep); box-shadow: 0 0 0 1px var(--deg-ink-deep); }
-[data-big="c"] .is-open .fb-head { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
-[data-big="c"] .is-open .flavor-thumb-big { width: calc(100% + 28px); height: auto; aspect-ratio: 4 / 3; margin: 0 -16px 0 -12px; border-radius: 0; }
-[data-big="c"] .is-open .fb-main { flex-direction: row; align-items: center; justify-content: space-between; align-self: auto; }
 
-/* B · Sheet: a bottom sheet over the list, stopping at the footer (--fs-bottom) so the egg counter stays in view. */
-.fs-layer { position: absolute; inset: 0; z-index: 5; }
-.fs-layer[hidden] { display: none; }
-.fs-backdrop { position: absolute; inset: 0 0 var(--fs-bottom, 0) 0; background: rgba(19, 13, 0, .45); opacity: 0; transition: opacity .25s ease; }
-.fs-sheet { position: absolute; left: 0; right: 0; bottom: var(--fs-bottom, 0); display: flex; flex-direction: column; max-height: calc(100% - var(--fs-bottom, 0px) - 56px); overflow: hidden; background: var(--deg-cream); border-radius: 24px 24px 0 0; box-shadow: var(--deg-shadow-float); transform: translateY(100%); transition: transform .28s cubic-bezier(.16, 1, .3, 1); }
-.fs-layer.is-open .fs-backdrop { opacity: 1; }
-.fs-layer.is-open .fs-sheet { transform: none; }
-.fs-media { flex: none; width: 100%; aspect-ratio: 1; max-height: 46vh; background: var(--deg-cream-cool); }
-.fs-media .fv-media { width: 100%; height: 100%; }
-.fs-close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-white); color: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); cursor: pointer; }
-.fs-close:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--deg-cream), 0 0 0 5px var(--deg-ink-deep); }
-.fs-body { display: flex; flex-direction: column; gap: 8px; padding: 16px 16px 20px; overflow-y: auto; overscroll-behavior: contain; }
-.fs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.fs-title { margin: 0; font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 26px; color: var(--deg-ink-heading); }
-.fs-stat { margin: 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
-.fs-desc { margin: 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
-.fs-body .fv-excl { margin: 4px 0 0; }
-@media (prefers-reduced-motion: reduce) { .fs-backdrop, .fs-sheet { transition: none; } }
+/* The flavor rows (Distilled and Grow alike): a Cool Linen row that steps to Border Chip on hover. A flavor in the mix becomes a white card with a 2px Deep Ink
+   stroke and a drop shadow. The full-pack state no longer dims the row: only its − and + are disabled. The stroke is always 2px
+   (transparent until selected) and the padding gives back the difference, so a row is the size it always was. */
+.dozen-flavor-row { position: relative; overflow: hidden; border: 2px solid transparent; border-radius: var(--deg-radius-card); padding: 11.5px 15.5px 11.5px 11.5px; background: var(--deg-cream-cool); transition: background-color .15s ease; }
+.dozen-flavor-row:not(.selected):hover { background: var(--deg-border-chip); }
+.dozen-flavor-row.selected, .dozen-flavor-row.selected:hover { background: var(--deg-white); border-color: var(--deg-ink-deep); box-shadow: 0 6px 16px rgba(19, 13, 0, .18); }
+.dozen-flavor-row.at-limit { opacity: 1; }
+.dozen-flavor-row.selected .flavor-exclusions, .dozen-flavor-row.selected .flavor-watch { border-top-color: var(--deg-border-chip); }
+/* The − and + buttons: 36px circles with a 44px tap area, the same outline and fill. */
+.dozen-flavor-row .mini-step-btn { position: relative; width: 36px; height: 36px; touch-action: manipulation; }
+.dozen-flavor-row .mini-step-btn::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+.dozen-flavor-row .mini-step-btn svg { width: 16px; height: 16px; }
+.dozen-flavor-row .mini-stepper { gap: 8px; }
+.dozen-flavor-row .mini-stepper span { min-width: 20px; }
+
+/* The temporary layout switcher scrolls sideways; its width must not widen the modal's content column on a phone. */
+.item-modal-content { min-width: 0; }
+.flavor-variant-switch { width: 100%; max-width: 100%; contain: inline-size; }
+
+/* ===== Distilled flavor picker (a layout in the switcher) =====
+   Adding and reviewing are the whole job: a compact header (the photo is untouched), a two-segment 3-or-6 control, shorter rows,
+   ingredient chips behind "Customize", the picks listed in the footer, Qty beside the action and the note behind a link. */
+#item-modal[data-distilled="1"] .item-modal-title-block { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
+#item-modal[data-distilled="1"] #dozen-modal-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+/* The one-line calorie text must not set the column's width: on a phone the content column is as wide as its widest unbroken line, so it is held to the screen. */
+#item-modal[data-distilled="1"] .item-modal-content { max-width: 100%; }
+#item-modal[data-distilled="1"] .flavor-row-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-custom { display: flex; align-items: center; gap: 12px; padding-left: 6px; }
+.fd-custom-btn { min-height: 44px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.fd-custom-sum { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--deg-ink-body); }
+
+/* Eggceptional Wraps flavor rows: the deviled egg picker's row (Cool Linen, white + 2px ink when chosen), with a pick-one radio
+   in place of the stepper. The whole head is the radio's label; the Customize link and chips sit below it, outside the label. */
+.wrap-flavor-label { position: relative; cursor: pointer; justify-content: flex-start; }
+.wrap-flavor-label .flavor-row-name { flex: 1 1 0; }
+.wrap-flavor-label .flavor-thumb { cursor: pointer; }
+.wrap-flavor-row .flavor-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.wrap-flavor-row.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.wrap-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.wrap-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.wrap-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+.wrap-flavor-extra:empty { display: none; }
+.wrap-flavor-extra { display: flex; flex-direction: column; gap: 12px; }
+/* The ingredient line is what a customer is choosing by: the chosen row shows all of it. */
+.wrap-flavor-row.selected .flavor-row-desc { display: block; -webkit-line-clamp: unset; overflow: visible; }
+/* The "No bacon, tomato, …" summary wraps instead of running on one line: a long list used to set the width of the whole column
+   and push the card past the screen. The column is held to the modal's width. */
+#wrap-modal .item-modal-content, .wrap-flavor-row, .wrap-flavor-extra { min-width: 0; max-width: 100%; }
+.wrap-flavor-extra .fd-custom { flex-wrap: wrap; gap: 0 12px; }
+.wrap-flavor-extra .fd-custom-sum { flex: 1 1 160px; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 6px; }
+.wrap-flavor-extra .fd-custom:has(.fd-custom-sum) .fd-custom-btn { margin-bottom: -6px; }
+
+/* Remove ingredients, as a list: one full-width row per ingredient (its glyph, its name, and a circle-slash at the right that
+   is grey until the ingredient is left out, then red). The whole row is the button, 48px tall. */
+.excl-list { margin: 0; padding: 0; list-style: none; }
+.excl-list li + li { border-top: 1px solid var(--deg-border-chip); }
+.excl { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 4px; border: 0; background: none; font: inherit; text-align: left; color: var(--deg-ink-body); cursor: pointer; touch-action: manipulation; }
+.excl:focus-visible { outline: none; border-radius: 8px; box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+.excl-icon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-heading); }
+.excl-name { flex: 1 1 0; min-width: 0; font-size: 15px; line-height: 20px; font-weight: 500; }
+.excl-no { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-muted); transition: color .15s ease; }
+.excl:hover .excl-no { color: var(--deg-ink-deep); }
+.excl.active .excl-no { color: var(--deg-error); }
+.excl.active .excl-no circle { fill: rgba(220, 38, 38, .12); }
+.excl.active .excl-name { text-decoration: line-through; text-decoration-color: var(--deg-error); text-decoration-thickness: 1.5px; }
+
+/* On a gold (chosen) single-choice row the red needs to be darker to stay readable, and the dividers need to show. */
+.radio-choice .excl-list li + li { border-top-color: rgba(38, 26, 0, .18); }
+.radio-choice .excl:hover .excl-no { color: var(--deg-ink-deep); }
+.radio-choice .excl.active .excl-no { color: #B91C1C; }
+
+/* Pair: the Customize link sits under the stepper, inside the tile; a tile is half the screen wide, so its ingredient rows are compact
+   and the summary wraps instead of widening the tile. */
+.fv-custom { margin: -4px 12px 8px; padding-left: 0; flex-wrap: wrap; gap: 0 8px; }
+.fv-custom[hidden] { display: none; }
+.fv-custom .fd-custom-sum { flex: 1 1 100%; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 8px; }
+[data-variant="2"] .fv-excl .excl { gap: 8px; padding: 6px 0; }
+[data-variant="2"] .fv-excl .excl-icon, [data-variant="2"] .fv-excl .excl-no { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-icon svg, [data-variant="2"] .fv-excl .excl-no svg { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-name { font-size: 14px; line-height: 18px; }
+
+/* A product with options (the 6 Pack) opens with none chosen: its flavors wait, dimmed, until the customer picks 3 or 6. */
+#flavor-block { scroll-margin-top: 72px; }
+#flavor-block.is-pending { opacity: .45; pointer-events: none; }
+#flavor-block.is-pending .flavor-variant-switch { display: none; }
+
+/* Pair: the "i" on a tile's clip, a black circle with a white glyph in the top-left corner where the number badge used to sit; it opens the sheet below. */
+.fv-info { position: absolute; top: 10px; left: 10px; z-index: 2; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; cursor: pointer; touch-action: manipulation; }
+.fv-info::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+.fv-info:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+/* The sheet is laid over the open modal the way a second card is stacked on a phone: it rises from the bottom with rounded top corners and
+   the clip runs edge to edge from its top, while the modal beneath is pushed back a little (scaled, still showing above the sheet's top edge). */
+.flavor-info { --sheet-top: 20px; position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; }
+@media (min-width: 641px) { .flavor-info { --sheet-top: 40px; } }
+.flavor-info-backdrop { position: absolute; inset: 0; background: rgba(19, 13, 0, .6); animation: flavor-info-fade .25s ease both; }
+.flavor-info-sheet { position: relative; display: flex; flex-direction: column; width: min(100%, 440px); height: calc(100% - var(--sheet-top)); max-height: calc(100% - var(--sheet-top)); overflow-y: auto; overscroll-behavior: contain; border-radius: 16px 16px 0 0; background: var(--deg-cream); box-shadow: var(--deg-shadow-modal); animation: flavor-info-rise .3s cubic-bezier(.2, .8, .2, 1) both; }
+.flavor-info-close { position: absolute; top: 12px; left: 12px; z-index: 3; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-white); box-shadow: 0 2px 8px rgba(19, 13, 0, .18); cursor: pointer; }
+.flavor-info-close:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-info-media.flavor-watch-media { flex: none; width: 100%; height: auto; max-height: 62vh; aspect-ratio: 2 / 3; border-radius: 0; }
+.flavor-info-media video { object-position: 50% 40%; }
+.flavor-info-copy { display: flex; flex-direction: column; gap: 6px; padding: 20px 20px 28px; }
+.flavor-info-copy h2 { margin: 0; font-family: var(--deg-font-body); font-size: 20px; line-height: 26px; font-weight: 700; color: var(--deg-ink-deep); }
+.flavor-info-stat { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-muted); }
+.flavor-info-copy p { margin: 4px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-body); }
+.flavor-info.is-closing .flavor-info-sheet { animation: flavor-info-drop .22s ease-in both; }
+.flavor-info.is-closing .flavor-info-backdrop { animation: flavor-info-fade .22s ease-in reverse both; }
+#item-modal { transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+#item-modal.is-under { transform: translateY(8px) scale(.94); transform-origin: 50% 0; }
+/* The modal underneath takes the sheet's 16px corners (a touch more, to read as 16 once it is scaled down) and gives up its close button. */
+.item-modal-inner { transition: border-radius .3s cubic-bezier(.2, .8, .2, 1); }
+#item-modal.is-under .item-modal-inner { border-radius: 17px; }
+#item-modal.is-under .item-modal-header .close-btn { visibility: hidden; }
+@keyframes flavor-info-rise { from { transform: translateY(100%); } }
+@keyframes flavor-info-drop { to { transform: translateY(100%); } }
+@keyframes flavor-info-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .flavor-info-sheet, .flavor-info-backdrop, .flavor-info.is-closing .flavor-info-sheet, .flavor-info.is-closing .flavor-info-backdrop { animation: none; }
+  #item-modal, .item-modal-inner { transition: none; }
+}
+
+/* Full Size Bagel: the yolk spread rows are the pack picker's (Cool Linen; white + 2px ink when chosen), the thumbnail still opens the clip, and a
+   pick-one radio sits where the stepper is. The label holds the name and the radio; the thumbnail and the Customize link sit outside it. */
+.bagel-pick { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 56px; cursor: pointer; }
+.bagel-flavor-row .flavor-row-head { justify-content: flex-start; }
+.bagel-flavor-row .flavor-row-name { flex: 1 1 0; }
+.bagel-flavor-row .flavor-row-desc { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bagel-flavor-row.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.bagel-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.bagel-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.bagel-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+#bagel-modal .item-modal-content { min-width: 0; max-width: 100%; }
+.bagel-flavor-row .fd-custom { flex-wrap: wrap; gap: 0 12px; }
+.bagel-flavor-row .fd-custom-sum { flex: 1 1 160px; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 6px; }
+.bagel-flavor-row .fd-custom:has(.fd-custom-sum) .fd-custom-btn { margin-bottom: -6px; }
