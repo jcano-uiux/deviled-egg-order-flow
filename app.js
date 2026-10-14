@@ -218,13 +218,13 @@
   // `exclusions` are the ingredients a customer can leave out, read off that line; the yolk or crab mix is the
   // base of the filling and stays (the live page lists no "NO:" toggles for this product, so confirm these).
   const WRAP_FLAVORS = [
-    { id: 'blte', label: 'BLTE', photo: 'BTLE', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+    { id: 'blte', label: 'BLTE', photo: 'assets/catering/flavors/blte-square-img.jpg', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
       exclusions: ['Bacon', 'Cheddar cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
-    { id: 'cali-roll', label: 'Cali Roll', photo: 'Cali-Roll', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame',
+    { id: 'cali-roll', label: 'Cali Roll', photo: 'assets/catering/flavors/cali-roll-square-img.jpg', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame',
       exclusions: ['Sriracha aioli', 'Avocado', 'Cucumber', 'Teriyaki', 'Black sesame'] },
-    { id: 'the-caesar', label: 'The Caesar', photo: 'The-Caesar', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+    { id: 'the-caesar', label: 'The Caesar', photo: 'assets/catering/flavors/caesar-square-img.png', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
       exclusions: ['Grilled chicken', 'Bacon', 'Parmesan cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
-    { id: 'buffalo-chicken', label: 'Buffalo Chicken', photo: 'Buffalo-Chicken', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch',
+    { id: 'buffalo-chicken', label: 'Buffalo Chicken', photo: 'assets/catering/flavors/Buffalo-chicken-square-img.png', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch',
       exclusions: ['Grilled chicken', 'Red onion', 'Buffalo sauce', 'Lettuce', 'Creamy ranch'] },
   ];
   // "Make it a Meal" is its own highlighted toggle on the live site, but it
@@ -254,7 +254,7 @@
   // (the flavor can still be changed there). The photo is the matching deviled egg flavor's still; the wraps have none of their own.
   const SANDWICH_WRAP = WRAP_FLAVORS.map((f) => ({
     id: 'wrap-' + f.id, name: f.label, price: WRAP_PRICE, note: 'Wrap', desc: f.ingredients,
-    image: `assets/flavors/${f.photo}.jpg`, wrapFlavors: WRAP_FLAVORS, wrapProduct: WRAP_PRODUCT, wrapFlavorId: f.id,
+    image: f.photo, wrapFlavors: WRAP_FLAVORS, wrapProduct: WRAP_PRODUCT, wrapFlavorId: f.id,
   }));
 
   const BAGEL_FLAVORS = [
@@ -330,27 +330,27 @@
   // with the same "NO:" ingredient toggles as FLAVORS above) and the shipping
   // and storage note. They open the same dozen-style modal as the menu's packs
   // and add to the in-app bag — never an outside page.
-  const SHIPPING_NOTICE = 'Our eggs are never frozen and ship in coolers on ice in kits to be assembled at your convenience. We do require overnight shipping during summer months but offer less costly options in the fall & winter in time for the holidays! Once our eggs arrive, refrigerate them (cannot be frozen) and consume within 3 days.';
+  const SHIPPING_NOTICE = 'Our eggs are never frozen. They ship in coolers on ice. Once they arrive, refrigerate them (they cannot be frozen) and eat within 3 days.';
   const KIT_FLAVOR_IDS = ['backyard-bbq', 'buffalo-blue-cheese', 'buffalo-chicken-ranch', 'cali-roll', 'chicken-bacon-ranch', 'chicken-pickle-egg', 'everything-seasoning', 'jalapeno-popper', 'smoked-salmon', 'south-of-the-border', 'sriracha-bacon', 'traditional'];
   const SHIPPING_KITS = [
     {
-      id: 'kit-sampler', name: 'Mini Deviled Egg Salad Sampler', price: 74.99, image: 'assets/shipping/kit-sampler.png', ships: true, cart: 'shipping',
+      id: 'kit-sampler', name: 'Mini Deviled Egg Salad Sampler', price: 74.99, note: 'Try them all', image: 'assets/shipping/kit-sampler.png', ships: true, cart: 'shipping',
       desc: 'Try all of our top sellers- shipped right to your door. This is a great gift for birthdays, anniversaries or just because.',
       detailsLabel: 'This kit includes:',
       details: ['(18) 2oz deviled egg salads perfect for eggsploring our options before your next big event.'],
-      fixedFlavors: ['Traditional', 'Everything Seasoning', 'Smoked Salmon', 'South of the Border', 'Sriracha Bacon', 'Jalapeno Popper', 'Crab Rangoon', 'Chicken Bacon Ranch', 'Cali Roll', 'Buffalo Blue Cheese', 'Buffalo Chicken', 'Chicken N a Pickle', 'Chicken Caesar', 'Gyro', 'Cheeseburger', 'BBQ Chicken', 'Featured Flavor!'],
+      fixedFlavors: ['Traditional', 'Everything Seasoning', 'Smoked Salmon', 'South of the Border', 'Sriracha Bacon', 'Jalapeño Popper', 'Crab Rangoon', 'Chicken Bacon Ranch', 'Cali Roll', 'Buffalo Blue Cheese', 'Buffalo Chicken', 'Chicken and Pickle Egg', 'Chicken Caesar', 'Gyro', 'Cheeseburger', 'BBQ Chicken'],
       notice: SHIPPING_NOTICE,
     },
     {
-      id: 'kit-24', name: '24 Count Kit', price: 64.99, image: 'assets/shipping/kit-24.png', ships: true, cart: 'shipping',
-      desc: 'Deviled Eggs — choose 2 flavors.',
+      id: 'kit-24', name: '24 Count Kit', price: 64.99, note: '2 flavors', image: 'assets/shipping/kit-24.png', ships: true, cart: 'shipping',
+      desc: 'Twenty-four deviled eggs in two flavors of your choice, packed cold with the yolk filling in piping bags and the toppings, ready to assemble.',
       details: ['24 egg white halves conveniently packaged into egg trays with lids perfect for transporting or storing.', '2 flavors of yolk filling in piping bags for the perfect presentation.', 'Toppings for your deviled egg flavors of choice.'],
       flavorIds: KIT_FLAVOR_IDS, pickerConfig: { total: 24, maxFlavors: 2 },
       notice: SHIPPING_NOTICE,
     },
     {
-      id: 'kit-36', name: '36 Count Kit', price: 99.99, image: 'assets/shipping/kit-24.png', ships: true, cart: 'shipping',
-      desc: 'Deviled Eggs — choose 3 flavors.',
+      id: 'kit-36', name: '36 Count Kit', price: 99.99, note: '3 flavors', image: 'assets/shipping/kit-36-placeholder.svg', ships: true, cart: 'shipping',
+      desc: 'Thirty-six deviled eggs in three flavors of your choice, packed cold with the yolk filling in piping bags and the toppings, ready to assemble.',
       details: ['36 egg white halves conveniently packaged into egg trays with lids perfect for transporting or storing.', '3 flavors of yolk filling in piping bags for the perfect presentation.', 'Toppings for your deviled egg flavors of choice.'],
       flavorIds: KIT_FLAVOR_IDS, pickerConfig: { total: 36, maxFlavors: 3 },
       notice: SHIPPING_NOTICE,
@@ -380,6 +380,11 @@
   try { cateringIntent = localStorage.getItem('deg-catering-intent') === '1'; } catch (e) { /* ignore */ }
   // What the flag was before a funnel from Home changed it, so cancelling that funnel puts it back.
   let intentBeforeFunnel = null;
+  // True only for the funnel that Home's "Order catering" tile started: that one ends on the Catering group, no other does. The flag
+  // above can outlive a cancelled funnel; this one cannot, so a later "Continue to menu" always goes to the menu.
+  let funnelForCatering = false;
+  // Set when "Change time" was tapped on the nav's saved order: the time modal then returns to the where modal, not to the page.
+  let ldBackToWhere = null;
   function setCateringIntent(on) {
     cateringIntent = !!on;
     try { if (on) localStorage.setItem('deg-catering-intent', '1'); else localStorage.removeItem('deg-catering-intent'); } catch (e) { /* ignore */ }
@@ -614,6 +619,7 @@
     badge.textContent = String(shown);
     badge.hidden = shown === 0;
     updateCartBar();
+    renderNavWhere();
   }
 
   // ---------- Floating cart bar (mobile) ----------
@@ -651,6 +657,8 @@
     renderShopGrid('egg-salads-grid', EGG_SALADS, 'saladcup', 'Egg salad');
     renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
     renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
+    renderShopGrid('ship-kits-grid', SHIPPING_KITS, 'kit', 'Shipping kit');
+    renderShipHoliday();
     renderBagelCard();
     renderFeatured();
   }
@@ -1184,6 +1192,7 @@
   const REVEAL_BARS = [
     { view: document.getElementById('view-menu'), bar: document.querySelector('#view-menu .drawer-nav-mobile'), anchor: document.getElementById('featured-items') },
     { view: document.getElementById('view-catering'), bar: document.querySelector('#view-catering .drawer-nav-mobile'), anchor: document.getElementById('cater-section-boxes') },
+    { view: document.getElementById('view-shipping'), bar: document.querySelector('#view-shipping .drawer-nav-mobile'), anchor: document.getElementById('ship-section-kits') },
   ];
   const REVEAL_LINE_PX = 69;
   let revealTicking = false;
@@ -1206,7 +1215,6 @@
   window.addEventListener('scroll', onScrollForReveal, { passive: true });
   window.addEventListener('resize', onScrollForReveal);
   updateBarReveal();
-  document.getElementById('cater-back').addEventListener('click', (e) => { e.preventDefault(); goHome(); });
 
   // ---------- Overlay focus management ----------
   const pageRoot = document.getElementById('page-root');
@@ -1295,6 +1303,22 @@
     b.setAttribute('aria-pressed', String(excluded.has(items[i])));
   });
 
+  // The "Customize" control every customizable item shares (packs, wraps, bagel, bowls): a link named for the item, a one-line summary of what has
+  // been left out, and, once the link is open, the "Remove ingredients" list. `excluded` is the Set of names left out; the item keeps the state.
+  const customizeHTML = ({ label, items, excluded, open }) => `
+    <div class="fd-custom">
+      <button class="fd-custom-btn" type="button" aria-expanded="${open}" aria-label="Customize ${escapeHTML(label)}">Customize</button>
+      ${excluded.size ? `<span class="fd-custom-sum">No ${escapeHTML([...excluded].join(', ').toLowerCase())}</span>` : ''}
+    </div>
+    ${open ? `<div class="flavor-exclusions"><span class="flavor-exclusions-label">Remove ingredients</span>${exclusionListHTML(items, excluded)}</div>` : ''}`;
+  // Draws it into `box` and wires it: the link calls onToggleOpen, a row calls onToggle(ingredient). The item redraws from its own state.
+  function mountCustomize(box, { label, items, excluded, open, onToggleOpen, onToggle }) {
+    box.innerHTML = customizeHTML({ label, items, excluded, open });
+    box.querySelector('.fd-custom-btn').addEventListener('click', onToggleOpen);
+    box.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => onToggle(items[i])));
+  }
+  const toggleIn = (set, value) => { if (set.has(value)) set.delete(value); else set.add(value); };
+
   const radioChoiceHTML = ({ group, value, label, note, selected }) => `
     <div class="radio-choice${selected ? ' selected' : ''}">
       <label class="radio-choice-row">
@@ -1357,19 +1381,15 @@
     const extra = group.querySelector('.radio-choice-extra');
     if (!flavor || !flavor.exclusions || !flavor.exclusions.length) { extra.innerHTML = ''; return; }
     const excluded = state.modalExclusions[flavor.id] || new Set();
-    extra.innerHTML = `
-      <div class="flavor-exclusions">
-        <span class="flavor-exclusions-label">Remove ingredients</span>
-        ${exclusionListHTML(flavor.exclusions, excluded)}
-      </div>`;
-    extra.querySelectorAll('.excl').forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        const ing = flavor.exclusions[i];
+    mountCustomize(extra, {
+      label: flavor.label, items: flavor.exclusions, excluded, open: fd.custom.has(flavor.id),
+      onToggleOpen: () => { if (fd.custom.has(flavor.id)) fd.custom.delete(flavor.id); else fd.custom.add(flavor.id); renderSingleFlavorExtra(group, flavor); },
+      onToggle: (ing) => {
         const set = state.modalExclusions[flavor.id] || new Set();
-        if (set.has(ing)) set.delete(ing); else set.add(ing);
+        toggleIn(set, ing);
         state.modalExclusions[flavor.id] = set;
-        paintExclusionList(extra, flavor.exclusions, set);
-      });
+        renderSingleFlavorExtra(group, flavor);
+      },
     });
   }
 
@@ -1408,6 +1428,20 @@
     const video = flavorWatch.wrap && flavorWatch.wrap.querySelector('video');
     if (video) video.pause();
     flavorWatch = { id: null, wrap: null, playing: false };
+  }
+
+  // The expanded panel's stand-in for a flavor that has no clip yet: the same 2:3 slot, labeled.
+  // A flavor with a still photo but no clip (catering sandwiches) shows the photo itself, square.
+  function flavorWatchPlaceholder(photo) {
+    const el = document.createElement('div');
+    if (photo) {
+      el.className = 'flavor-watch-media flavor-watch-photo';
+      el.innerHTML = `<img src="${photo}" alt="" loading="lazy" decoding="async">`;
+      return el;
+    }
+    el.className = 'flavor-watch-media flavor-watch-placeholder';
+    el.innerHTML = '<img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Photo coming soon</span>';
+    return el;
   }
 
   function flavorWatchMedia(f) {
@@ -1459,7 +1493,8 @@
   const FV_MINUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
   const FV_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12M12 6v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 
-  const flavorVariantAvailable = () => activeProduct.total > 1 && !activeProduct.fixedFlavors && flavorList().every((f) => FLAVOR_MEDIA[f.id]);
+  // Only the 6 Pack Deviled Egg offers the three layouts to compare; every other flavor picker is Distilled.
+  const flavorVariantAvailable = () => activeProduct.id === '6-pack' && activeProduct.total > 1 && !activeProduct.fixedFlavors && flavorList().every((f) => FLAVOR_MEDIA[f.id]);
   const flavorStat = (f) => { const m = FLAVOR_MEDIA[f.id]; return f.desc || (m && m.cal ? `${m.cal} cal · ${m.protein}g protein each` : ''); };
 
   (function initFlavorSwitch() {
@@ -1921,15 +1956,19 @@
       // Selecting a flavor and excluding an ingredient from it are one
       // continuous card — the exclusion chips live inside the same
       // .flavor-row button, not a separate block stacked below it.
-      const media = FLAVOR_MEDIA[f.id];
-      const watching = !!media && flavorWatch.id === f.id;
+      // A flavor with no photo or clip yet gets a placeholder thumbnail, and its expanded panel a placeholder in the clip's place.
+      // A flavor with its own photo (the catering lists) shows that photo, not a pack clip that happens to share its id.
+      const media = f.photo ? null : FLAVOR_MEDIA[f.id] || null;
+      const watching = flavorWatch.id === f.id;
+      const thumbSrc = media ? `assets/flavors/${media.file}.jpg` : f.photo || 'assets/flavors/placeholder.svg';
+      const thumbLabel = media ? `${watching ? 'Hide' : 'Watch'} the ${f.label} video` : `${watching ? 'Hide' : 'Show'} details for ${f.label}`;
       const statLine = f.desc || (media && media.cal ? `${media.cal} cal · ${media.protein}g protein each` : '');
       const row = document.createElement('div');
       row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
       row.dataset.flavor = f.id;
       row.innerHTML = `
         <div class="flavor-row-head">
-          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(f.label)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>` : ''}
+          <button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${escapeHTML(thumbLabel)}"><img src="${thumbSrc}" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>
           <span class="flavor-row-name">${f.label}${statLine ? `<small class="flavor-row-desc">${escapeHTML(statLine)}</small>` : ''}</span>
           <div class="mini-stepper">
             <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Remove ' + f.label : 'Remove ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
@@ -1941,29 +1980,17 @@
           <div class="flavor-watch" id="flavor-watch-${f.id}">
             <div class="flavor-watch-slot"></div>
             <div class="flavor-watch-copy">
-              <p>${escapeHTML(media.desc)}</p>
-              <button class="flavor-watch-hide" type="button">Hide video</button>
+              <p>${escapeHTML(media ? media.desc : f.desc || 'Details coming soon.')}</p>
+              <button class="flavor-watch-hide" type="button">${media ? 'Hide video' : 'Hide details'}</button>
             </div>
           </div>
         ` : ''}
-        ${showExclusions && distilled ? `
-          <div class="fd-custom">
-            <button class="fd-custom-btn" type="button" aria-expanded="${fd.custom.has(f.id)}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
-            ${excluded.size ? `<span class="fd-custom-sum">No ${escapeHTML([...excluded].join(', ').toLowerCase())}</span>` : ''}
-          </div>` : ''}
-        ${showExclusions && (!distilled || fd.custom.has(f.id)) ? `
-          <div class="flavor-exclusions">
-            <span class="flavor-exclusions-label">Remove ingredients</span>
-            ${exclusionListHTML(f.exclusions, excluded)}
-          </div>
-        ` : ''}
+        ${showExclusions ? '<div class="fd-custom-box"></div>' : ''}
       `;
-      if (media) {
-        row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
-      }
+      row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
       if (watching) {
         row.querySelector('.flavor-watch-hide').addEventListener('click', () => toggleFlavorWatch(f.id));
-        row.querySelector('.flavor-watch-slot').replaceWith(flavorWatchMedia(f));
+        row.querySelector('.flavor-watch-slot').replaceWith(media ? flavorWatchMedia(f) : flavorWatchPlaceholder(f.photo));
       }
       const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
       decBtn.addEventListener('click', () => {
@@ -1985,27 +2012,22 @@
         renderFlavorGrid();
         renderModalFooter();
       });
-      if (showExclusions && distilled) {
-        row.querySelector('.fd-custom-btn').addEventListener('click', () => {
-          if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
-          renderFlavorGrid();
-        });
-      }
       if (showExclusions) {
-        row.querySelectorAll('.excl').forEach((btn, i) => {
-          btn.addEventListener('click', () => {
-            const ing = f.exclusions[i];
+        mountCustomize(row.querySelector('.fd-custom-box'), {
+          label: f.label, items: f.exclusions, excluded, open: fd.custom.has(f.id),
+          onToggleOpen: () => { if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id); renderFlavorGrid(); },
+          onToggle: (ing) => {
             const set = state.modalExclusions[f.id] || new Set();
-            if (set.has(ing)) set.delete(ing); else set.add(ing);
+            toggleIn(set, ing);
             state.modalExclusions[f.id] = set;
             renderFlavorGrid();
-          });
+          },
         });
       }
 
       grid.appendChild(row);
       // The grid redraws on every + / -, which pauses a re-attached video; pick the clip up again unless the customer paused it.
-      if (watching && flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
+      if (watching && media && flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
     });
     renderFlavorGuidance(allocated);
   }
@@ -2317,22 +2339,11 @@
       row.querySelector('.radio-choice-input').checked = chosen;
       const extra = row.querySelector('.wrap-flavor-extra');
       if (!chosen || !f.exclusions.length) { extra.innerHTML = ''; return; }
-      extra.innerHTML = `
-        <div class="fd-custom">
-          <button class="fd-custom-btn" type="button" aria-expanded="${bagelCustomOpen}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
-          ${bagelExcl.size ? `<span class="fd-custom-sum">No ${escapeHTML([...bagelExcl].join(', ').toLowerCase())}</span>` : ''}
-        </div>
-        ${bagelCustomOpen ? `
-          <div class="flavor-exclusions">
-            <span class="flavor-exclusions-label">Remove ingredients</span>
-            ${exclusionListHTML(f.exclusions, bagelExcl)}
-          </div>` : ''}`;
-      extra.querySelector('.fd-custom-btn').addEventListener('click', () => { bagelCustomOpen = !bagelCustomOpen; syncBagelFlavorRows(); });
-      extra.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => {
-        const ing = f.exclusions[i];
-        if (bagelExcl.has(ing)) bagelExcl.delete(ing); else bagelExcl.add(ing);
-        syncBagelFlavorRows();
-      }));
+      mountCustomize(extra, {
+        label: f.label, items: f.exclusions, excluded: bagelExcl, open: bagelCustomOpen,
+        onToggleOpen: () => { bagelCustomOpen = !bagelCustomOpen; syncBagelFlavorRows(); },
+        onToggle: (ing) => { toggleIn(bagelExcl, ing); syncBagelFlavorRows(); },
+      });
     });
   }
 
@@ -2488,18 +2499,13 @@
     renderAddOnRows(document.getElementById('bowl-addons-picker'), activeBowl.addOns, state.bowlAddOns, renderBowlModalFooter);
   }
 
+  // Ingredients to leave out: the same Customize link and list as the packs, wraps and bagel.
+  let bowlCustomOpen = false;
   function renderBowlExclusions() {
-    const container = document.getElementById('bowl-no-picker');
-    container.innerHTML = activeBowl.exclusions.map((label) => `
-      <button class="chip exclude-chip${state.bowlExclusions.has(label) ? ' active' : ''}" type="button" data-value="${label}">NO: ${label}</button>
-    `).join('');
-    container.querySelectorAll('.exclude-chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const value = chip.dataset.value;
-        if (state.bowlExclusions.has(value)) state.bowlExclusions.delete(value);
-        else state.bowlExclusions.add(value);
-        chip.classList.toggle('active');
-      });
+    mountCustomize(document.getElementById('bowl-no-picker'), {
+      label: activeBowl.name, items: activeBowl.exclusions, excluded: state.bowlExclusions, open: bowlCustomOpen,
+      onToggleOpen: () => { bowlCustomOpen = !bowlCustomOpen; renderBowlExclusions(); },
+      onToggle: (ing) => { toggleIn(state.bowlExclusions, ing); renderBowlExclusions(); },
     });
   }
 
@@ -2522,6 +2528,7 @@
     editingLine = line;
     state.bowlAddOns = new Set(line ? line.edit.addOns : []);
     state.bowlExclusions = new Set(line ? line.edit.exclusions : []);
+    bowlCustomOpen = state.bowlExclusions.size > 0;
     state.bowlOptions = new Set(line ? line.edit.options : []);
     state.bowlQty = line ? line.qty : 1;
     populateQtySelect(document.getElementById('bowl-qty-select'));
@@ -2624,7 +2631,7 @@
       <div class="flavor-row dozen-flavor-row wrap-flavor-row" data-flavor="${f.id}">
         <label class="flavor-row-head wrap-flavor-label">
           <input class="radio-choice-input" type="radio" name="wrap-flavor" value="${f.id}">
-          <span class="flavor-thumb" aria-hidden="true"><img src="assets/flavors/${f.photo}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"></span>
+          <span class="flavor-thumb" aria-hidden="true"><img src="${f.photo}" alt="" width="56" height="56" loading="lazy" decoding="async"></span>
           <span class="flavor-row-name">${escapeHTML(f.label)}<small class="flavor-row-desc">${escapeHTML(f.ingredients)}</small></span>
           <span class="radio-choice-ind" aria-hidden="true"></span>
         </label>
@@ -2650,23 +2657,11 @@
       row.querySelector('.radio-choice-input').checked = chosen;
       const extra = row.querySelector('.wrap-flavor-extra');
       if (!chosen) { extra.innerHTML = ''; return; }
-      extra.innerHTML = `
-        <div class="fd-custom">
-          <button class="fd-custom-btn" type="button" aria-expanded="${wrapCustomOpen}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button>
-          ${wrapExcl.size ? `<span class="fd-custom-sum">No ${escapeHTML([...wrapExcl].join(', ').toLowerCase())}</span>` : ''}
-        </div>
-        ${wrapCustomOpen ? `
-          <div class="flavor-exclusions">
-            <span class="flavor-exclusions-label">Remove ingredients</span>
-            ${exclusionListHTML(f.exclusions, wrapExcl)}
-          </div>` : ''}`;
-      extra.querySelector('.fd-custom-btn').addEventListener('click', () => { wrapCustomOpen = !wrapCustomOpen; syncWrapFlavorRows(); });
-      extra.querySelectorAll('.excl').forEach((btn, i) => btn.addEventListener('click', () => {
-        const ing = f.exclusions[i];
-        if (wrapExcl.has(ing)) wrapExcl.delete(ing); else wrapExcl.add(ing);
-        syncWrapFlavorRows();
-        renderWrapModalFooter();
-      }));
+      mountCustomize(extra, {
+        label: f.label, items: f.exclusions, excluded: wrapExcl, open: wrapCustomOpen,
+        onToggleOpen: () => { wrapCustomOpen = !wrapCustomOpen; syncWrapFlavorRows(); },
+        onToggle: (ing) => { toggleIn(wrapExcl, ing); syncWrapFlavorRows(); renderWrapModalFooter(); },
+      });
     });
   }
 
@@ -2853,9 +2848,9 @@
   // Every catering "Order Now" opens its own modal and adds to the Catering
   // cart. Contents are the live catering order form's own (flavor lists with
   // descriptions, sides and prices, drinks, minimums).
-  const CATERING_SANDWICHES = [{"id": "blte-sw", "label": "BLTE", "desc": "Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "cali-sw", "label": "Cali Roll", "desc": "Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame"}, {"id": "veggie-sw", "label": "Vegetarian", "desc": "Cream Cheese, Cucumbers, Tomato & Everything Seasoning"}, {"id": "caesar-sw", "label": "The Caesar", "desc": "Caesar Yolk Mix, Grilled Chicken, Bacon, Parmean Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "bbq-sw", "label": "Backyard BBQ", "desc": "Traditional Yolk Mix, BBQ Brisket, Lettuce, Pickled Jalapeno, Red Onion, BBQ Sauce, Cheddar Cheese"}, {"id": "buffalo-sw", "label": "Buffalo Chicken", "desc": "Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch"}];
+  const CATERING_SANDWICHES = [{"id": "blte-sw", "photo": "assets/catering/flavors/blte-square-img.jpg", "label": "BLTE", "desc": "Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "cali-sw", "photo": "assets/catering/flavors/cali-roll-square-img.jpg", "label": "Cali Roll", "desc": "Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame"}, {"id": "veggie-sw", "label": "Vegetarian", "desc": "Cream Cheese, Cucumbers, Tomato & Everything Seasoning"}, {"id": "caesar-sw", "photo": "assets/catering/flavors/caesar-square-img.png", "label": "The Caesar", "desc": "Caesar Yolk Mix, Grilled Chicken, Bacon, Parmean Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "bbq-sw", "photo": "assets/catering/flavors/backyard-bbq-square-img.jpg", "label": "Backyard BBQ", "desc": "Traditional Yolk Mix, BBQ Brisket, Lettuce, Pickled Jalapeno, Red Onion, BBQ Sauce, Cheddar Cheese"}, {"id": "buffalo-sw", "photo": "assets/catering/flavors/Buffalo-chicken-square-img.png", "label": "Buffalo Chicken", "desc": "Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch"}];
   const CATERING_BOWLS = [{"id": "avo-blt-bowl", "label": "Avocado Chicken BLT", "desc": "Egg Whites, Grilled Chicken, Bacon, Fresh Avocado, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "buffalo-bowl", "label": "Buffalo Chicken Bowl", "desc": "Egg Whites, Lettuce, Grilled Chicken, Red Onion, Buffalo Sauce, Cheddar Cheese & House-Made Creamy Ranch"}, {"id": "caesar-bowl", "label": "The Caesar Bowl", "desc": "Egg Whites, Grilled Chicken, Capers, Romaine Lettuce, Red Onion, Creamy Caesar & Parmesan Cheese"}, {"id": "brisket-bowl", "label": "Banging Brisket Bowl", "desc": "Egg Whites, BBQ Brisket, Lettuce, Pickled Jalapeño, Red Onion, BBQ Sauce & Cheddar Cheese"}, {"id": "poke-bowl", "label": "Poke-Egg-Bowl", "desc": "Egg Whites, Imitation Crab, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki Sauce & Black Sesame Seeds"}, {"id": "walking-taco-bowl", "label": "Walking Taco Bowl", "desc": "Egg Whites, Refried Beans, Grilled Chicken, Lettuce, Cheddar Cheese, Cholula Hot Sauce, Sour Cream & Doritos"}];
-  const CATERING_EGGS = [{"id": "buffalo-blue", "label": "Buffalo Blue", "desc": "Hot Sauce Yolk Mix, Blue Cheese Crumbles & A Hot Sauce Drizzle"}, {"id": "buffalo-chicken", "label": "Buffalo Chicken Egg", "desc": "Buffalo Sauce Infused Yolk Mix, Grilled Chicken, Red Onion & A Buffalo Sauce Drizzle"}, {"id": "walking-taco", "label": "Walking Taco Egg", "desc": "Cholula Infused Yolk Mix, Grilled Chicken, Refried Beans, Lettuce, Sour Cream, Cheddar Cheese & Crumbled Doritos"}, {"id": "jalapeno-popper", "label": "Jalapeño Popper", "desc": "Cream Cheese Yolk Mix, Bacon Crumbles, Fresh Jalapeño Slice & A Chipotle Sauce Drizzle"}, {"id": "chicken-pickle", "label": "Chicken N A Pickle", "desc": "Sweet Chicken Sauce Yolk Mix, Grilled Chicken, A Dill Pickle Slice & A Sweet Chicken Sauce Drizzle"}, {"id": "smoked-salmon", "label": "Smoked Salmon", "desc": "Cream Cheese Infused Yolk Mix, Capers, Red Onion & Fully Cooked Wild Caught Smoked Salmon"}, {"id": "crab-rangoon", "label": "Crab Rangoon", "desc": "Sweet Crab Mix, Cream Cheese Infused Yolk Mix, Crispy Wontons & A Sweet & Sour Sauce Drizzle"}, {"id": "cali-roll", "label": "Cali Roll Egg", "desc": "Spicy Mayo Crab Mix, Fresh Cucumber Slice, Black Sesame Seeds & A Teriyaki Sauce Drizzle"}, {"id": "sriracha-bacon", "label": "Sriracha Bacon", "desc": "Sriracha Yolk Mix, Bacon Crumbles & A Sriracha Drizzle"}, {"id": "blte", "label": "BLTE Egg", "desc": "Ranch Yolk Mix, Bacon Crumbles, Lettuce, Cherry Tomato Slice & A Ranch Sauce Drizzle"}, {"id": "south-border", "label": "South of the Border", "desc": "Cholula Infused Yolk Mix, Cheddar Cheese & Fresh Jalapeño Slice"}, {"id": "chicken-caesar", "label": "Chicken Caesar", "desc": "Caesar Infused Yolk Mix, Grilled Chicken, Lettuce, Parmesan Cheese & A Caesar Drizzle"}, {"id": "backyard-bbq", "label": "Backyard BBQ Egg", "desc": "Smokey BBQ In The Base, Traditional Yolk Mix, Dill Pickle Slice & A BBQ Sauce Drizzle"}, {"id": "chicken-bacon-ranch", "label": "Chicken Bacon Ranch", "desc": "Ranch Yolk Mix, Grilled Chicken, Bacon Crumbles, Cheddar Cheese & A Ranch Sauce Drizzle"}, {"id": "traditional", "label": "Traditional", "desc": "Mayo & Dijon Infused Yolk Mix, Paprika Seasoning"}, {"id": "everything", "label": "Everything Seasoning", "desc": "Cream Cheese Infused Yolk Mix, Everything Seasoning"}];
+  const CATERING_EGGS = [{"id": "buffalo-blue", "photo": "assets/catering/flavors/buffalo-blue-square-img.jpg", "label": "Buffalo Blue", "desc": "Hot Sauce Yolk Mix, Blue Cheese Crumbles & A Hot Sauce Drizzle"}, {"id": "buffalo-chicken", "photo": "assets/catering/flavors/Buffalo-chicken-square-img.png", "label": "Buffalo Chicken Egg", "desc": "Buffalo Sauce Infused Yolk Mix, Grilled Chicken, Red Onion & A Buffalo Sauce Drizzle"}, {"id": "walking-taco", "photo": "assets/catering/flavors/walking-taco-square-img.jpg", "label": "Walking Taco Egg", "desc": "Cholula Infused Yolk Mix, Grilled Chicken, Refried Beans, Lettuce, Sour Cream, Cheddar Cheese & Crumbled Doritos"}, {"id": "jalapeno-popper", "photo": "assets/catering/flavors/popper-square-img.png", "label": "Jalapeño Popper", "desc": "Cream Cheese Yolk Mix, Bacon Crumbles, Fresh Jalapeño Slice & A Chipotle Sauce Drizzle"}, {"id": "chicken-pickle", "photo": "assets/catering/flavors/chicken-a-pickle-square-img.jpg", "label": "Chicken N A Pickle", "desc": "Sweet Chicken Sauce Yolk Mix, Grilled Chicken, A Dill Pickle Slice & A Sweet Chicken Sauce Drizzle"}, {"id": "smoked-salmon", "photo": "assets/catering/flavors/smoked-salmon-square-img.png", "label": "Smoked Salmon", "desc": "Cream Cheese Infused Yolk Mix, Capers, Red Onion & Fully Cooked Wild Caught Smoked Salmon"}, {"id": "crab-rangoon", "photo": "assets/catering/flavors/crab-rangoon-square-img.png", "label": "Crab Rangoon", "desc": "Sweet Crab Mix, Cream Cheese Infused Yolk Mix, Crispy Wontons & A Sweet & Sour Sauce Drizzle"}, {"id": "cali-roll", "photo": "assets/catering/flavors/cali-roll-square-img.jpg", "label": "Cali Roll Egg", "desc": "Spicy Mayo Crab Mix, Fresh Cucumber Slice, Black Sesame Seeds & A Teriyaki Sauce Drizzle"}, {"id": "sriracha-bacon", "photo": "assets/catering/flavors/srircha-bacon-square-img.png", "label": "Sriracha Bacon", "desc": "Sriracha Yolk Mix, Bacon Crumbles & A Sriracha Drizzle"}, {"id": "blte", "photo": "assets/catering/flavors/blte-square-img.jpg", "label": "BLTE Egg", "desc": "Ranch Yolk Mix, Bacon Crumbles, Lettuce, Cherry Tomato Slice & A Ranch Sauce Drizzle"}, {"id": "south-border", "photo": "assets/catering/flavors/south-of-the-border-square-img.jpg", "label": "South of the Border", "desc": "Cholula Infused Yolk Mix, Cheddar Cheese & Fresh Jalapeño Slice"}, {"id": "chicken-caesar", "photo": "assets/catering/flavors/caesar-square-img.png", "label": "Chicken Caesar", "desc": "Caesar Infused Yolk Mix, Grilled Chicken, Lettuce, Parmesan Cheese & A Caesar Drizzle"}, {"id": "backyard-bbq", "photo": "assets/catering/flavors/backyard-bbq-square-img.jpg", "label": "Backyard BBQ Egg", "desc": "Smokey BBQ In The Base, Traditional Yolk Mix, Dill Pickle Slice & A BBQ Sauce Drizzle"}, {"id": "chicken-bacon-ranch", "photo": "assets/catering/flavors/chicken-bacon-ranch-square-img.jpg", "label": "Chicken Bacon Ranch", "desc": "Ranch Yolk Mix, Grilled Chicken, Bacon Crumbles, Cheddar Cheese & A Ranch Sauce Drizzle"}, {"id": "traditional", "photo": "assets/catering/flavors/traditional-square-img.jpg", "label": "Traditional", "desc": "Mayo & Dijon Infused Yolk Mix, Paprika Seasoning"}, {"id": "everything", "photo": "assets/catering/flavors/everything-square-img.jpg", "label": "Everything Seasoning", "desc": "Cream Cheese Infused Yolk Mix, Everything Seasoning"}];
   const CATERING_COFFEE_NOTE = 'The Coffee Bar Included';
   const CATERING_DRINKS = { price: 3, choices: ['Water', 'Sprite', 'Coke', 'Unsweet Tea', 'Sweet Tea'], maxEach: 10 };
   // Sides a box can add. `flavor` ones ask which deviled egg flavor goes in them.
@@ -3035,6 +3030,9 @@
     });
   }
 
+  // Up to two flavors, as the same rows as the wraps and the pack pickers (a photo, the name, what is on it), with a checkbox in place
+  // of the radio or stepper. Built once per protein and updated in place, so the focused box keeps focus. A full pick never dims a
+  // row: a third tap bounces back and the hint says what to do.
   function renderBoxFlavors() {
     const grid = document.getElementById('box-flavor-grid');
     const hint = document.getElementById('box-flavor-hint');
@@ -3043,35 +3041,44 @@
       hint.textContent = 'Choose sandwich or bowl first.';
       return;
     }
-    const flavors = boxProtein().flavors;
-    const full = box.flavors.length >= 2;
-    hint.textContent = box.flavors.length === 2
-      ? 'Two flavors chosen. Your boxes split evenly between them.'
-      : 'Pick up to 2 flavors. Two flavors split your boxes evenly.';
-    grid.innerHTML = flavors.map((f) => {
-      const on = box.flavors.includes(f.id);
-      const blocked = full && !on;
-      return `
-      <button class="addon-row${on ? ' selected' : ''}${blocked ? ' at-limit' : ''}" type="button" role="checkbox" aria-checked="${on}"${blocked ? ' aria-disabled="true"' : ''} data-id="${f.id}">
-        <span class="addon-row-text">
-          <span class="addon-row-name">${escapeHTML(f.label)}</span>
-          <span class="addon-row-note">${escapeHTML(f.desc)}</span>
-        </span>
-        <span class="addon-row-box" aria-hidden="true">${on ? ADDON_CHECK_ICON : ''}</span>
-      </button>`;
-    }).join('');
-    grid.querySelectorAll('.addon-row').forEach((row) => {
-      row.addEventListener('click', () => {
-        const id = row.dataset.id;
+    grid.innerHTML = boxProtein().flavors.map((f) => `
+      <div class="flavor-row dozen-flavor-row wrap-flavor-row box-flavor-row" data-flavor="${f.id}">
+        <label class="flavor-row-head wrap-flavor-label">
+          <input class="radio-choice-input" type="checkbox" name="box-flavor" value="${f.id}">
+          <span class="flavor-thumb" aria-hidden="true"><img src="${f.photo || 'assets/flavors/placeholder.svg'}" alt="" width="56" height="56" loading="lazy" decoding="async"></span>
+          <span class="flavor-row-name">${escapeHTML(f.label)}<small class="flavor-row-desc">${escapeHTML(f.desc)}</small></span>
+          <span class="addon-row-box" aria-hidden="true">${ADDON_CHECK_ICON}</span>
+        </label>
+      </div>`).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      input.addEventListener('change', () => {
+        const id = input.value;
         const at = box.flavors.indexOf(id);
-        if (at >= 0) box.flavors.splice(at, 1);
-        else if (box.flavors.length < 2) box.flavors.push(id);
-        else return;
-        renderBoxFlavors();
-        grid.querySelector(`.addon-row[data-id="${id}"]`).focus();
+        if (input.checked && at < 0) {
+          if (box.flavors.length >= 2) { input.checked = false; syncBoxFlavorHint(true); return; }
+          box.flavors.push(id);
+        } else if (!input.checked && at >= 0) box.flavors.splice(at, 1);
+        syncBoxFlavorRows();
         renderBoxFooter();
       });
     });
+    syncBoxFlavorRows();
+  }
+
+  function syncBoxFlavorHint(bounced) {
+    const hint = document.getElementById('box-flavor-hint');
+    hint.textContent = bounced ? 'Two flavors is the most. Untick one to pick another.'
+      : box.flavors.length === 2 ? 'Two flavors chosen. Your boxes split evenly between them.'
+      : 'Pick up to 2 flavors. Two flavors split your boxes evenly.';
+  }
+
+  function syncBoxFlavorRows() {
+    document.querySelectorAll('#box-flavor-grid .box-flavor-row').forEach((row) => {
+      const on = box.flavors.includes(row.dataset.flavor);
+      row.classList.toggle('selected', on);
+      row.querySelector('.radio-choice-input').checked = on;
+    });
+    syncBoxFlavorHint(false);
   }
 
   function renderBoxSides() {
@@ -3084,7 +3091,7 @@
           <select data-side="${side.id}"><option value="">Choose a flavor</option>${CATERING_EGGS.map((f) => `<option value="${f.id}"${box.sideFlavor[side.id] === f.id ? ' selected' : ''}>${escapeHTML(f.label)}</option>`).join('')}</select>
         </label>` : '';
       return `
-      <div class="side-option">
+      <div class="side-option${flavorPick ? ' has-flavor' : ''}">
         <button class="addon-row${on ? ' selected' : ''}" type="button" role="checkbox" aria-checked="${on}" data-side="${side.id}">
           <span class="addon-row-text">
             <span class="addon-row-name">${escapeHTML(side.label)}</span>
@@ -3408,12 +3415,13 @@
     delivery: 'Your cart is empty. Add something delicious from the menu.',
   };
   const DRAWER_NOTE = {
-    shipping: 'Shipping is added at checkout.',
+    shipping: 'Shipping and handling are worked out from your address at checkout.',
     delivery: 'Delivery fee, tip and tax are added at checkout.',
+    pickup: 'Tax and tip are added at checkout.',
   };
 
   function drawerContextHTML(kind) {
-    if (kind === 'shipping') return 'Ships nationwide · order Mon–Wed for week-of arrival';
+    if (kind === 'shipping') return 'Ships nationwide · you choose a holiday window at checkout';
     if (kind === 'delivery') return state.delivery && state.delivery.street ? `Delivering to <strong>${escapeHTML(deliveryLabel())}</strong>` : 'Delivery';
     return `Pickup at <strong>${state.location}</strong>`;
   }
@@ -3557,16 +3565,15 @@
     });
     freshLineKey = null;
 
-    // Pickup shows its total with tax, as it always has; the other two carts
-    // owe fees that only checkout knows, so they show a subtotal and say so.
-    const isPickup = kind === 'pickup';
-    document.getElementById('drawer-total-label').textContent = isPickup ? 'Total' : 'Subtotal';
-    document.getElementById('drawer-total').textContent = money(isPickup ? computeTotals().total : cartSubtotal(kind));
+    // Every cart shows a subtotal here and says what checkout adds (tax and tip, plus a delivery fee or shipping): a "Total" that
+    // left out the tip would not match the one at checkout.
+    document.getElementById('drawer-total-label').textContent = 'Subtotal';
+    document.getElementById('drawer-total').textContent = money(cartSubtotal(kind));
     const note = document.getElementById('drawer-total-note');
     // Delivery has a minimum: below it the note says how much is missing, and checkout waits.
     const short = kind === 'delivery' ? Math.max(0, DELIVERY_MINIMUM - cartSubtotal('delivery')) : 0;
     const cateringNote = kind === 'pickup' || kind === 'delivery' ? cateringBagNote(kind) : '';
-    note.hidden = (isPickup && !cateringNote) || items.length === 0;
+    note.hidden = items.length === 0;
     note.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : cateringNote || DRAWER_NOTE[kind] || '';
 
     const totalQty = cartCount(kind);
@@ -3631,6 +3638,7 @@
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
     document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
+    renderNavWhere();
     // The order summary opens expanded at every width; the customer can fold it.
     if (name === 'checkout') setOrderSummaryOpen(true);
     if (name === 'location-picker') { syncPickerSaved(); loadLocationPicker(); }
@@ -3847,7 +3855,11 @@
   // The funnel's last step: the order page, opened on the Catering group for a customer who came in to order catering.
   function landOnOrderPage() {
     intentBeforeFunnel = null;
-    if (cateringIntent) {
+    const toCatering = cateringIntent && funnelForCatering;
+    funnelForCatering = false;
+    // A catering flag left over from a funnel that never finished must not send this customer to Catering.
+    if (cateringIntent && !toCatering) setCateringIntent(false);
+    if (toCatering) {
       history.replaceState(null, '', '#order/catering');
       showView('order');
       openOrderGroup('catering', { push: false });
@@ -3875,7 +3887,7 @@
     // Catering starts the same funnel as Pickup (the "where" modal), with catering's notice applied; it ends on the
     // order page's Catering group.
     intentBeforeFunnel = cateringIntent;
-    if (path === 'catering') { setCateringIntent(true); startFunnel('pickup'); return; }
+    if (path === 'catering') { setCateringIntent(true); startFunnel('pickup'); funnelForCatering = true; return; }
     setCateringIntent(false);
     if (path === 'shipping') {
       history.replaceState(null, '', '#' + path);
@@ -3943,13 +3955,6 @@
     if (view === 'order' && group) openOrderGroup(group, { push: false });
   }
   window.addEventListener('hashchange', routeFromHash);
-
-  // Kit cards open their in-app modal; the whole card is the target, as on the menu.
-  document.querySelector('.kit-grid').addEventListener('click', (e) => {
-    const card = e.target.closest('.kit-card');
-    if (!card) return;
-    openMenuItem(SHIPPING_KITS.find((k) => k.id === card.dataset.kit));
-  });
 
   document.querySelectorAll('[data-scroll]').forEach((a) => {
     a.addEventListener('click', (e) => {
@@ -4321,18 +4326,44 @@
   function navWhereState() {
     const pickup = pickupSessionValid();
     const delivery = deliverySessionValid();
-    if (delivery && (state.orderMode === 'delivery' || !pickup)) return { path: 'delivery', verb: 'Deliver to', name: deliveryLabel() };
-    if (pickup) return { path: 'pickup', verb: 'Pickup from', name: state.location };
+    const onCatering = !views.catering.hidden;
+    // Catering goes into the pickup or delivery bag, so there the indicator says so.
+    const verbs = onCatering ? { delivery: 'Catering delivery to', pickup: 'Catering pickup from' } : { delivery: 'Deliver to', pickup: 'Pickup from' };
+    if (delivery && (state.orderMode === 'delivery' || !pickup)) {
+      // A delivery bag under the minimum says how much is missing, right where the customer is looking.
+      const short = Math.max(0, DELIVERY_MINIMUM - cartSubtotal('delivery'));
+      const verb = cartCount('delivery') > 0 && short > 0 ? `${money(short)} to the minimum` : verbs.delivery;
+      return { path: 'delivery', verb, name: deliveryLabel(), note: verb !== verbs.delivery };
+    }
+    if (pickup) {
+      // On another store's page the order still goes to the store chosen earlier: say which one it is.
+      const viewed = !views.menu.hidden && state.viewStore ? storeName(storeById(state.viewStore)) : null;
+      const verb = viewed && viewed !== state.location ? 'Your pickup store' : verbs.pickup;
+      return { path: 'pickup', verb, name: state.location, note: verb !== verbs.pickup };
+    }
+    // A store or address was chosen but its time has gone by: ask for a new time instead of forgetting the choice.
+    if (state.delivery.chosen && state.orderMode === 'delivery') return { path: 'delivery', verb: 'Time has passed', name: deliveryLabel(), stale: true };
+    if (state.pickupChosen) return { path: 'pickup', verb: 'Time has passed', name: state.location, stale: true };
+    if (state.delivery.chosen) return { path: 'delivery', verb: 'Time has passed', name: deliveryLabel(), stale: true };
     return { path: null, verb: 'Pickup or delivery?', name: 'Choose a store' };
+  }
+  // Where the indicator means nothing it is hidden: the Shipping page (no store or address), the location finder (which is the place to
+  // choose one), the order confirmation (the choice has just been used up), and a bag of shipping items alone with nothing chosen.
+  function navWhereHidden() {
+    if (!views.shipping.hidden || !views['location-picker'].hidden || !views.confirmation.hidden) return true;
+    return cartCount('shipping') > 0 && cartCount('pickup') === 0 && cartCount('delivery') === 0 && !pickupSessionValid() && !deliverySessionValid();
   }
   function renderNavWhere() {
     if (!navWhereReady) return;
     const w = navWhereState();
+    document.body.classList.toggle('no-nav-where', navWhereHidden());
     document.getElementById('nav-where-verb').textContent = w.verb;
     document.getElementById('nav-where-name').textContent = w.name;
     // The icon is the map's: the egg pin for pickup (and before a choice), the gold truck pin for delivery.
     document.getElementById('nav-where').dataset.path = w.path || '';
-    document.getElementById('nav-where').setAttribute('aria-label', w.path ? `${w.verb} ${w.name}. Change` : 'Choose pickup or delivery');
+    document.getElementById('nav-where').dataset.alert = w.stale ? 'true' : '';
+    document.getElementById('nav-where').dataset.note = w.note ? 'true' : '';
+    document.getElementById('nav-where').setAttribute('aria-label', w.stale ? `The time for ${w.name} has passed. Choose a new time` : w.path ? `${w.verb} ${w.name}. Change` : 'Choose pickup or delivery');
     renderPayNote();
   }
   function announceNav(message) {
@@ -4344,6 +4375,8 @@
     const w = navWhereState();
     // Nothing chosen yet: the plain funnel. Otherwise the modal changes the order in place.
     if (!w.path) { openWhere(wm.tab); return; }
+    // A passed time starts the funnel again on the same path.
+    if (w.stale) { openWhere(w.path); return; }
     openWhere(w.path, { returnTo: 'nav' });
   });
 
@@ -4556,10 +4589,14 @@
 
   // Closing keeps nothing from the modal and returns to the picker.
   function closeLocationDetails() {
+    const back = ldBackToWhere;
+    ldBackToWhere = null;
     ldBackdrop.hidden = true;
     ldModal.hidden = true;
     updateInert();
     if (lastFocusedEl) lastFocusedEl.focus();
+    // "Change time" on the nav's saved order: whether the time was saved or the modal cancelled, the customer is back on that order.
+    if (back) openWhere(back, { returnTo: 'nav' });
   }
 
   document.getElementById('ld-close').addEventListener('click', closeLocationDetails);
@@ -4568,6 +4605,7 @@
     // Only the order page's banner has to leave the page to change store; from the picker, closing is enough.
     const fromOrder = ld && ld.edit && !ld.thenOrder;
     const wasDelivery = ld && ld.kind === 'delivery';
+    ldBackToWhere = null;
     closeLocationDetails();
     if (wasDelivery) { startDelivery({ returnTo: views['delivery-checkout'].hidden ? null : 'checkout' }); return; }
     if (fromOrder) startFunnel('pickup', { returnTo: views.checkout.hidden ? null : 'checkout' });
@@ -4639,6 +4677,8 @@
     return `${deliveryStreetLine()}, ${d.city}, ${d.state} ${d.zip}`;
   }
   const deliveryDropoffText = () => (state.delivery.dropoff === 'hand' ? 'Hand it to me' : 'Leave it at my door');
+  // How to hand it over, with the customer's own note after it ("Leave it at my door · Leave at the front desk").
+  const deliveryDropoffLine = () => deliveryDropoffText() + (state.delivery.notes ? ` · ${state.delivery.notes}` : '');
 
   function saveDeliverySession() {
     try { localStorage.setItem(DELIVERY_SESSION_KEY, JSON.stringify(state.delivery)); } catch (e) { /* storage unavailable: the choice lasts until reload */ }
@@ -4835,6 +4875,7 @@
   function openWhere(tab, { returnTo = null, store = null } = {}) {
     const fresh = daModal.hidden;
     if (fresh) {
+      funnelForCatering = false;
       wm.preselect = store;
       lastFocusedEl = document.activeElement;
       deliveryReturn = returnTo;
@@ -4853,6 +4894,7 @@
   }
   function closeWhere() {
     pendingStoreOpen = null;
+    funnelForCatering = false;
     // Cancelling a funnel started from Home puts the catering flag back as it was.
     if (intentBeforeFunnel !== null) { setCateringIntent(intentBeforeFunnel); intentBeforeFunnel = null; }
     closeWhereQuietly();
@@ -5143,7 +5185,12 @@
     if (wm.nav && wm.origin === 'delivery') deliveryReturn = null;
     finishDeliveryFunnel();
   });
-  document.getElementById('da-change-time').addEventListener('click', () => { closeWhereQuietly(); openLocationDetails(null, { edit: true, kind: 'delivery' }); });
+  document.getElementById('da-change-time').addEventListener('click', () => {
+    const back = wm.nav ? 'delivery' : null;
+    closeWhereQuietly();
+    openLocationDetails(null, { edit: true, kind: 'delivery' });
+    ldBackToWhere = back;
+  });
 
   // ----- Pickup tab -----
   // How far a customer can sensibly be from the store they pick up at. A searched place with no store inside it gets
@@ -5237,13 +5284,16 @@
     // From the pickup checkout only the store changes: the day and time stay, and the customer is back where they were.
     if (wm.origin === 'pickup') {
       if (st.id === currentStoreId()) return;
-      closeWhere();
+      const fromNav = wm.nav;
+      // From the nav the modal stays open: the saved order above updates to the new store and "Continue to menu" is still there.
+      if (!fromNav) closeWhere();
       state.location = storeName(st);
       savePickupSession();
       renderPickupSummary();
       renderStoreLocatorSummary();
       renderDrawer();
       const msg = `Pickup location updated to ${state.location}. ${pickupReadyText()}`;
+      if (fromNav) { initPickupTab(); renderWmPill(); refreshStorePins(); announceNav(msg); return; }
       if (views.checkout.hidden) announceNav(msg); else announceCheckout(msg);
       return;
     }
@@ -5257,8 +5307,9 @@
   });
   document.getElementById('wm-pk-change-time').addEventListener('click', () => {
     const st = storeById(currentStoreId());
+    const back = wm.nav ? 'pickup' : null;
     closeWhereQuietly();
-    if (st) openLocationDetails(st, { edit: true });
+    if (st) { openLocationDetails(st, { edit: true }); ldBackToWhere = back; }
   });
 
   // A searched place (or the customer's location) puts the stores in order of distance from it.
@@ -5652,7 +5703,21 @@
     countEl.textContent = `(${totalQty} item${totalQty === 1 ? '' : 's'})`;
   }
 
+  // Name, number and email are the same person's whichever checkout comes first: the other one starts with them filled in
+  // (typing over them is fine, and a field already filled is left alone).
+  const CONTACT_FIELDS = [['name', 'name'], ['phone', 'phone'], ['email', 'email']];
+  const CONTACT_PREFIX = { pickup: 'co-', delivery: 'dc-', ship: 'sc-' };
+  function shareContact(into) {
+    CONTACT_FIELDS.forEach(([key, suffix]) => {
+      const target = document.getElementById(CONTACT_PREFIX[into] + suffix);
+      if (target.value) return;
+      const others = Object.entries(CONTACT_PREFIX).filter(([k]) => k !== into).map(([, p]) => document.getElementById(p + suffix).value);
+      target.value = others.find(Boolean) || (state.delivery && state.delivery[key]) || '';
+    });
+  }
+
   function renderCheckout() {
+    shareContact('pickup');
     const pkNote = document.getElementById('co-catering-note');
     pkNote.textContent = cateringBagNote('pickup');
     pkNote.hidden = !pkNote.textContent;
@@ -5745,7 +5810,7 @@
     const d = state.delivery;
     document.getElementById('dc-address-name').textContent = deliveryLabel();
     document.getElementById('dc-address-line').textContent = deliveryAddressLine();
-    document.getElementById('dc-dropoff-line').textContent = deliveryDropoffText() + (d.notes ? ` · ${d.notes}` : '');
+    document.getElementById('dc-dropoff-line').textContent = deliveryDropoffLine();
     document.getElementById('dc-time-summary').textContent = d.chosen ? deliveryWhenText() : '';
     renderDeliveryEta();
     const dlNote = document.getElementById('dc-catering-note');
@@ -5757,6 +5822,7 @@
       const input = document.getElementById(id);
       if (!input.value && value) input.value = value;
     });
+    shareContact('delivery');
     renderSummaryItems(document.getElementById('dc-items'), document.getElementById('dc-item-count'), state.carts.delivery);
     document.getElementById('dc-pay-note').textContent = deliveryArrivalText();
     renderDeliveryTotals();
@@ -5909,7 +5975,7 @@
       items.push({ label: 'Delivery fee', amount: money(t.fee) });
       items.push({ label: 'Tax', amount: money(t.tax) });
       if (t.tip > 0) items.push({ label: 'Courier tip', amount: money(t.tip) });
-      const addressLines = `<strong>${escapeHTML(deliveryLabel())}</strong><br>${escapeHTML(deliveryStreetLine())}<br>${escapeHTML(d.city)}, ${d.state} ${escapeHTML(d.zip)}<br>${escapeHTML(deliveryDropoffText())}`;
+      const addressLines = `<strong>${escapeHTML(deliveryLabel())}</strong><br>${escapeHTML(deliveryStreetLine())}<br>${escapeHTML(d.city)}, ${d.state} ${escapeHTML(d.zip)}<br>${escapeHTML(deliveryDropoffLine())}`;
 
       clearCart('delivery');
       endDeliverySession();
@@ -5943,7 +6009,8 @@
     items.forEach((line) => {
       const el = document.createElement('div');
       el.className = 'summary-line';
-      el.innerHTML = `<span>${line.label}</span><span>${line.amount}</span>`;
+      // A line with choices on it (what was left out, toast, add-ons) shows them under its name, as the bag and checkout do.
+      el.innerHTML = `<span class="summary-line-text"><span>${line.label}</span>${line.sub ? `<small class="summary-line-sub">${escapeHTML(line.sub)}</small>` : ''}</span><span>${line.amount}</span>`;
       confirmItems.appendChild(el);
     });
     document.getElementById('confirm-total').textContent = money(total);
@@ -5956,7 +6023,7 @@
     heading.focus({ preventScroll: true });
   }
 
-  const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, amount: money(lineTotal(item)) }));
+  const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, sub: item.sub || '', amount: money(lineTotal(item)) }));
 
   // Switching a checkout from pickup to delivery (or back) takes its lines with it. Carts are otherwise kept apart;
   // this is the one place they join, and only when the customer changes how the order is fulfilled.
@@ -5984,7 +6051,8 @@
   const checkoutStatus = document.getElementById('checkout-status');
   let statusTimer = null;
   function announceCheckout(message, delay = 50) {
-    const region = views['delivery-checkout'].hidden ? checkoutStatus : document.getElementById('dc-status');
+    const region = !views['ship-checkout'].hidden ? document.getElementById('sc-status')
+      : !views['delivery-checkout'].hidden ? document.getElementById('dc-status') : checkoutStatus;
     window.clearTimeout(statusTimer);
     region.textContent = '';
     statusTimer = window.setTimeout(() => { region.textContent = message; }, delay);
@@ -6086,7 +6154,7 @@
     if (first) {
       first.focus();
       // Focus moves to the first problem and reads its message; the count says how many more there are.
-      if (failed > 1 && first.closest('#view-checkout, #view-delivery-checkout')) announceCheckout(`${failed} fields need attention.`, 700);
+      if (failed > 1 && first.closest('#view-checkout, #view-delivery-checkout, #view-ship-checkout')) announceCheckout(`${failed} fields need attention.`, 700);
     }
     return !first;
   }
@@ -6114,65 +6182,173 @@
   };
 
   // ---------- Shipping checkout ----------
-  // Prototype rate only: the live site gives no shipping prices, so this one
-  // flat figure stands in (and says so on the page) until real pricing exists.
+  // Prototype rate only: the live site works shipping out from the address and shows no price before it, so this one flat figure
+  // stands in (and says so on the page) until real pricing exists. It appears only once a ZIP code has been entered.
   const SHIPPING_RATE_PLACEHOLDER = 19.99;
 
-  // Orders placed Mon–Wed arrive that week; Thu–Sun go out the following Monday.
-  function shipWindow(now = new Date()) {
-    const day = now.getDay(); // 0 Sun … 6 Sat
-    if (day >= 1 && day <= 3) {
-      return { title: 'Arrives this week', body: 'We hand-pack every order in our Texas kitchen the morning we ship. Orders placed Monday through Wednesday arrive within the same week.', arrive: 'this week' };
-    }
-    const daysToMonday = (8 - day) % 7 || 7;
-    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday);
-    const label = monday.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    return { title: `Ships ${label}`, body: 'Orders placed Thursday through Sunday go out the following Monday and arrive that week.', arrive: `the week of ${label}` };
+  // Holiday windows are the only way to order a kit for now (the live cart works the same way): the customer reserves a window, not a
+  // date. Each can be ordered until its cutoff day, as on the live page's lineup.
+  const SHIP_WINDOWS = [
+    { id: 'halloween', label: 'Halloween', range: 'Oct 28 – Oct 30', cutoff: '2026-10-27', cutoffLabel: 'Oct 27' },
+    { id: 'thanksgiving', label: 'Thanksgiving', range: 'Nov 24 – Nov 25', cutoff: '2026-11-23', cutoffLabel: 'Nov 23' },
+    { id: 'christmas', label: 'Christmas', range: 'Dec 22 – Dec 24', cutoff: '2026-12-21', cutoffLabel: 'Dec 21' },
+  ];
+  const shipWindowOpen = (w) => todayISO() <= w.cutoff;
+  // The Shipping page lists the same windows the checkout offers, so the two can't disagree.
+  const SHIP_WINDOW_ART = { halloween: 'holiday-halloween', thanksgiving: 'holiday-thanksgiving', christmas: 'holiday-christmas' };
+  function renderShipHoliday() {
+    document.getElementById('ship-holiday-list').innerHTML = SHIP_WINDOWS.map((w) => `
+      <li>
+        <img class="ship-window-art" src="assets/shipping/${SHIP_WINDOW_ART[w.id]}.png" alt="" width="56" height="56" loading="lazy" decoding="async">
+        <span class="ship-window-text"><strong>${w.label}</strong><span>${w.range}</span></span>
+        <span class="ship-window-when">${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</span>
+      </li>`).join('');
+  }
+  state.shipWindow = null;
+  state.sTipPct = 0;
+  state.sTipCustom = 0;
+
+  const scField = (id) => document.getElementById('sc-' + id);
+  const shipAddressKnown = () => isZip(scField('zip').value.trim());
+
+  function renderShipWindows() {
+    const grid = document.getElementById('sc-window');
+    const open = SHIP_WINDOWS.filter(shipWindowOpen);
+    // A window that has closed cannot stay chosen.
+    if (state.shipWindow && !open.some((w) => w.id === state.shipWindow)) state.shipWindow = null;
+    grid.innerHTML = SHIP_WINDOWS.map((w) => radioChoiceHTML({
+      group: 'ship-window', value: w.id, label: w.label,
+      note: shipWindowOpen(w) ? `${w.range} · order by ${w.cutoffLabel}` : `${w.range} · closed`,
+      selected: state.shipWindow === w.id,
+    })).join('');
+    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
+      const w = SHIP_WINDOWS.find((x) => x.id === input.value);
+      if (!shipWindowOpen(w)) { input.disabled = true; input.closest('.radio-choice').classList.add('is-closed'); return; }
+      input.addEventListener('change', () => {
+        state.shipWindow = input.value;
+        document.getElementById('sc-window-error').hidden = true;
+        grid.querySelectorAll('.radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('.radio-choice-input').checked));
+        announceCheckout(`${w.label} window chosen, ${w.range}.`);
+      });
+    });
+  }
+
+  function shipTotals() {
+    const subtotal = cartSubtotal('shipping');
+    const shipping = shipAddressKnown() ? SHIPPING_RATE_PLACEHOLDER : null;
+    const tip = state.sTipPct === 'custom' ? state.sTipCustom : subtotal * (state.sTipPct / 100);
+    return { subtotal, shipping, tip, total: subtotal + (shipping || 0) + tip };
+  }
+
+  function renderShipTotals() {
+    const t = shipTotals();
+    scField('subtotal').textContent = money(t.subtotal);
+    scField('shipping').textContent = t.shipping === null ? '' : money(t.shipping);
+    document.getElementById('sc-shipping-note').textContent = t.shipping === null
+      ? 'Enter your address to view shipping options.'
+      : "Prototype rate. Final shipping pricing isn't set yet.";
+    scField('tip').textContent = money(t.tip);
+    document.querySelectorAll('#sc-tip-picker .tip-chip').forEach((chip) => {
+      const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
+      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.sTipCustom : t.subtotal * (pct / 100));
+    });
+    scField('total').textContent = money(t.total);
+    return t;
   }
 
   function renderShipCheckout() {
+    shareContact('ship');
     renderSummaryItems(document.getElementById('sc-items'), document.getElementById('sc-item-count'), state.carts.shipping);
-    const when = shipWindow();
-    document.getElementById('sc-when').innerHTML = `<strong>${when.title}</strong><p>${when.body}</p>`;
+    renderShipWindows();
     renderShipTotals();
     renderPaymentPickers();
   }
 
-  function renderShipTotals() {
-    const subtotal = cartSubtotal('shipping');
-    document.getElementById('sc-subtotal').textContent = money(subtotal);
-    document.getElementById('sc-shipping').textContent = money(SHIPPING_RATE_PLACEHOLDER);
-    document.getElementById('sc-total').textContent = money(subtotal + SHIPPING_RATE_PLACEHOLDER);
-    return subtotal + SHIPPING_RATE_PLACEHOLDER;
-  }
+  // The shipping line appears when the ZIP does.
+  scField('zip').addEventListener('input', () => {
+    const was = document.getElementById('sc-shipping-note').textContent;
+    renderShipTotals();
+    if (was !== document.getElementById('sc-shipping-note').textContent && shipAddressKnown()) announceCheckout(`Shipping and handling ${scField('shipping').textContent}. Order total ${scField('total').textContent}.`, 600);
+  });
+
+  // Ship to someone else: the buyer's contact stays as it is; the recipient's name is the one on the box.
+  const scGift = document.getElementById('sc-gift');
+  scGift.addEventListener('change', () => {
+    document.getElementById('sc-recipient-wrap').hidden = !scGift.checked;
+    if (scGift.checked) scField('recipient').focus();
+    else setFieldError(scField('recipient'), '');
+  });
+
+  const scTipCustomWrap = document.getElementById('sc-tip-custom');
+  const scTipCustomInput = document.getElementById('sc-tip-custom-input');
+  const announceShipTip = () => announceCheckout(`Tip ${scField('tip').textContent}. Order total ${scField('total').textContent}.`, 600);
+  document.getElementById('sc-tip-picker').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-value]');
+    if (!btn) return;
+    document.querySelectorAll('#sc-tip-picker .chip').forEach((b) => { b.classList.remove('active'); b.setAttribute('aria-checked', 'false'); });
+    btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
+    const isCustom = btn.dataset.value === 'custom';
+    state.sTipPct = isCustom ? 'custom' : Number(btn.dataset.value);
+    scTipCustomWrap.hidden = !isCustom;
+    if (isCustom) scTipCustomInput.focus();
+    renderShipTotals();
+    announceShipTip();
+  });
+  let lastValidSTip = '';
+  scTipCustomInput.addEventListener('input', () => {
+    if (/^\d{0,4}(\.\d{0,2})?$/.test(scTipCustomInput.value)) lastValidSTip = scTipCustomInput.value;
+    else scTipCustomInput.value = lastValidSTip;
+    state.sTipCustom = parseFloat(lastValidSTip) || 0;
+    renderShipTotals();
+    announceShipTip();
+  });
+  scTipCustomInput.addEventListener('blur', () => {
+    if (scTipCustomInput.value === '') return;
+    lastValidSTip = state.sTipCustom.toFixed(2);
+    scTipCustomInput.value = lastValidSTip;
+  });
 
   document.getElementById('sc-place-order').addEventListener('click', () => {
     if (state.carts.shipping.length === 0) return;
-    const f = (id) => document.getElementById('sc-' + id);
-    const ok = validateFields([
+    const f = scField;
+    const rows = [
       [f('name'), present, 'Enter the name for this order.'],
       [f('phone'), isPhone, 'Enter a phone number with area code.'],
       [f('email'), isEmail, 'Enter a valid email so we can send your tracking link.'],
+    ];
+    if (scGift.checked) rows.push([f('recipient'), present, "Enter the recipient's name."]);
+    rows.push(
       [f('street'), present, 'Enter the street address to ship to.'],
       [f('city'), present, 'Enter the city.'],
       [f('state'), present, 'Choose a state. We ship to the 48 contiguous states.'],
       [f('zip'), isZip, 'Enter a 5-digit ZIP code.'],
-    ]);
-    if (!ok) return;
+    );
+    if (!validateFields(rows)) return;
+    const chosen = SHIP_WINDOWS.find((w) => w.id === state.shipWindow);
+    if (!chosen) {
+      const error = document.getElementById('sc-window-error');
+      error.hidden = false;
+      const first = document.querySelector('#sc-window .radio-choice-input:not(:disabled)');
+      if (first) first.focus();
+      announceCheckout(error.textContent);
+      return;
+    }
 
-    const total = renderShipTotals();
-    const when = shipWindow();
+    const t = renderShipTotals();
     const items = recapLines(state.carts.shipping);
-    items.push({ label: 'Shipping', amount: money(SHIPPING_RATE_PLACEHOLDER) });
+    items.push({ label: 'Shipping and handling', amount: money(t.shipping) });
+    if (t.tip > 0) items.push({ label: 'Tip', amount: money(t.tip) });
     const apt = f('street2').value.trim();
-    const addressLines = `${escapeHTML(f('name').value.trim())}<br>${escapeHTML(f('street').value.trim())}${apt ? ', ' + escapeHTML(apt) : ''}<br>${escapeHTML(f('city').value.trim())}, ${f('state').value} ${f('zip').value.trim()}`;
+    const who = scGift.checked ? f('recipient').value.trim() : f('name').value.trim();
+    const addressLines = `${escapeHTML(who)}<br>${escapeHTML(f('street').value.trim())}${apt ? ', ' + escapeHTML(apt) : ''}<br>${escapeHTML(f('city').value.trim())}, ${f('state').value} ${f('zip').value.trim()}`;
 
     clearCart('shipping');
     showConfirmation({
       number: orderNumber(),
-      subHTML: `Order {number} · We'll email your tracking link the morning we ship. Your kit arrives <strong>${when.arrive}</strong>.`,
+      subHTML: `Order {number} · We'll email your tracking link the morning we ship. Your kit is reserved for the <strong>${chosen.label} window (${chosen.range})</strong>.`,
       steps: ['Packing', 'Shipped'],
-      items, total,
+      items, total: t.total,
       cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
       backLabel: '← Back to Nationwide Shipping', backView: 'shipping',
     });

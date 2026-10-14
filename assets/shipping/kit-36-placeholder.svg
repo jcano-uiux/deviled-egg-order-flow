@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 662 662" width="662" height="662" role="img" aria-label="Photo of the 36 count kit coming soon">
+  <rect width="662" height="662" fill="#F5F0E8"/>
+  <g fill="none" stroke="#635E57" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".75">
+    <rect x="161" y="236" width="340" height="190" rx="28"/>
+    <ellipse cx="236" cy="302" rx="38" ry="46"/><ellipse cx="331" cy="302" rx="38" ry="46"/><ellipse cx="426" cy="302" rx="38" ry="46"/>
+    <ellipse cx="236" cy="384" rx="38" ry="26" opacity=".001"/>
+  </g>
+  <text x="331" y="486" text-anchor="middle" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="26" font-weight="600" fill="#635E57">Photo coming soon</text>
+</svg>

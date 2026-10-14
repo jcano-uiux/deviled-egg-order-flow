@@ -339,125 +339,69 @@
 
 <main id="view-shipping" class="view page-view" hidden>
 
-  <section class="ship-hero" aria-labelledby="ship-title">
-    <div class="ship-hero-copy">
-      <h1 id="ship-title">Send Deviled Eggs anywhere in the US for the Holidays!</h1>
-      <p class="ship-lead">Three crowd-pleasers, hand-packed in our Texas kitchen and cold-shipped overnight nationwide. Pick a size, choose your flavors, send the wow.</p>
-      <a class="pill-btn dark ship-cta" href="#ship-kits" data-scroll="ship-kits">Shop Now</a>
-      <ul class="ship-badges">
-        <li class="ship-badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v20M4.2 7l15.6 10M19.8 7 4.2 17M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Cold-shipped overnight
-        </li>
-        <li class="ship-badge">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Order Mon–Wed for week-of arrival
-        </li>
-      </ul>
-    </div>
-    <img loading="lazy" decoding="async" class="ship-hero-map" src="assets/shipping/shipping-map.png" width="1182" height="837" alt="Map of the United States: boxes of deviled eggs leave Texas and land across the country, with an egg riding a paper plane. Caption: We ship nationwide.">
-  </section>
+  <!-- Nationwide Shipping follows the Catering and location pages: a banner, a sidebar with the name and the sections, and
+       sections of the same product cards the menu uses. The kit cards are drawn from SHIPPING_KITS in app.js and each opens
+       its in-app modal, adding to the Shipping bag. -->
+  <div class="store-hero ship-banner" aria-hidden="true">
+    <img src="assets/shipping/kit-sampler.png" alt="" loading="lazy" decoding="async"><img src="assets/shipping/shipping-map.png" alt="" loading="lazy" decoding="async"><img src="assets/shipping/kit-24.png" alt="" loading="lazy" decoding="async">
+  </div>
 
-  <section class="page-section" id="ship-kits" aria-labelledby="ship-kits-title">
-    <div class="page-section-head">
-      <h2 id="ship-kits-title">Make the Holidays Egg-ceptional!</h2>
-      <p>Three ways to send our signature deviled eggs nationwide. Cold-shipped overnight.</p>
-    </div>
-    <ul class="kit-grid">
-      <li class="kit-card" data-kit="kit-sampler">
-        <div class="kit-media">
-          <img src="assets/shipping/kit-sampler.png" width="662" height="662" alt="Nine mini deviled egg salad cups in an orange gift box" loading="lazy">
-          <span class="kit-tag">Try them all</span>
-        </div>
-        <div class="kit-body">
-          <h3 class="kit-name">Mini Deviled Egg Salad Sampler</h3>
-          <p class="kit-sub">18 Count</p>
-          <p class="kit-price"><strong>$74.99</strong> <span>per kit</span></p>
-          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: Mini Deviled Egg Salad Sampler, 18 Count</span></button>
-        </div>
-      </li>
-      <li class="kit-card" data-kit="kit-24">
-        <div class="kit-media">
-          <img src="assets/shipping/kit-24.png" width="662" height="662" alt="Six deviled egg flavors on black trays: Buffalo Chicken Ranch, Everything Seasoning, Traditional, Jalapeño Popper, Buffalo Blue, South of the Border, Sriracha Bacon" loading="lazy">
-        </div>
-        <div class="kit-body">
-          <h3 class="kit-name">24 Count Kit</h3>
-          <p class="kit-sub">Deviled Eggs · Choose 2 Flavors</p>
-          <p class="kit-price"><strong>$64.99</strong> <span>per kit</span></p>
-          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: 24 Count Kit, choose 2 flavors</span></button>
-        </div>
-      </li>
-      <li class="kit-card" data-kit="kit-36">
-        <div class="kit-media">
-          <img src="assets/shipping/kit-24.png" width="662" height="662" alt="Deviled eggs in several flavors on black trays" loading="lazy">
-        </div>
-        <div class="kit-body">
-          <h3 class="kit-name">36 Count Kit</h3>
-          <p class="kit-sub">Deviled Eggs · Choose 3 Flavors</p>
-          <p class="kit-price"><strong>$99.99</strong> <span>per kit</span></p>
-          <button class="pill-btn dark full kit-add" type="button">Add to Bag<span class="visually-hidden">: 36 Count Kit, choose 3 flavors</span></button>
-        </div>
-      </li>
-    </ul>
-  </section>
+  <div class="menu-layout">
 
-  <section class="page-section" aria-labelledby="ship-how-title">
-    <div class="page-section-head">
-      <h2 id="ship-how-title">From our kitchen to your door.</h2>
-      <p>Cold-shipped overnight to all 48 contiguous states. Order Monday through Wednesday for week-of arrival.</p>
-    </div>
-    <ol class="ship-steps">
-      <li class="ship-step">
-        <span class="ship-step-num" aria-hidden="true">1</span>
-        <h3>Order Mon–Wed</h3>
-        <p>We hand-pack every order in our Texas kitchen the morning we ship. Mon–Wed orders arrive within the same week.</p>
-      </li>
-      <li class="ship-step">
-        <span class="ship-step-num" aria-hidden="true">2</span>
-        <h3>Cold-shipped overnight</h3>
-        <p>Insulated boxes with gel packs ship via overnight refrigerated freight. Available to all 48 contiguous states.</p>
-      </li>
-      <li class="ship-step">
-        <span class="ship-step-num" aria-hidden="true">3</span>
-        <h3>Fresh on arrival</h3>
-        <p>You'll get a tracking link the morning we ship. Eggs are best within 5 days of arrival, keep refrigerated.</p>
-      </li>
-    </ol>
-    <a class="ship-policy-link" href="https://deviledeggco.com/shipping-policy/" target="_blank" rel="noopener">Shipping &amp; Returns</a>
-  </section>
+    <aside class="store-sidebar" aria-label="Shipping details and sections">
+      <div class="store-card">
+        <h1 class="store-name" id="ship-title">Nationwide Shipping</h1>
+        <p class="store-address">Deviled eggs hand-packed in our Texas kitchen and cold-shipped to all 48 contiguous states.</p>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-menu-head">
+        <span class="sidebar-menu-label">Menu</span>
+        <span class="sidebar-menu-hours">You choose a holiday window at checkout</span>
+      </div>
+      <nav class="drawer-nav" aria-label="Shipping sections">
+        <button class="category-item active" type="button" data-target="ship-section-kits">Shipping Kits</button>
+        <button class="category-item" type="button" data-target="ship-section-how">How It Ships</button>
+        <button class="category-item" type="button" data-target="ship-section-holiday">Holiday Windows</button>
+      </nav>
+    </aside>
 
-  <section class="page-section" aria-labelledby="ship-holiday-title">
-    <div class="page-section-head">
-      <h2 id="ship-holiday-title">Pre-order your Holiday Kit</h2>
-      <p>Themed flavors, festive packaging, and seasonal touches. Hand packed in our Texas Kitchen and shipped to land before the holiday.</p>
+    <div class="menu-content" id="shipping-top">
+
+      <nav class="drawer-nav-mobile" aria-label="Shipping sections">
+        <button class="category-item active" type="button" data-target="ship-section-kits">Shipping Kits</button>
+        <button class="category-item" type="button" data-target="ship-section-how">How It Ships</button>
+        <button class="category-item" type="button" data-target="ship-section-holiday">Holiday Windows</button>
+      </nav>
+
+      <section class="menu-section" id="ship-section-kits">
+        <h2>Shipping Kits</h2>
+        <p class="menu-section-sub">Three ways to send our signature deviled eggs anywhere in the US. Pick a size, choose your flavors, send the wow.</p>
+        <div class="shop-grid" id="ship-kits-grid"></div>
+      </section>
+
+      <section class="menu-section" id="ship-section-how">
+        <h2>How It Ships</h2>
+        <p class="menu-section-sub">Cold-shipped to all 48 contiguous states, in the holiday window you choose.</p>
+        <div class="cater-addons-list ship-how">
+          <ol>
+            <li><span class="ship-how-num" aria-hidden="true">1</span><div><strong>Pick a holiday window</strong><p>You reserve a delivery window, not a guaranteed date. We hand-pack every order in our Texas kitchen the morning we ship.</p></div></li>
+            <li><span class="ship-how-num" aria-hidden="true">2</span><div><strong>Cold-shipped by air</strong><p>Insulated boxes with gel packs ship by UPS Next Day Air or 2nd Day Air to all 48 contiguous states.</p></div></li>
+            <li><span class="ship-how-num" aria-hidden="true">3</span><div><strong>Fresh on arrival</strong><p>You'll get a tracking link the morning we ship. Eat within 3 days of arrival and keep refrigerated.</p></div></li>
+          </ol>
+          <a class="text-btn ship-policy-link" href="https://deviledeggco.com/shipping-policy/" target="_blank" rel="noopener">Shipping &amp; Returns</a>
+        </div>
+      </section>
+
+      <section class="menu-section" id="ship-section-holiday">
+        <h2>Holiday Windows</h2>
+        <p class="menu-section-sub">Themed flavors, festive packaging and seasonal touches, hand packed in our Texas kitchen and shipped to land before the holiday. You choose your window at checkout.</p>
+        <div class="cater-addons-list ship-windows">
+          <ul id="ship-holiday-list"></ul>
+        </div>
+      </section>
+
     </div>
-    <ul class="shop-grid holiday-grid">
-      <li class="shop-card holiday-card">
-        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-halloween.png" alt="Happy Halloween, Trick or Treat" loading="lazy"></div>
-        <div class="shop-card-body">
-          <h3 class="shop-card-name">Halloween</h3>
-          <p class="holiday-status is-open">Open</p>
-          <p class="shop-card-desc">Order by Oct 27</p>
-        </div>
-      </li>
-      <li class="shop-card holiday-card">
-        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-thanksgiving.png" alt="Happy Thanksgiving" loading="lazy"></div>
-        <div class="shop-card-body">
-          <h3 class="shop-card-name">Thanksgiving</h3>
-          <p class="holiday-status">Early</p>
-          <p class="shop-card-desc">Order by Nov 23</p>
-        </div>
-      </li>
-      <li class="shop-card holiday-card">
-        <div class="shop-card-media"><img class="shop-card-photo" src="assets/shipping/holiday-christmas.png" alt="Merry Christmas" loading="lazy"></div>
-        <div class="shop-card-body">
-          <h3 class="shop-card-name">Christmas</h3>
-          <p class="holiday-status">Soon</p>
-          <p class="shop-card-desc">Order by Dec 21</p>
-        </div>
-      </li>
-    </ul>
-  </section>
+  </div>
 
   <section class="page-signup" aria-labelledby="ship-signup-title">
     <div class="page-signup-copy">
@@ -500,7 +444,6 @@
 
     <aside class="store-sidebar" aria-label="Catering details and categories">
       <div class="store-card">
-        <a class="store-back" id="cater-back" href="#home">← Home</a>
         <h1 class="store-name">Catering</h1>
         <p class="store-address">Box meals, bundles and a coffee bar for 10 or more. Order ahead for pickup or delivery.</p>
       </div>
@@ -848,6 +791,15 @@
 
       <section class="checkout-card">
         <h2>Shipping address</h2>
+        <label class="page-consent sc-gift">
+          <input type="checkbox" id="sc-gift">
+          <span class="page-consent-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span>Ship to someone else</span>
+        </label>
+        <label class="field-group" id="sc-recipient-wrap" hidden>
+          <span class="field-label">Recipient's name</span>
+          <input type="text" id="sc-recipient" autocomplete="off" placeholder="First and last name" maxlength="80">
+        </label>
         <label class="field-group">
           <span class="field-label">Street address</span>
           <input type="text" id="sc-street" autocomplete="address-line1" placeholder="123 Main St" maxlength="100" aria-required="true">
@@ -870,7 +822,7 @@
             <input type="text" id="sc-zip" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="75069" aria-required="true">
           </label>
         </div>
-        <p class="field-note">Cold-shipped overnight to all 48 contiguous states.</p>
+        <p class="field-note">Cold-shipped to all 48 contiguous states.</p>
         <label class="field-group">
           <span class="field-label">Delivery notes (optional)</span>
           <input type="text" id="sc-notes" placeholder="e.g. leave with the front desk">
@@ -878,8 +830,10 @@
       </section>
 
       <section class="checkout-card">
-        <h2>When it ships</h2>
-        <div class="ship-when" id="sc-when"></div>
+        <h2>Choose your holiday week</h2>
+        <p class="field-note">You're reserving a delivery window, not a guaranteed date. Kits ship by UPS Next Day Air or 2nd Day Air and are expected to arrive within the window you choose.</p>
+        <div class="addon-list" id="sc-window" role="radiogroup" aria-label="Holiday week"></div>
+        <p class="field-error" id="sc-window-error" role="alert" hidden>Choose the holiday week you want your kit to arrive.</p>
       </section>
 
       <section class="checkout-card">
@@ -907,14 +861,33 @@
         <h2>Order total</h2>
         <div class="summary-line"><span>Subtotal</span><span id="sc-subtotal">$0.00</span></div>
         <div class="summary-divider"></div>
-        <div class="summary-line"><span>Shipping</span><span id="sc-shipping">$0.00</span></div>
-        <p class="summary-note">Prototype rate. Final shipping pricing isn't set yet.</p>
+        <div class="summary-line"><span>Shipping and handling</span><span id="sc-shipping"></span></div>
+        <p class="summary-note" id="sc-shipping-note">Enter your address to view shipping options.</p>
+        <div class="summary-divider"></div>
+
+        <div class="field-group tip-group">
+          <span class="field-label">Add a tip for the team</span>
+          <div class="chip-row" id="sc-tip-picker" role="radiogroup" aria-label="Tip">
+            <button class="chip tip-chip" data-value="15" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">15%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip" data-value="18" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">18%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip" data-value="20" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">20%</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip tip-chip-none active" data-value="0" type="button" role="radio" aria-checked="true"><span class="tip-chip-pct">No tip</span><span class="tip-chip-amt">$0.00</span></button>
+            <button class="chip tip-chip" data-value="custom" type="button" role="radio" aria-checked="false"><span class="tip-chip-pct">Custom</span><span class="tip-chip-amt">$0.00</span></button>
+          </div>
+          <div class="tip-custom" id="sc-tip-custom" hidden>
+            <span class="tip-custom-prefix" aria-hidden="true">$</span>
+            <input type="text" id="sc-tip-custom-input" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="Custom tip amount in dollars">
+          </div>
+        </div>
+        <div class="summary-line"><span>Tip</span><span id="sc-tip">$0.00</span></div>
+
         <div class="summary-divider"></div>
         <div class="summary-line total"><span>Total</span><span id="sc-total">$0.00</span></div>
         <button class="pill-btn dark full" id="sc-place-order" type="button">Place order</button>
       </section>
     </aside>
   </div>
+  <div class="visually-hidden" id="sc-status" role="status" aria-live="polite" aria-atomic="true"></div>
 </main>
 
 <main id="view-confirmation" class="view" hidden>
@@ -1136,10 +1109,10 @@
           <div class="divider"></div>
           <div class="bowl-modal-section">
             <div class="modal-section-head">
-              <span class="modal-section-title">No</span>
-              <span class="modal-section-sub">Choose what items you may not want.</span>
+              <span class="modal-section-title">Ingredients</span>
+              <span class="modal-section-sub">Leave out anything you don't want.</span>
             </div>
-            <div class="chip-row" id="bowl-no-picker"></div>
+            <div id="bowl-no-picker"></div>
           </div>
 
           <div class="divider"></div>
@@ -1283,7 +1256,7 @@
               <span class="modal-section-title">Pick your flavor</span>
               <span class="modal-section-sub" id="box-flavor-hint"></span>
             </div>
-            <div class="addon-list is-quiet" id="box-flavor-grid" role="group" aria-label="Flavor"></div>
+            <div class="addon-list" id="box-flavor-grid" role="group" aria-label="Flavor"></div>
           </div>
 
           <div class="divider"></div>
@@ -1297,7 +1270,7 @@
               <span class="modal-section-title">Add additional side</span>
               <span class="modal-section-sub">Optional, priced per box.</span>
             </div>
-            <div class="addon-list is-quiet" id="box-sides-grid" role="group" aria-label="Additional sides"></div>
+            <div class="addon-list" id="box-sides-grid" role="group" aria-label="Additional sides"></div>
           </div>
 
           <div id="box-drinks-block" hidden>

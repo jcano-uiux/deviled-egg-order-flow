@@ -103,7 +103,7 @@ input, select {
   font-family: var(--deg-font-body);
   font-size: 16px; /* iOS Safari zooms the page when a focused field is under 16px */
   color: var(--deg-ink-body);
-  border-radius: var(--deg-radius-compact); /* text fields; the dropdowns below stay pills */
+  border-radius: var(--deg-radius-compact); /* text fields and the form dropdowns below; only the quantity dropdowns are pills */
   border: 1px solid var(--deg-border-control);
   padding: 14px 22px;
   background: var(--deg-white);
@@ -124,7 +124,7 @@ textarea:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 
    deliberately. Every dropdown in the product (quantity, country, and any
    future one) inherits this rather than repeating it per field. */
 select {
-  border-radius: var(--deg-radius-pill);
+  border-radius: var(--deg-radius-compact); /* a dropdown in a form (State, Country, a flavor) is a field: it takes the field's corners */
   appearance: none; -webkit-appearance: none; -moz-appearance: none;
   cursor: pointer;
   padding-right: 44px;
@@ -133,6 +133,9 @@ select {
   background-position: right 18px center;
   background-size: 16px 16px;
 }
+
+/* The quantity dropdowns are compact controls, not fields: they stay pills. */
+.qty-select, .drawer-qty-select { border-radius: var(--deg-radius-pill); }
 
 /* A labeled field, or a small group of them (a "Choose your flavors" label
    above a grid, a "Delivery instructions" label above its input). */

@@ -96,6 +96,12 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
 .nav-compact .nav-toggle { order: 2; display: flex; margin-left: 0; }
 .nav-compact .nav-where { order: 3; flex: 0 1 auto; justify-content: flex-start; max-width: none; margin-left: auto; margin-right: 0; min-width: 0; }
 .nav-compact .cart-btn { order: 4; margin-left: 12px; }
+/* The order indicator is hidden where it means nothing (the Shipping page, the location finder, the confirmation, a shipping-only bag); the cart keeps the right edge. */
+body.no-nav-where .nav-where { display: none; }
+body.no-nav-where .nav-compact .cart-btn { margin-left: auto; }
+/* A passed time or a bag short of the delivery minimum is flagged in the indicator's first line. */
+.nav-where[data-alert="true"] .nav-where-verb { color: var(--deg-error); font-weight: 700; }
+.nav-where[data-note="true"] .nav-where-verb { color: var(--deg-ink-body); font-weight: 700; }
 /* Collapses into an anchored dropdown instead of wrapping onto extra
    header rows — .nav-compact only turns on once the full link set has
    nowhere near enough room to wrap gracefully, so it's hidden until
@@ -459,8 +465,6 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    accent, keeping gold reserved for actual selections. */
 .flavor-exclusions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
 .flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
-.exclude-chip { padding: 8px 16px; font-size: 13px; }
-.exclude-chip.active { background: var(--deg-ink-deep); color: #FBF3E3; }
 
 /* Priced add-ons (bowl + wrap modals) as full-width checkbox rows, per the
    Figma "Item customize" spec (node 262:1749): cream-cool row, 12px radius,
@@ -818,7 +822,6 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
    exactly where they were. */
 .add-payment-form { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 6px; margin: -6px; scroll-padding: 8px; }
 /* The country dropdown sits among text fields here, so it takes their corners. */
-.add-payment-form select { border-radius: var(--deg-radius-compact); }
 
 /* ---------- Confirmation ---------- */
 .confirmation-wrap { max-width: 1360px; margin: 0 auto; display: flex; justify-content: center; padding: 20px 40px 60px; }
@@ -1165,59 +1168,6 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
 :where(.page-view) :where(ul, ol) { list-style: none; margin: 0; padding: 0; }
 :where(.page-view) p { margin: 0; }
 
-.ship-hero {
-  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: 48px;
-  padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-gold); color: var(--deg-ink-on-gold);
-}
-.ship-hero h1 { font-size: 48px; line-height: 52px; letter-spacing: -.01em; text-wrap: balance; }
-.ship-lead { margin-top: 16px; max-width: 52ch; font-size: 18px; line-height: 28px; font-weight: 500; }
-.ship-cta { margin-top: 28px; padding: 16px 32px; font-size: 16px; font-weight: 700; }
-.ship-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
-.ship-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-white); font-size: 13px; line-height: 18px; font-weight: 700; color: var(--deg-ink-deep); }
-.ship-badge svg { flex: none; }
-.ship-hero-map { display: block; width: 100%; height: auto; border-radius: var(--deg-radius-media); }
-
-.page-section { margin-top: var(--page-gap); scroll-margin-top: 93px; } /* clears the sticky header, like .menu-section */
-.page-section-head { margin-bottom: 24px; }
-.page-section-head h2 { font-size: 32px; line-height: 40px; font-weight: 700; color: var(--deg-ink-deep); text-wrap: balance; }
-.page-section-head p { margin-top: 8px; max-width: 62ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-muted); }
-
-/* Kits: three vertical product cards, same surface language as .shop-card. */
-.kit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.kit-card { cursor: pointer; display: flex; flex-direction: column; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; }
-.kit-media { position: relative; aspect-ratio: 1 / 1; background: var(--deg-cream-cool); }
-.kit-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.kit-tag { position: absolute; top: 12px; left: 12px; padding: 6px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; box-shadow: var(--deg-shadow-float); }
-.kit-body { display: flex; flex: 1 1 auto; flex-direction: column; padding: 20px; }
-.kit-name { font-size: 20px; line-height: 28px; font-weight: 800; color: var(--deg-ink-heading); }
-.kit-sub { margin-top: 2px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
-.kit-price { margin-top: 12px; margin-bottom: 20px; font-size: 14px; color: var(--deg-ink-muted); }
-.kit-price strong { font-family: var(--deg-font-body); font-size: 24px; line-height: 32px; font-weight: 700; color: var(--deg-ink-deep); }
-.kit-add { margin-top: auto; }
-
-/* How it works: a sequence, so the numbers carry information; one rule
-   threads the markers together instead of boxing each step in a card. */
-.ship-steps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
-.ship-step { position: relative; }
-.ship-step::before { content: ''; position: absolute; top: 20px; left: 52px; right: -32px; height: 2px; background: var(--deg-border-secondary); }
-.ship-step:last-child::before { display: none; }
-.ship-step-num { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--deg-gold); color: var(--deg-ink-on-gold); font-family: var(--deg-font-body); font-size: 18px; font-weight: 700; }
-.ship-step h3 { margin-top: 16px; font-size: 20px; line-height: 28px; color: var(--deg-ink-heading); }
-.ship-step p { margin-top: 6px; max-width: 36ch; font-size: 15px; line-height: 24px; color: var(--deg-ink-muted); }
-.ship-policy-link { display: inline-block; margin-top: 24px; font-size: 14px; font-weight: 700; color: var(--deg-link); text-underline-offset: 3px; }
-
-/* Holiday lineup reuses .shop-card; it's informational, not a link. */
-.holiday-grid { grid-template-columns: minmax(0, 1fr); }
-/* Three across only once each card can keep the 202px image plus a readable body; in between, a single column beats a lone orphan card. */
-@media (min-width: 1160px) { .holiday-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.holiday-card { cursor: default; }
-/* The holiday art is 5:4 with lettering near the edges; the menu card's square 161px crop would cut it, so the media runs 202x162 to show it whole. */
-.holiday-card .shop-card-media { width: 202px; }
-.holiday-card .shop-card-body { padding-bottom: 16px; }
-.holiday-status { align-self: flex-start; margin-top: 8px; padding: 4px 12px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 12px; line-height: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--deg-ink-heading); }
-.holiday-status.is-open { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
-.holiday-card .shop-card-desc { margin-top: auto; padding-top: 12px; font-size: 15px; font-weight: 600; color: var(--deg-ink-body); }
-
 /* Signup */
 .page-signup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; margin-top: var(--page-gap); padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-deep); }
 .page-signup-copy h2 { font-size: 32px; line-height: 40px; font-weight: 700; color: var(--deg-ink-deep); text-wrap: balance; }
@@ -1239,12 +1189,6 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
 .page-form input:disabled { opacity: 1; }
 
 @media (max-width: 900px) {
-  .ship-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 32px; }
-  .ship-hero h1 { font-size: 40px; line-height: 44px; }
-  .ship-hero-map { max-width: 560px; justify-self: center; }
-  .kit-grid { grid-template-columns: minmax(0, 1fr); }
-  .kit-card { flex-direction: row; }
-  .kit-media { flex: none; width: 220px; aspect-ratio: auto; }
   .page-signup { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 32px; }
 }
 
@@ -1252,26 +1196,7 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
   .page-view { --page-gap: 40px; padding-bottom: 0; }
   /* 16px keeps iOS Safari from zooming in when a field takes focus. */
   .page-form input[type="email"], .page-form input[type="tel"] { font-size: 16px; }
-  .ship-hero { margin: -24px -16px 0; border-radius: 0; padding: 32px 16px 24px; }
-  .ship-hero h1 { font-size: 32px; line-height: 38px; }
-  .ship-lead { font-size: 16px; line-height: 24px; }
-  .ship-cta { width: 100%; justify-content: center; }
-  .ship-hero-map { max-width: none; }
-  .page-section-head h2, .page-signup-copy h2 { font-size: 26px; line-height: 34px; }
-  .kit-card { flex-direction: column; }
-  .kit-media { width: auto; aspect-ratio: 16 / 11; }
-  /* Beside a 202px image the date wraps mid-phrase at phone width, so the holiday card stacks instead. */
-  .holiday-card { flex-direction: column; }
-  .holiday-card .shop-card-media { width: auto; aspect-ratio: 316 / 228; }
-  .holiday-card .shop-card-body { padding: 16px; }
-  .holiday-card .shop-card-desc { padding-top: 8px; }
-  .ship-steps { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .ship-step { padding: 0 0 28px 56px; }
-  .ship-step:last-child { padding-bottom: 0; }
-  .ship-step-num { position: absolute; left: 0; top: 0; }
-  .ship-step h3 { margin-top: 0; padding-top: 6px; }
-  .ship-step::before { top: 48px; bottom: 8px; left: 19px; right: auto; width: 2px; height: auto; }
-  .ship-step p { max-width: none; }
+  .page-signup-copy h2 { font-size: 26px; line-height: 34px; }
   .page-signup { margin-left: -16px; margin-right: -16px; border-radius: 0; padding: 32px 16px; }
 }
 
@@ -1343,10 +1268,12 @@ body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdro
 /* Catering modals */
 .flavor-row-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .flavor-row-desc { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--deg-ink-muted); }
-.addon-row.at-limit { opacity: .5; cursor: not-allowed; }
-.addon-row.at-limit:hover { background: var(--deg-cream-cool); }
 .side-option { display: flex; flex-direction: column; gap: 8px; }
 .side-flavor { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; font-size: 13px; font-weight: 600; }
+/* A side with its own flavor choice is one continuous card: the chosen row and its select share the gold, as a pack flavor and its Customize link share one card. */
+.side-option.has-flavor { gap: 0; border-radius: var(--deg-radius-card); background: var(--deg-gold); }
+.side-option.has-flavor .addon-row.selected { background: transparent; }
+.side-option.has-flavor .side-flavor { padding: 0 16px 16px; }
 .side-flavor-label { color: var(--deg-ink-heading); }
 
 @media (max-width: 640px) {
@@ -1380,12 +1307,6 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .box-count-other .qty-select { padding: 10px 40px 10px 16px; }
 .box-count-total { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--deg-ink-deep); }
 
-/* Many rows can be selected at once here, so selection is a ring and a check,
-   not a gold slab per row. */
-.addon-list.is-quiet .addon-row.selected { background: var(--deg-white); box-shadow: inset 0 0 0 2px var(--deg-ink-deep); }
-.addon-list.is-quiet .addon-row.selected .addon-row-box { background: var(--deg-ink-deep); }
-.addon-list.is-quiet .addon-row-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.addon-row.at-limit .addon-row-note { color: var(--deg-ink-body); }
 .thumb-coffee { aspect-ratio: 1; }
 
 /* Cart drawer: box lines edit in the modal and remove with an undo. */
@@ -1724,14 +1645,16 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 /* ===== Distilled flavor picker (a layout in the switcher) =====
    Adding and reviewing are the whole job: a compact header (the photo is untouched), a two-segment 3-or-6 control, shorter rows,
    ingredient chips behind "Customize", the picks listed in the footer, Qty beside the action and the note behind a link. */
-#item-modal[data-distilled="1"] .item-modal-title-block { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
 #item-modal[data-distilled="1"] #dozen-modal-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 /* The one-line calorie text must not set the column's width: on a phone the content column is as wide as its widest unbroken line, so it is held to the screen. */
 #item-modal[data-distilled="1"] .item-modal-content { max-width: 100%; }
 #item-modal[data-distilled="1"] .flavor-row-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fd-custom { display: flex; align-items: center; gap: 12px; padding-left: 6px; }
+.fd-custom { display: flex; align-items: center; flex-wrap: wrap; gap: 0 12px; padding-left: 6px; }
 .fd-custom-btn { min-height: 44px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.fd-custom-sum { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--deg-ink-body); }
+/* The summary of what was left out ("No bacon, tomato") wraps onto as many lines as it needs: the section grows in height, never in width, so a long list can't widen the card. */
+.fd-custom-sum { flex: 1 1 160px; min-width: 0; padding-bottom: 6px; font-size: 13px; line-height: 18px; color: var(--deg-ink-body); overflow-wrap: anywhere; }
+.fd-custom-sum:empty { display: none; }
+.fd-custom:has(.fd-custom-sum:not(:empty)) .fd-custom-btn { margin-bottom: -6px; }
 
 /* Eggceptional Wraps flavor rows: the deviled egg picker's row (Cool Linen, white + 2px ink when chosen), with a pick-one radio
    in place of the stepper. The whole head is the radio's label; the Customize link and chips sit below it, outside the label. */
@@ -1739,20 +1662,20 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .wrap-flavor-label .flavor-row-name { flex: 1 1 0; }
 .wrap-flavor-label .flavor-thumb { cursor: pointer; }
 .wrap-flavor-row .flavor-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.wrap-flavor-row.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.wrap-flavor-row.selected .radio-choice-ind, .box-flavor-row.selected .addon-row-box { background: var(--deg-ink-deep); }
 .wrap-flavor-row.selected .radio-choice-ind::after { background: #fff; }
 .wrap-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
 .wrap-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
 .wrap-flavor-extra:empty { display: none; }
+.box-flavor-row .addon-row-box { transition: background-color .15s ease; }
+.box-flavor-row .addon-row-box svg { opacity: 0; }
+.box-flavor-row.selected .addon-row-box svg { opacity: 1; }
 .wrap-flavor-extra { display: flex; flex-direction: column; gap: 12px; }
 /* The ingredient line is what a customer is choosing by: the chosen row shows all of it. */
 .wrap-flavor-row.selected .flavor-row-desc { display: block; -webkit-line-clamp: unset; overflow: visible; }
 /* The "No bacon, tomato, …" summary wraps instead of running on one line: a long list used to set the width of the whole column
    and push the card past the screen. The column is held to the modal's width. */
 #wrap-modal .item-modal-content, .wrap-flavor-row, .wrap-flavor-extra { min-width: 0; max-width: 100%; }
-.wrap-flavor-extra .fd-custom { flex-wrap: wrap; gap: 0 12px; }
-.wrap-flavor-extra .fd-custom-sum { flex: 1 1 160px; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 6px; }
-.wrap-flavor-extra .fd-custom:has(.fd-custom-sum) .fd-custom-btn { margin-bottom: -6px; }
 
 /* Remove ingredients, as a list: one full-width row per ingredient (its glyph, its name, and a circle-slash at the right that
    is grey until the ingredient is left out, then red). The whole row is the button, 48px tall. */
@@ -1833,6 +1756,50 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .bagel-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
 .bagel-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
 #bagel-modal .item-modal-content { min-width: 0; max-width: 100%; }
-.bagel-flavor-row .fd-custom { flex-wrap: wrap; gap: 0 12px; }
-.bagel-flavor-row .fd-custom-sum { flex: 1 1 160px; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 6px; }
-.bagel-flavor-row .fd-custom:has(.fd-custom-sum) .fd-custom-btn { margin-bottom: -6px; }
+
+/* The order confirmation's lines: the name, and under it what was chosen (what was left out, toast, add-ons), muted, as in the bag and at checkout. */
+.summary-line { gap: 16px; }
+.summary-line-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.summary-line-sub { font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+
+
+/* Shipping checkout: the "Ship to someone else" switch, and a holiday window that has closed. */
+/* The "Ship to someone else" switch is the site's checkbox (.page-consent: a 24px box that fills Deep Ink with a white check), centered on its label and 44px tall. */
+.sc-gift { align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; }
+.radio-choice.is-closed { opacity: .5; }
+.radio-choice.is-closed .radio-choice-row, .radio-choice.is-closed .radio-choice-input { cursor: not-allowed; }
+
+/* Nationwide Shipping: it follows the Catering page (banner, sidebar, sections, menu cards). Only what is its own is here: the banner's
+   panels, the "How it ships" list and the holiday windows list, both drawn like the Catering add-ons card. */
+.ship-banner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.ship-banner img { display: block; width: 100%; height: 100%; object-fit: cover; }
+#shipping-top > .menu-section:first-of-type { margin-top: 32px; }
+#shipping-top, #ship-section-kits, #ship-section-how, #ship-section-holiday { scroll-margin-top: 93px; }
+.ship-how ol { list-style: none; margin: 0; padding: 0; }
+.ship-how li { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ship-how-num { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--deg-cream-cool); font-size: 14px; font-weight: 700; color: var(--deg-ink-deep); }
+.ship-how li strong { display: block; font-size: 15px; line-height: 22px; color: var(--deg-ink-deep); }
+.ship-how li p { margin: 2px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-policy-link { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
+.ship-windows ul { list-style: none; margin: 0; padding: 0; }
+.ship-windows li { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ship-windows li:last-child, .ship-how li:last-of-type { border-bottom: 0; }
+.ship-window-art { flex: none; width: 56px; height: 56px; border-radius: 12px; object-fit: cover; background: var(--deg-cream-cool); }
+.ship-window-text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ship-windows .ship-window-text strong { font-size: 16px; line-height: 22px; color: var(--deg-ink-deep); }
+.ship-window-text span { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ship-window-when { flex: none; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); text-align: right; }
+@media (max-width: 900px) {
+  #shipping-top, #ship-section-kits, #ship-section-how, #ship-section-holiday { scroll-margin-top: 149px; }
+}
+@media (max-width: 640px) {
+  #shipping-top > .menu-section:first-of-type { margin-top: 24px; }
+}
+/* Modal lists (what a kit includes): a plain dot in the body ink, not gold; gold is kept for the chosen state and the one primary action. */
+.modal-list li::before { background: var(--deg-ink-heading); }
+
+/* A flavor with no photo or clip yet: its expanded panel keeps the clip's 2:3 slot with a quiet label, not a play button. */
+.flavor-watch-photo { aspect-ratio: 1 / 1; cursor: default; }
+.flavor-watch-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: default; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-muted); text-align: center; }
+.flavor-watch-placeholder img { width: 56px; height: 56px; border-radius: 12px; }
