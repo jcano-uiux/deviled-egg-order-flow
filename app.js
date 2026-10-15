@@ -75,8 +75,17 @@
     img.className = 'shop-card-photo';
     // `loading` goes on before `src`: set after it, the browser has already started the download.
     img.loading = 'lazy';
+    // The first card photo of the Optimized Shipping page is upgraded to eager once that page is on screen (see setShipVersion).
+    if (item.thumb && item.thumb.eager) img.dataset.eager = '';
     img.decoding = 'async';
     img.alt = item.name;
+    // A card photo with sized sources (srcset, width and height) loads only the size it shows, and reserves its space.
+    if (item.thumb) {
+      img.srcset = item.thumb.srcset;
+      img.sizes = item.thumb.sizes;
+      img.width = item.thumb.width;
+      img.height = item.thumb.height;
+    }
     // A photo that fails to load falls back to the placeholder instead of showing a broken image.
     img.addEventListener('error', () => img.replaceWith(eggThumb()), { once: true });
     img.src = item.image;
@@ -383,6 +392,9 @@
   // True only for the funnel that Home's "Order catering" tile started: that one ends on the Catering group, no other does. The flag
   // above can outlive a cancelled funnel; this one cannot, so a later "Continue to menu" always goes to the menu.
   let funnelForCatering = false;
+  // True from a card tap on the Catering page until that tap's "where" or time step is finished or cancelled: the steps then offer only
+  // times catering can meet, as if the bag already held catering. Unlike `cateringIntent` it is never saved, and cancelling clears it.
+  let cateringTap = false;
   // Set when "Change time" was tapped on the nav's saved order: the time modal then returns to the where modal, not to the page.
   let ldBackToWhere = null;
   function setCateringIntent(on) {
@@ -439,6 +451,15 @@
   const LEGACY_OPTION = { '6-pack-3-flavors': ['6-pack', '3-flavors'], '6-pack-6-flavors': ['6-pack', '6-flavors'] };
   const priceLabel = (item) => (item.options ? 'From ' : '') + money(item.price);
   SHIPPING_KITS.forEach((k) => { PRODUCT_IMAGE_BY_NAME[k.name] = k.image; });
+  // The Optimized Shipping page's card photos: WebP cut to the 161px they show (and twice that), with the size set up front.
+  const SHIPPING_KITS_OPT = SHIPPING_KITS.map((k) => {
+    const sized = { 'kit-sampler': 'kit-sampler', 'kit-24': 'kit-24' }[k.id];
+    // The photo's average color, shown behind it while it loads, so the card has its color before the picture arrives.
+    const bg = { 'kit-sampler': '#B06A3D', 'kit-24': '#A18357' }[k.id];
+    if (!sized) return k;
+    const base = `assets/shipping/opt/${sized}`;
+    return { ...k, thumb: { srcset: `${base}-240.webp 240w, ${base}-480.webp 480w`, sizes: '(max-width: 640px) 128px, 200px', width: 200, height: 200, bg, eager: k.id === 'kit-sampler' } };
+  });
 
   // Saved carts: the current per-path shape, or the older single list, whose
   // shipping kits (tagged `ships`) move to the Shipping cart.
@@ -484,7 +505,7 @@
   // A line's price × qty, plus anything charged once per line (a catering box's drinks).
   const lineTotal = (item) => item.price * item.qty + (item.extra || 0);
   // A line's detail text: a box meal's is rebuilt from its saved choices, so it can never disagree with them.
-  const lineSub = (item) => (item.config ? boxLineSub(item) : item.sub || '');
+  const lineSub = (item) => (item.config ? boxLineSub(item) : escapeHTML(item.sub || ''));
 
   function cartSubtotal(kind) {
     return state.carts[kind].reduce((sum, item) => sum + lineTotal(item), 0);
@@ -658,6 +679,9 @@
     renderShopGrid('platters-grid', PLATTERS, 'platter', 'Party platter');
     renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
     renderShopGrid('ship-kits-grid', SHIPPING_KITS, 'kit', 'Shipping kit');
+    renderShipKits('ship-kits-grid-d', SHIPPING_KITS_OPT);
+    renderShipKits('ship-kits-grid-p', SHIPPING_KITS);
+    renderShipKits('ship-kits-grid-o', SHIPPING_KITS_OPT);
     renderShipHoliday();
     renderBagelCard();
     renderFeatured();
@@ -665,7 +689,7 @@
 
   // Every product opens its modal first (never an instant add); which modal depends on what it can customize.
   function openMenuItem(item, keyPrefix, cartCategory) {
-    if (gateFulfillment(() => openMenuItem(item, keyPrefix, cartCategory))) return;
+    if (gateFulfillment(() => openMenuItem(item, keyPrefix, cartCategory), orderTargetFor(item, keyPrefix))) return;
     if (item.wrapFlavors) {
       openWrapModal(item.wrapProduct, null, item.wrapFlavorId);
     } else if (item.pickerConfig || item.fixedFlavors) {
@@ -791,8 +815,37 @@
     });
   }
 
+  // The kit card of the three new Shipping page versions (see index.html): the photo, the name, the price with what the kit is, a short
+  // description and one plain action. The whole card opens the kit's modal; the button is the keyboard and screen-reader way in.
+  const SHIP_KIT_ARROW = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  function renderShipKits(gridId, items) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    items.forEach((item) => {
+      const open = () => openMenuItem(item, 'kit', 'Shipping kit');
+      const action = item.fixedFlavors ? 'View kit' : 'Choose flavors';
+      const card = document.createElement('article');
+      card.className = 'ship-kit';
+      const media = document.createElement('div');
+      media.className = 'ship-kit-media';
+      if (item.thumb && item.thumb.bg) media.style.backgroundColor = item.thumb.bg;
+      media.appendChild(productThumb(item));
+      const body = document.createElement('div');
+      body.className = 'ship-kit-body';
+      body.innerHTML = `
+        <h3 class="ship-kit-name">${item.name}</h3>
+        <p class="ship-kit-meta"><span class="ship-kit-price">${priceLabel(item)}</span>${item.note ? `<span class="ship-kit-chip">${item.note}</span>` : ''}</p>
+        <p class="ship-kit-desc">${item.desc}</p>
+        <button class="ship-kit-cta" type="button" aria-label="${action} for ${escapeHTML(item.name)}">${action}${SHIP_KIT_ARROW}</button>`;
+      body.querySelector('.ship-kit-cta').addEventListener('click', open);
+      card.addEventListener('click', (e) => { if (!e.target.closest('.ship-kit-cta')) open(); });
+      card.append(media, body);
+      grid.appendChild(card);
+    });
+  }
+
   // On a store's page, the first thing added asks how the order is going (pickup or delivery) if that is not chosen yet.
-  const openBagelFromMenu = () => { if (!gateFulfillment(() => openBagelFromMenu())) openBagelModal(); };
+  const openBagelFromMenu = () => { if (!gateFulfillment(() => openBagelFromMenu(), { group: ORDER_GROUPS.find((g) => g.id === 'bagels') })) openBagelModal(); };
 
   function renderBagelCard() {
     const grid = document.getElementById('bagels-grid');
@@ -837,6 +890,17 @@
     { id: 'sandwich-wrap', name: 'Sandwich/Wrap', image: WRAP_IMAGE, items: SANDWICH_WRAP, keyPrefix: 'wrap', cartCategory: 'Sandwich/Wrap' },
   ];
   const orderGroupSingle = (g) => g.open || (g.items.length === 1 ? () => openMenuItem(g.items[0], g.keyPrefix, g.cartCategory) : null);
+
+  // Where a menu card's item lives on the order page. The order page has no Platters group: the two platters are the
+  // same products as the Deviled Eggs group's last two, under other ids, so they open there.
+  const ORDER_GROUP_OF = { egg: 'deviled-eggs', platter: 'deviled-eggs', saladcup: 'egg-salads', bowl: 'protein-bowls', wrap: 'sandwich-wrap' };
+  const PLATTER_TWINS = { '24-count': '24-count-platter', 'try-them-all': 'try-them-all-platter' };
+  function orderTargetFor(item, keyPrefix) {
+    const group = ORDER_GROUPS.find((g) => g.id === ORDER_GROUP_OF[keyPrefix]);
+    const id = keyPrefix === 'platter' ? PLATTER_TWINS[item.id] : item.id;
+    const found = group && group.items.find((i) => i.id === id);
+    return found ? { group, item: found } : null;
+  }
   const ORDER_CHEVRON = '<svg class="order-tile-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const orderTilesScreen = document.getElementById('order-tiles-screen');
   const orderGroupScreen = document.getElementById('order-group-screen');
@@ -870,6 +934,7 @@
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'order-row';
+      row.dataset.item = item.id;
       row.setAttribute('aria-label', `${(g.catering || item.pickerConfig || item.addOns || item.wrapFlavors) ? 'Customize' : 'View'} ${item.name}`);
       row.innerHTML = `
         <span class="order-row-media"></span>
@@ -1240,8 +1305,8 @@
     else if (!addPaymentModal.hidden) closeAddPayment();
     else if (!paymentMethodsModal.hidden) closePaymentMethods();
     else if (!boxModal.hidden) closeBoxModal();
-    else if (!ldModal.hidden) closeLocationDetails();
-    else if (!ddModal.hidden) closeDeliveryDetails();
+    else if (!ldModal.hidden) cancelLocationDetails();
+    else if (!ddModal.hidden) cancelDeliveryDetails();
     else if (!daModal.hidden) closeWhere();
     else if (!siModal.hidden) closeStoreInfo();
   });
@@ -1567,61 +1632,103 @@
     return wrap;
   }
 
-  // ----- Flavor info sheet (Pair): the full clip and the description over the open modal. -----
+  // ----- Flavor info sheet: the full clip and the description over the open modal. -----
+  // Pair opens it for one flavor. The Sampler's flavor grid opens it on a flavor and passes the whole list, so the customer can step
+  // through every flavor without closing it; a flavor with no clip yet shows the placeholder panel instead of a video.
   let flavorInfo = null;
+  const FLAVOR_INFO_PREV = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+  const FLAVOR_INFO_NEXT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
-  function openFlavorInfo(f, opener) {
+  function openFlavorInfo(f, opener, opts = {}) {
     closeFlavorInfo(false);
-    const media = FLAVOR_MEDIA[f.id];
-    const file = `assets/flavors/${media.file}`;
-    const stat = flavorStat(f);
+    const list = opts.list || [f];
+    let index = opts.index || 0;
     const root = document.createElement('div');
     root.className = 'flavor-info';
     root.innerHTML = `
       <div class="flavor-info-backdrop"></div>
       <div class="flavor-info-sheet" role="dialog" aria-modal="true" aria-labelledby="flavor-info-title">
         <button class="close-btn flavor-info-close" type="button" aria-label="Close">${document.getElementById('close-modal').innerHTML}</button>
-        <button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>
-        <div class="flavor-info-copy">
-          <h2 id="flavor-info-title">${escapeHTML(f.label)}</h2>
-          ${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}
-          <p>${escapeHTML(media.desc)}</p>
-        </div>
+        <div class="flavor-info-stage"></div>
       </div>`;
     document.body.appendChild(root);
     itemModal.inert = true;
     itemModal.classList.add('is-under');
-    const player = root.querySelector('.flavor-info-media');
-    const video = player.querySelector('video');
-    const paint = () => {
-      player.classList.toggle('is-paused', video.paused);
-      player.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${f.label} video`);
+    const stage = root.querySelector('.flavor-info-stage');
+    const info = { root, video: null, getOpener: () => (opts.openerFor ? opts.openerFor(index) : opener), step: null };
+    flavorInfo = info;
+
+    // One flavor's media and copy; stepping replaces both.
+    const show = (i) => {
+      index = i;
+      const cur = list[i];
+      const media = FLAVOR_MEDIA[cur.id] || null;
+      const file = media ? `assets/flavors/${media.file}` : '';
+      const stat = opts.noStat ? '' : flavorStat(cur);
+      if (info.video) info.video.pause();
+      stage.innerHTML = `
+        ${media
+          ? `<button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>`
+          : '<div class="flavor-watch-media flavor-info-media flavor-watch-placeholder"><img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Video coming soon</span></div>'}
+        <div class="flavor-info-copy">
+          <h2 id="flavor-info-title">${escapeHTML(cur.label)}</h2>
+          ${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}
+          <p>${escapeHTML(media ? media.desc : 'The video and description are coming soon.')}</p>
+          ${list.length > 1 ? `
+          <div class="flavor-info-nav">
+            <button class="flavor-info-step" type="button" data-step="-1"${i === 0 ? ' disabled' : ''}>${FLAVOR_INFO_PREV}Previous</button>
+            <span class="flavor-info-count" aria-live="polite">${i + 1} of ${list.length}</span>
+            <button class="flavor-info-step" type="button" data-step="1"${i === list.length - 1 ? ' disabled' : ''}>Next${FLAVOR_INFO_NEXT}</button>
+          </div>` : ''}
+        </div>`;
+      stage.querySelectorAll('.flavor-info-step').forEach((btn) => btn.addEventListener('click', () => info.step(Number(btn.dataset.step))));
+      const player = stage.querySelector('button.flavor-info-media');
+      info.video = player ? player.querySelector('video') : null;
+      if (player) {
+        const video = info.video;
+        const paint = () => {
+          player.classList.toggle('is-paused', video.paused);
+          player.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${cur.label} video`);
+        };
+        video.addEventListener('play', paint);
+        video.addEventListener('pause', paint);
+        player.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
+        paint();
+        if (!flavorReduceMotion.matches) video.play().catch(() => {});
+      }
     };
-    video.addEventListener('play', paint);
-    video.addEventListener('pause', paint);
-    player.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
-    paint();
-    if (!flavorReduceMotion.matches) video.play().catch(() => {});
+    info.step = (d) => {
+      const next = index + d;
+      if (next < 0 || next >= list.length) return;
+      const hadFocus = stage.contains(document.activeElement);
+      show(next);
+      stage.parentElement.scrollTop = 0;
+      // The button that was pressed is replaced, so focus goes to the same direction's button (or the other one at an end).
+      if (hadFocus) (stage.querySelector(`.flavor-info-step[data-step="${d}"]:not([disabled])`) || stage.querySelector('.flavor-info-step:not([disabled])') || root.querySelector('.flavor-info-close')).focus();
+    };
+    show(index);
     root.querySelector('.flavor-info-backdrop').addEventListener('click', () => closeFlavorInfo());
     root.querySelector('.flavor-info-close').addEventListener('click', () => closeFlavorInfo());
-    flavorInfo = { root, video, opener };
     root.querySelector('.flavor-info-close').focus();
   }
 
   function closeFlavorInfo(restoreFocus = true) {
     if (!flavorInfo) return;
-    const { root, video, opener } = flavorInfo;
+    const { root, video, getOpener } = flavorInfo;
     flavorInfo = null;
-    video.pause();
+    if (video) video.pause();
     itemModal.inert = false;
     itemModal.classList.remove('is-under');
     // It slides back down (at once when the modal itself is closing or motion is reduced).
     if (restoreFocus && !flavorReduceMotion.matches) { root.classList.add('is-closing'); window.setTimeout(() => root.remove(), 220); } else root.remove();
+    const opener = getOpener();
     if (restoreFocus && opener && opener.isConnected) opener.focus();
   }
-  // Escape closes the sheet and nothing under it.
+  // Escape closes the sheet and nothing under it; the arrow keys step through a list of flavors.
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && flavorInfo) { e.stopPropagation(); closeFlavorInfo(); }
+    if (!flavorInfo) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeFlavorInfo(); }
+    else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && flavorInfo.step) flavorInfo.step(e.key === 'ArrowLeft' ? -1 : 1);
   }, true);
 
   // The observer only reports a clip when it crosses the line, so a clip already on screen when the layout is built
@@ -2166,7 +2273,7 @@
     // The count of eggs chosen lives in the footer, above the button; a fixed kit has nothing to count.
     document.getElementById('flavor-meter').hidden = !!activeProduct.fixedFlavors;
     document.getElementById('fixed-flavors').hidden = !activeProduct.fixedFlavors;
-    document.getElementById('fixed-flavors-list').innerHTML = (activeProduct.fixedFlavors || []).map((f) => `<li>${escapeHTML(f)}</li>`).join('');
+    renderFixedFlavors(activeProduct.fixedFlavors || []);
     const notice = document.getElementById('dozen-modal-notice');
     notice.hidden = !activeProduct.notice;
     notice.textContent = activeProduct.notice || '';
@@ -2186,6 +2293,31 @@
     itemModal.querySelector('.item-modal-scroll').scrollTop = 0;
     updateInert();
     document.getElementById('close-modal').focus();
+  }
+
+  // The Sampler's flavors, each a tile: the clip's still, a play mark and the name under it. A tap opens the flavor info sheet on that
+  // flavor, with Previous and Next through all of them. Nothing plays in the grid and no clip loads until the sheet opens it; a flavor
+  // with no clip yet (Gyro, BBQ Chicken) shows the placeholder egg and the sheet says its video is coming.
+  const SAMPLER_CLIPS = {
+    'Traditional': 'traditional', 'Everything Seasoning': 'everything-seasoning', 'Smoked Salmon': 'smoked-salmon',
+    'South of the Border': 'south-of-the-border', 'Sriracha Bacon': 'sriracha-bacon', 'Jalapeño Popper': 'jalapeno-popper',
+    'Crab Rangoon': 'crab-rangoon', 'Chicken Bacon Ranch': 'chicken-bacon-ranch', 'Cali Roll': 'cali-roll',
+    'Buffalo Blue Cheese': 'buffalo-blue-cheese', 'Buffalo Chicken': 'buffalo-chicken-ranch', 'Chicken and Pickle Egg': 'chicken-pickle-egg',
+    'Chicken Caesar': 'chicken-caesar', 'Cheeseburger': 'cheeseburger',
+  };
+  function renderFixedFlavors(names) {
+    const flavors = names.map((label) => ({ id: SAMPLER_CLIPS[label] || null, label }));
+    const list = document.getElementById('fixed-flavors-list');
+    document.getElementById('fixed-flavors-sub').textContent = `18 deviled eggs in ${names.length} flavors. Tap one to watch it.`;
+    list.innerHTML = flavors.map((f, i) => {
+      const media = FLAVOR_MEDIA[f.id];
+      return `<li><button class="sampler-tile${media ? '' : ' is-empty'}" type="button" data-i="${i}" aria-haspopup="dialog" aria-label="${media ? 'Watch the ' : 'Details for '}${escapeHTML(f.label)}${media ? ' video' : ''}">
+        <span class="sampler-tile-media"><img src="${media ? `assets/flavors/${media.file}.jpg` : 'assets/flavors/placeholder.svg'}" alt="" width="${media ? 360 : 56}" height="${media ? 540 : 56}" loading="lazy" decoding="async">${media ? `<span class="sampler-tile-play" aria-hidden="true">${PLAY_ICON}</span>` : ''}</span>
+        <span class="sampler-tile-name">${escapeHTML(f.label)}</span>
+      </button></li>`;
+    }).join('');
+    const tiles = [...list.querySelectorAll('.sampler-tile')];
+    tiles.forEach((tile, i) => tile.addEventListener('click', () => openFlavorInfo(flavors[i], tile, { list: flavors, index: i, noStat: true, openerFor: (j) => tiles[j] })));
   }
 
   function closeDozenModal() {
@@ -2214,7 +2346,8 @@
     if (!activeProduct.fixedFlavors && dozenAllocated() !== activeProduct.total) return;
     const flavorLabels = flavorList().filter((f) => (state.modalFlavorQty[f.id] || 0) > 0).map((f) => {
       const excluded = state.modalExclusions[f.id];
-      return excluded && excluded.size ? `${f.label} (no ${[...excluded].join(', ').toLowerCase()})` : f.label;
+      const label = excluded && excluded.size ? `${f.label} (no ${[...excluded].join(', ').toLowerCase()})` : f.label;
+      return `${label} ×${state.modalFlavorQty[f.id]}`;
     });
     const note = document.getElementById('item-note').value.trim();
     // Shipping kits say so on their bag line; the sampler has no flavors to list.
@@ -2237,6 +2370,7 @@
       };
     }
     if (editingLine) { commitLineEdit(entry, closeDozenModal); return; }
+    if (activeProduct.catering && cateringAddBlocked(itemModal)) return;
     addToCart({
       ...entry,
       cart: activeProduct.cart || orderKind(),
@@ -2830,6 +2964,7 @@
   document.getElementById('add-quickview-to-order').addEventListener('click', () => {
     const qty = Number(document.getElementById('quickview-qty-select').value);
     const { keyPrefix, cartCategory } = activeQuickview.cartMeta;
+    if (activeQuickview.cartMeta.catering && cateringAddBlocked(quickviewModal)) return;
     addToCart({
       cart: activeQuickview.cartMeta.cart || orderKind(),
       ...(activeQuickview.cartMeta.catering ? { catering: true } : {}),
@@ -3341,6 +3476,7 @@
       closeBoxModal();
       return;
     }
+    if (cateringAddBlocked(boxModal)) return;
     addToCart({
       cart: cateringCart(),
       catering: true,
@@ -3634,6 +3770,7 @@
       if (state.viewStore) document.title = `${storeName(storeById(state.viewStore))} — ${SITE_NAME}`;
     }
     if (name === 'order') { renderNavWhere(); showOrderTiles(); }
+    if (name === 'shipping') setShipVersion(shipVersion);
     if (name === 'delivery-checkout') setSummaryOpen(document.getElementById('dc-toggle-summary'), true);
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
@@ -3712,8 +3849,7 @@
 
   // ---------- A store's own page ----------
   // The menu page, with its banner, store card and menu, is every real store's page: #store/<id>. The finder's cards
-  // open it. Browsing is open to everyone; the first thing added asks how the order is going (pickup or delivery) if
-  // that is not chosen yet, with this store already selected, and then carries on with what was tapped.
+  // open it. Browsing is open to everyone; a tapped card does not open there but on the order page (see gateFulfillment).
   function showStorePage(id) {
     if (!storeById(id)) { history.replaceState(null, '', '#location-picker'); showView('location-picker'); return; }
     state.viewStore = id;
@@ -3725,27 +3861,107 @@
     showView('location-picker');
   });
   let pendingStoreOpen = null;
-  function gateFulfillment(resume) {
+  // A card tapped on a store page (or the products page) leads to the order page, with that item open there. With no
+  // valid pickup or delivery yet, the "where" modal comes first, on the path last used, with this store selected. A
+  // pickup set for another store asks there before switching; a valid order for this store goes straight on.
+  // `target` is the item's place on the order page (orderTargetFor); without one the item opens where it was tapped.
+  function gateFulfillment(resume, target) {
     if (views.menu.hidden) return false;
-    const chosen = state.orderMode === 'delivery' ? deliverySessionValid() : pickupSessionValid();
-    if (chosen) return false;
-    pendingStoreOpen = resume;
-    openWhere('pickup', { returnTo: 'store', store: state.viewStore || currentStoreId() });
+    const delivery = state.orderMode === 'delivery';
+    const go = target ? () => openOnOrderPage(target) : resume;
+    if (delivery ? deliverySessionValid() : pickupSessionValid()) {
+      const otherStore = !delivery && state.viewStore && state.viewStore !== currentStoreId();
+      if (!otherStore) {
+        if (!target) return false;
+        go();
+        return true;
+      }
+    }
+    pendingStoreOpen = go;
+    openWhere(delivery ? 'delivery' : 'pickup', { returnTo: 'store', store: state.viewStore || currentStoreId() });
     return true;
+  }
+  // The end of a store page tap: the order page on the item's group, with the item open and its row behind it to come
+  // back to. It is pushed, so Back returns to the store page. `null` lands on the order page's tiles.
+  function openOnOrderPage(target) {
+    intentBeforeFunnel = null;
+    funnelForCatering = false;
+    if (cateringIntent) setCateringIntent(false);
+    const g = target && target.group;
+    const single = g && orderGroupSingle(g);
+    history.pushState(null, '', g && !single ? '#order/' + g.id : '#order');
+    showView('order');
+    if (views.order.hidden || !g) return;
+    if (!single) openOrderGroup(g.id, { push: false });
+    requestAnimationFrame(() => {
+      const opener = single ? document.querySelector(`.order-tile[data-group="${g.id}"]`) : document.querySelector(`#order-rows .order-row[data-item="${target.item.id}"]`);
+      if (opener) { opener.scrollIntoView({ block: 'center' }); opener.focus({ preventScroll: true }); }
+      if (single) single(); else openMenuItem(target.item, g.keyPrefix, g.cartCategory);
+    });
+  }
+  // Walking away from a funnel step (its close button, the backdrop, Escape) drops the store page tap waiting on it, so
+  // it never opens later when some other funnel finishes.
+  function dropStoreIntent() {
+    pendingStoreOpen = null;
+    cateringTap = false;
+    if (funnelReturn === 'store') funnelReturn = null;
+    if (deliveryReturn === 'store') deliveryReturn = null;
   }
   // The Catering page is open to everyone, but its items go into the pickup or delivery bag: with none chosen yet, the
   // "where" modal opens first and the item opens once it is done.
+  // Catering needs notice (see CATERING_NOTICE_MIN), so from the tap on, the steps offer only times that meet it. With no valid
+  // session the "where" modal comes first; with one whose time is too soon only the day and time are asked again, for the same store
+  // or address. A valid session that meets the notice opens the item at once. The customer stays on the Catering page.
   function gateCatering(resume) {
-    const chosen = state.orderMode === 'delivery' ? deliverySessionValid() : pickupSessionValid();
-    if (chosen || views.catering.hidden) return false;
+    if (views.catering.hidden) return false;
+    const delivery = state.orderMode === 'delivery';
+    const kind = delivery ? 'delivery' : 'pickup';
+    const chosen = delivery ? deliverySessionValid() : pickupSessionValid();
+    if (chosen && slotMeetsLead(kind, CATERING_NOTICE_MIN[kind])) return false;
+    cateringTap = true;
     pendingStoreOpen = resume;
-    openWhere(state.orderMode === 'delivery' ? 'delivery' : 'pickup', { returnTo: 'store' });
+    if (!chosen) { openWhere(kind, { returnTo: 'store' }); return true; }
+    // Too soon: the same modal as "Change time", finishing on the item instead of staying put.
+    funnelReturn = 'store';
+    deliveryReturn = 'store';
+    if (delivery) { openLocationDetails(null, { edit: true, kind: 'delivery', thenOrder: true }); return true; }
+    const st = PICKUP_STORES.find((x) => storeName(x) === state.location);
+    if (st) openLocationDetails(st, { edit: true, thenOrder: true }); else openWhere('pickup', { returnTo: 'store' });
     return true;
   }
   function resumeStorePage() {
     const resume = pendingStoreOpen;
     pendingStoreOpen = null;
+    cateringTap = false;
     if (resume) resume();
+  }
+  // The time chosen can pass, or be too soon for catering, while an item is open. The add then stops with a line in the modal's footer
+  // and a button that opens the time step on top of it; once a time is saved the line goes and Add works again.
+  function clearCateringTimeNotes() {
+    document.querySelectorAll('.catering-time-note').forEach((n) => { n.hidden = true; });
+  }
+  function cateringAddBlocked(modal) {
+    const kind = cateringCart();
+    const valid = kind === 'delivery' ? deliverySessionValid() : pickupSessionValid();
+    const footer = modal.querySelector('.item-modal-footer');
+    let note = footer.querySelector('.catering-time-note');
+    if (valid && slotMeetsLead(kind, CATERING_NOTICE_MIN[kind])) { if (note) note.hidden = true; return false; }
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 'catering-time-note';
+      note.setAttribute('role', 'alert');
+      note.innerHTML = '<span></span><button class="text-btn" type="button">Choose a new time</button>';
+      note.querySelector('button').addEventListener('click', () => {
+        cateringTap = true;
+        if (kind === 'delivery') { openLocationDetails(null, { edit: true, kind: 'delivery' }); return; }
+        const st = PICKUP_STORES.find((x) => storeName(x) === state.location);
+        if (st) openLocationDetails(st, { edit: true });
+      });
+      footer.prepend(note);
+    }
+    note.querySelector('span').textContent = valid ? `That time is too soon for catering. It needs ${cateringNoticeText(kind)}.` : 'That time has passed.';
+    note.hidden = false;
+    return true;
   }
 
   // ----- Store info: a card with the store on a map, its address, hours, delivery terms and directions -----
@@ -3793,10 +4009,11 @@
     status.textContent = 'Address copied';
     window.setTimeout(() => { status.textContent = ''; }, 2000);
   });
-  // Delivery from this store: the row opens the "where" modal on its Delivery tab.
+  // Delivery from this store: the row opens the "where" modal on its Delivery tab, and the order page once it is done.
   document.getElementById('si-delivery-btn').addEventListener('click', () => {
     closeStoreInfo();
-    openWhere('delivery', { returnTo: 'store' });
+    pendingStoreOpen = () => openOnOrderPage(null);
+    openWhere('delivery', { returnTo: 'store', store: state.viewStore });
   });
 
   // ---------- Order funnels ----------
@@ -3944,6 +4161,12 @@
   }
   // "#order/deviled-eggs" is the order page opened on that group's screen.
   function routeFromHash() {
+    // Back with an item open (on the order page after a store page tap, say) closes it with the page it belonged to.
+    if (!itemModal.hidden) closeDozenModal();
+    if (!bagelModal.hidden) closeBagelModal();
+    if (!bowlModal.hidden) closeBowlModal();
+    if (!wrapModal.hidden) closeWrapModal();
+    if (!quickviewModal.hidden) closeQuickviewModal();
     const [base, group] = location.hash.split('/');
     // The address checker is a modal: a link to #delivery opens it over Home.
     if (base === '#delivery') { showView('home'); startDelivery(); return; }
@@ -3952,6 +4175,7 @@
     if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'delivery' ? 'delivery-checkout' : 'checkout';
     if (CHECKOUT_VIEWS.includes(view)) { openCheckoutFromLink(view); return; }
     showView(view);
+    if (view === 'shipping' && group) setShipVersion(group);
     if (view === 'order' && group) openOrderGroup(group, { push: false });
   }
   window.addEventListener('hashchange', routeFromHash);
@@ -4239,7 +4463,7 @@
   const CATERING_NOTICE_MIN = { pickup: 120, delivery: 24 * 60 };
   const bagHasCatering = (kind) => (state.carts[kind] || []).some((line) => line.catering);
   // The notice the "where" modal asks for: a catering item in the bag, or a customer who came in to order catering.
-  const cateringLead = (kind) => (bagHasCatering(kind) || cateringIntent ? CATERING_NOTICE_MIN[kind] || 0 : 0);
+  const cateringLead = (kind) => (bagHasCatering(kind) || cateringIntent || cateringTap ? CATERING_NOTICE_MIN[kind] || 0 : 0);
   const cateringNoticeText = (kind) => (kind === 'delivery' ? "a day's notice" : '2 hours\' notice');
   const cateringBagNote = (kind) => (bagHasCatering(kind)
     ? `Catering in your bag needs ${cateringNoticeText(kind)}${kind === 'delivery' ? `, and delivery is ${money(CATERING_DELIVERY_FEE)} (free over ${money(CATERING_FREE_DELIVERY_AT)})` : ''}.` : '');
@@ -4251,11 +4475,13 @@
     return new Date(y, m - 1, d, Number(String(sess.timeId).slice(0, 2)), Number(String(sess.timeId).slice(2)));
   }
   // Checked at checkout, so it follows the bag alone: an order with no catering in it needs no notice.
-  function slotMeetsCateringNotice(kind) {
-    const lead = bagHasCatering(kind) ? CATERING_NOTICE_MIN[kind] || 0 : 0;
+  function slotMeetsLead(kind, lead) {
     if (!lead) return true;
     const start = chosenSlotStart(kind);
     return !!start && start.getTime() >= Date.now() + lead * 60000;
+  }
+  function slotMeetsCateringNotice(kind) {
+    return slotMeetsLead(kind, bagHasCatering(kind) ? CATERING_NOTICE_MIN[kind] || 0 : 0);
   }
   // Re-opens the day and time step so a slot that is too soon can be moved out.
   function askCateringTime(kind) {
@@ -4419,6 +4645,8 @@
 
   function savePickupSession() {
     state.pickupChosen = true;
+    cateringTap = false;
+    clearCateringTimeNotes();
     try {
       localStorage.setItem(PICKUP_SESSION_KEY, JSON.stringify({
         location: state.location, dateKey: state.pickupDateKey, timeId: state.pickupTimeId, timeLabel: state.pickupTimeLabel,
@@ -4490,7 +4718,7 @@
     // Coming from a checkout, this is a step on the way back to it, not the start of an order.
     const back = ld.kind === 'delivery' ? deliveryReturn : funnelReturn;
     const fromCheckout = back === 'checkout';
-    start.textContent = ld.edit ? 'Update order' : fromCheckout ? 'Continue to checkout' : back === 'store' || back === 'nav' ? 'Continue' : ld.kind === 'delivery' ? 'Continue' : 'Start my order';
+    start.textContent = ld.edit && back !== 'store' ? 'Update order' : fromCheckout ? 'Continue to checkout' : back === 'store' || back === 'nav' ? 'Continue' : ld.kind === 'delivery' ? 'Continue' : 'Start my order';
     const verb = fromCheckout || back === 'store' || back === 'nav' || ld.edit ? 'continue' : 'start';
     document.getElementById('ld-hint').textContent = ready ? '' : ld.dateKey ? `Pick a time to ${verb}.` : `Pick a day and a time to ${verb}.`;
   }
@@ -4574,7 +4802,7 @@
     const hoursText = delivery ? 'Delivery hours: 10:00 AM – 8:00 PM' : 'Pickup hours: 10:00 AM – 8:00 PM';
     const noticeKind = delivery ? 'delivery' : 'pickup';
     document.getElementById('ld-hours').textContent = bagHasCatering(noticeKind) ? `${hoursText}. Catering in your bag needs ${cateringNoticeText(noticeKind)}.`
-      : cateringIntent ? `${hoursText}. Catering orders need ${cateringNoticeText(noticeKind)}.` : hoursText;
+      : cateringIntent || cateringTap ? `${hoursText}. Catering orders need ${cateringNoticeText(noticeKind)}.${cateringTap && cartCount(noticeKind) > 0 ? ' Your whole order will be ready at the time you choose.' : ''}` : hoursText;
     document.getElementById('ld-change').textContent = delivery ? 'Change address' : 'Change store';
     renderLdDates();
     renderLdTimes();
@@ -4599,18 +4827,30 @@
     if (back) openWhere(back, { returnTo: 'nav' });
   }
 
-  document.getElementById('ld-close').addEventListener('click', closeLocationDetails);
+  function cancelLocationDetails() {
+    dropStoreIntent();
+    closeLocationDetails();
+  }
+  document.getElementById('ld-close').addEventListener('click', cancelLocationDetails);
   // "Change store" goes back to the picker; from the menu banner that means leaving the menu for it.
   document.getElementById('ld-change').addEventListener('click', () => {
-    // Only the order page's banner has to leave the page to change store; from the picker, closing is enough.
+    // Only the order page's banner has to leave the page to change store; from the location finder, closing is enough.
+    // From the "where" modal it opens again, still carrying a store page tap that is waiting.
     const fromOrder = ld && ld.edit && !ld.thenOrder;
+    const fromWhere = ld && ld.fromWhere;
     const wasDelivery = ld && ld.kind === 'delivery';
+    const store = wm.preselect;
     ldBackToWhere = null;
     closeLocationDetails();
-    if (wasDelivery) { startDelivery({ returnTo: views['delivery-checkout'].hidden ? null : 'checkout' }); return; }
+    if (wasDelivery) {
+      if (deliveryReturn === 'store') openWhere('delivery', { returnTo: 'store', store });
+      else startDelivery({ returnTo: views['delivery-checkout'].hidden ? null : 'checkout' });
+      return;
+    }
     if (fromOrder) startFunnel('pickup', { returnTo: views.checkout.hidden ? null : 'checkout' });
+    else if (fromWhere) openWhere('pickup', { returnTo: funnelReturn, store });
   });
-  ldBackdrop.addEventListener('click', closeLocationDetails);
+  ldBackdrop.addEventListener('click', cancelLocationDetails);
   document.getElementById('ld-date-next').addEventListener('click', () => {
     const list = document.getElementById('ld-date-list');
     list.scrollBy({ left: list.clientWidth, behavior: 'smooth' });
@@ -4681,6 +4921,8 @@
   const deliveryDropoffLine = () => deliveryDropoffText() + (state.delivery.notes ? ` · ${state.delivery.notes}` : '');
 
   function saveDeliverySession() {
+    cateringTap = false;
+    clearCateringTimeNotes();
     try { localStorage.setItem(DELIVERY_SESSION_KEY, JSON.stringify(state.delivery)); } catch (e) { /* storage unavailable: the choice lasts until reload */ }
     renderNavWhere();
   }
@@ -4893,7 +5135,7 @@
     if (fresh) document.querySelector('#da-toggle .chip.active').focus();
   }
   function closeWhere() {
-    pendingStoreOpen = null;
+    dropStoreIntent();
     funnelForCatering = false;
     // Cancelling a funnel started from Home puts the catering flag back as it was.
     if (intentBeforeFunnel !== null) { setCateringIntent(intentBeforeFunnel); intentBeforeFunnel = null; }
@@ -5008,6 +5250,9 @@
 
   // What the address says right now: nothing yet, a place being checked, a deliverable address, or one outside the area.
   function renderDeliveryResult() {
+    // Opened from a store page: the way out to pickup names that store.
+    const viewed = deliveryReturn === 'store' && wm.preselect ? storeById(wm.preselect) : null;
+    const pickupInstead = `<button class="text-btn" id="da-pickup" type="button">${viewed ? `Pick up at ${escapeHTML(viewed.city)} instead` : 'Pickup instead'}</button>`;
     const sel = wm.sel;
     const typed = daAddress.value.trim();
     const street = sel ? sel.street : wm.geoDown ? typed.replace(/[,\s]+(?:TX|Texas)?[,\s]*\d{5}(?:-\d{4})?\s*$/i, '') : '';
@@ -5020,10 +5265,12 @@
         : `Search for your street address to see if we deliver there. A ${money(DELIVERY_FEE)} delivery fee applies.`;
       daResult.className = 'delivery-result is-idle';
       daResult.innerHTML = `${DA_ICON}<p class="delivery-result-note">${message}</p>
-        <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>`;
+        ${pickupInstead}`;
       return;
     }
     const area = deliveryAreaFor(zip);
+    // Delivery comes from the store that covers the address, which may not be the one whose page this was opened on.
+    const fromOther = area && viewed && area.store !== storeName(viewed) ? area.store.split(',')[0] : null;
     deliveryChecked = area ? { street, zip, city: area.city, store: area.store, lat: sel ? sel.lat : null, lng: sel ? sel.lng : null } : null;
     const place = area ? `${area.city}, TX ${zip}` : `${sel && sel.city ? sel.city + ' ' : ''}${zip}`.trim();
     const address = `${escapeHTML(street)}<br>${escapeHTML(place)}`;
@@ -5032,12 +5279,13 @@
       <h2>You're in luck, we can deliver to</h2>
       <p class="delivery-result-address">${address}</p>
       <p class="delivery-result-note">A ${money(DELIVERY_FEE)} delivery fee applies, and the minimum order is ${money(DELIVERY_MINIMUM)}.</p>
+      ${fromOther ? `<p class="delivery-result-note">Delivered from ${escapeHTML(fromOther)}, the closest store to you.</p>` : ''}
       <button class="pill-btn dark full" id="da-add-details" type="button">Add address details</button>
-      <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>` : `${DA_ICON}
+      ${pickupInstead}` : `${DA_ICON}
       <h2>Sorry, we can't deliver to</h2>
       <p class="delivery-result-address">${address}</p>
-      <p class="delivery-result-note">That address is outside our delivery area for now. Try another address, or pick up at a store.</p>
-      <button class="text-btn" id="da-pickup" type="button">Pickup instead</button>`;
+      <p class="delivery-result-note">That address is outside our delivery area for now. Try another address, or pick up at ${viewed ? `our ${escapeHTML(viewed.city)} store` : 'a store'}.</p>
+      ${pickupInstead}`;
   }
 
   // ----- address suggestions -----
@@ -5226,8 +5474,20 @@
       document.getElementById('wm-pk-saved-continue').hidden = own && !wm.nav;
       document.getElementById('wm-pk-change-time').hidden = !own;
       document.getElementById('wm-pk-saved-continue').textContent = own && wm.nav ? 'Continue to menu' : savedContinueLabel();
+      // Tapped on another store's page: the saved pickup is the one to keep, the store below the one to switch to.
+      const keeping = switchingFrom();
+      if (keeping) {
+        document.getElementById('wm-pk-saved-title').textContent = `Your order is set for ${keeping}`;
+        document.getElementById('wm-pk-saved-continue').textContent = `Keep ${keeping}`;
+      }
     }
     renderStoreList();
+  }
+  // The city of the pickup already set, while a store page tap for a different store is waiting on this modal.
+  function switchingFrom() {
+    if (funnelReturn !== 'store' || !wm.preselect || wm.origin === 'pickup' || !pickupSessionValid()) return null;
+    const current = storeById(currentStoreId());
+    return current && current.id !== wm.preselect ? current.city : null;
   }
   function renderStoreList() {
     const hours = storeHoursText();
@@ -5256,7 +5516,11 @@
     list.querySelectorAll('.radio-choice-input').forEach((input) => input.addEventListener('change', () => selectStore(input.value)));
     // The one action: "Pick up here", or from the pickup checkout "Update pickup location", which waits for a different store.
     const pick = document.getElementById('wm-pk-pick');
-    pick.textContent = storeOnly ? 'Update pickup location' : 'Pick up here';
+    const keeping = switchingFrom();
+    const chosen = storeById(wm.store);
+    pick.textContent = storeOnly ? 'Update pickup location'
+      : keeping && chosen ? (wm.store === currentStoreId() ? `Keep ${keeping}` : `Switch to ${chosen.city}`)
+      : 'Pick up here';
     pick.disabled = storeOnly && wm.store === current;
     document.getElementById('wm-pk-actions').hidden = !wm.store || none;
   }
@@ -5297,8 +5561,13 @@
       if (views.checkout.hidden) announceNav(msg); else announceCheckout(msg);
       return;
     }
+    const switching = switchingFrom();
     closeWhereQuietly();
-    openLocationDetails(st);
+    // Keeping the store already set carries on with its day and time.
+    if (switching && st.id === currentStoreId()) { finishPickerFunnel(); return; }
+    // Switching stores offers the day and time already set, while the new store still has them.
+    openLocationDetails(st, switching ? { edit: true, thenOrder: true } : {});
+    if (ld) { ld.fromWhere = true; renderLdFooter(); }
   });
   document.getElementById('wm-pk-saved-continue').addEventListener('click', () => {
     closeWhereQuietly();
@@ -5540,11 +5809,16 @@
     if (lastFocusedEl) lastFocusedEl.focus();
   }
 
-  document.getElementById('dd-close').addEventListener('click', closeDeliveryDetails);
-  ddBackdrop.addEventListener('click', closeDeliveryDetails);
+  function cancelDeliveryDetails() {
+    dropStoreIntent();
+    closeDeliveryDetails();
+  }
+  document.getElementById('dd-close').addEventListener('click', cancelDeliveryDetails);
+  ddBackdrop.addEventListener('click', cancelDeliveryDetails);
   document.getElementById('dd-change').addEventListener('click', () => {
     closeDeliveryDetails();
-    startDelivery({ returnTo: dd && dd.edit ? 'checkout' : deliveryReturn });
+    const returnTo = dd && dd.edit ? 'checkout' : deliveryReturn;
+    openWhere('delivery', { returnTo, store: returnTo === 'store' ? wm.preselect : null });
   });
   document.getElementById('dd-nick').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
@@ -5587,7 +5861,7 @@
     Object.assign(state.delivery, { dateKey: chosen.dateKey, timeId: chosen.timeId, timeLabel: chosen.timeLabel, chosen: true });
     saveDeliverySession();
     closeLocationDetails();
-    if (chosen.edit) {
+    if (chosen.edit && !chosen.thenOrder) {
       renderNavWhere();
       renderDrawer();
       if (!views['delivery-checkout'].hidden) { renderDeliveryCheckout(); announceCheckout(`Delivery updated. ${deliveryArrivalText()}`); }
@@ -6010,7 +6284,7 @@
       const el = document.createElement('div');
       el.className = 'summary-line';
       // A line with choices on it (what was left out, toast, add-ons) shows them under its name, as the bag and checkout do.
-      el.innerHTML = `<span class="summary-line-text"><span>${line.label}</span>${line.sub ? `<small class="summary-line-sub">${escapeHTML(line.sub)}</small>` : ''}</span><span>${line.amount}</span>`;
+      el.innerHTML = `<span class="summary-line-text"><span>${line.label}</span>${line.sub ? `<small class="summary-line-sub">${line.sub}</small>` : ''}</span><span>${line.amount}</span>`;
       confirmItems.appendChild(el);
     });
     document.getElementById('confirm-total').textContent = money(total);
@@ -6023,7 +6297,8 @@
     heading.focus({ preventScroll: true });
   }
 
-  const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, sub: item.sub || '', amount: money(lineTotal(item)) }));
+  // A catering box keeps its choices in .config, not in .sub, so its detail comes from lineSub like the bag's; the text is already safe HTML.
+  const recapLines = (items) => items.map((item) => ({ label: `${item.name} ×${item.qty}`, sub: lineSub(item), amount: money(lineTotal(item)) }));
 
   // Switching a checkout from pickup to delivery (or back) takes its lines with it. Carts are otherwise kept apart;
   // this is the one place they join, and only when the customer changes how the order is fulfilled.
@@ -6197,13 +6472,75 @@
   // The Shipping page lists the same windows the checkout offers, so the two can't disagree.
   const SHIP_WINDOW_ART = { halloween: 'holiday-halloween', thanksgiving: 'holiday-thanksgiving', christmas: 'holiday-christmas' };
   function renderShipHoliday() {
-    document.getElementById('ship-holiday-list').innerHTML = SHIP_WINDOWS.map((w) => `
+    const when = (w) => (shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed');
+    // Current and Polished: the art, the name over its dates, and the cutoff.
+    const rows = (src) => SHIP_WINDOWS.map((w) => `
       <li>
-        <img class="ship-window-art" src="assets/shipping/${SHIP_WINDOW_ART[w.id]}.png" alt="" width="56" height="56" loading="lazy" decoding="async">
+        <img class="ship-window-art" src="${src(w)}" alt="" width="56" height="56" loading="lazy" decoding="async">
         <span class="ship-window-text"><strong>${w.label}</strong><span>${w.range}</span></span>
-        <span class="ship-window-when">${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</span>
+        <span class="ship-window-when">${when(w)}</span>
+      </li>`).join('');
+    const png = (w) => `assets/shipping/${SHIP_WINDOW_ART[w.id]}.png`;
+    document.getElementById('ship-holiday-list').innerHTML = rows(png);
+    // How many days are left to order a window: its cutoff day counts, so the last day reads "Last day to order".
+    const daysLeft = (w) => Math.ceil((new Date(`${w.cutoff}T23:59:59`) - new Date()) / 864e5);
+    const left = (w) => { const d = daysLeft(w); return d <= 1 ? 'Last day to order' : `${d} days left`; };
+    const nextOpen = SHIP_WINDOWS.find(shipWindowOpen);
+    // Polished: the art, the name over its dates, "Next window" on the first open one, and on the right the cutoff over the days left.
+    document.getElementById('ship-holiday-list-p').innerHTML = SHIP_WINDOWS.map((w) => `
+      <li class="ship-window${shipWindowOpen(w) ? '' : ' is-closed'}${w === nextOpen ? ' is-next' : ''}">
+        <img class="ship-window-art" src="${png(w)}" alt="" width="64" height="64" loading="lazy" decoding="async">
+        <div class="ship-window-text"><strong>${w.label}</strong><span>Arrives ${w.range}</span>${w === nextOpen ? '<em>Next window</em>' : ''}</div>
+        <div class="ship-window-when">${shipWindowOpen(w) ? `<strong>Order by ${w.cutoffLabel}</strong><span>${left(w)}</span>` : '<strong>Closed</strong>'}</div>
+      </li>`).join('');
+    // Distilled: words only, one tile per window.
+    document.getElementById('ship-holiday-list-d').innerHTML = SHIP_WINDOWS.map((w) => `
+      <li class="${shipWindowOpen(w) ? '' : 'is-closed'}"><strong>${w.label}</strong><span>${w.range}</span><b>${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</b></li>`).join('');
+    // Optimized: the Polished rows with 128px WebP art (twice the size shown), flat: no wrapper elements around the name and dates.
+    document.getElementById('ship-holiday-list-o').innerHTML = SHIP_WINDOWS.map((w) => `
+      <li class="ship-window${shipWindowOpen(w) ? '' : ' is-closed'}${w === nextOpen ? ' is-next' : ''}">
+        <img class="ship-window-art" src="assets/shipping/opt/${SHIP_WINDOW_ART[w.id]}-128.webp" alt="" width="64" height="64" loading="lazy" decoding="async">
+        <strong>${w.label}</strong><span>Arrives ${w.range}</span>${w === nextOpen ? '<em>Next window</em>' : ''}
+        <b class="ship-window-cut">${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</b>${shipWindowOpen(w) ? `<small>${left(w)}</small>` : ''}
       </li>`).join('');
   }
+
+  // TEMPORARY COMPARISON of four versions of the Shipping page (see index.html). The choice is kept for the visit.
+  const SHIP_VERSIONS = ['current', 'distilled', 'polished', 'optimized'];
+  let shipVersion = 'current';
+  try { const saved = localStorage.getItem('deg-ship-version'); if (SHIP_VERSIONS.includes(saved)) shipVersion = saved; } catch (e) { /* ignore */ }
+  function setShipVersion(name) {
+    if (!SHIP_VERSIONS.includes(name)) return;
+    shipVersion = name;
+    try { localStorage.setItem('deg-ship-version', name); } catch (e) { /* storage unavailable */ }
+    document.querySelectorAll('#view-shipping .ship-v').forEach((el) => { el.hidden = el.dataset.shipVariant !== name; });
+    document.querySelectorAll('#view-shipping [data-ship-version]').forEach((btn) => btn.setAttribute('aria-checked', String(btn.dataset.shipVersion === name)));
+    // A banner image is lazy while its version is hidden, so the page does not fetch what nobody is looking at; shown, it loads at once.
+    if (!document.getElementById('view-shipping').hidden) document.querySelectorAll('#view-shipping .ship-v:not([hidden]) img[data-eager]').forEach((img) => { img.loading = 'eager'; });
+    // Optimized: a photo still loading is held clear over its reserved color and fades in when it arrives; a cached one never goes clear.
+    document.querySelectorAll('#view-shipping .ship-o img[data-fade], #view-shipping .ship-o .ship-kit-media img, #view-shipping .ship-o .ship-window-art').forEach((img) => {
+      if ((img.complete && img.naturalWidth) || img.dataset.fadeBound) return;
+      img.dataset.fadeBound = '1';
+      img.classList.add('is-loading');
+      const done = () => img.classList.remove('is-loading');
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+    updateBarReveal();
+  }
+  document.querySelectorAll('#view-shipping [data-ship-version]').forEach((btn) => btn.addEventListener('click', () => setShipVersion(btn.dataset.shipVersion)));
+  // Polished: the sidebar and the phone's pill bar follow the section on screen, not only the last tap. The current section is
+  // the last one whose top has passed the header; a scroll listener (like the reveal bar's) does it, throttled to one frame.
+  let shipSpyTicking = false;
+  function updateShipSpy() {
+    shipSpyTicking = false;
+    const polished = document.querySelector('#view-shipping .ship-v:not([hidden]):is(.ship-p, .ship-o)');
+    if (!polished) return;
+    const sections = [...polished.querySelectorAll('.menu-section')];
+    const current = sections.filter((sec) => sec.getBoundingClientRect().top <= 220).pop() || sections[0];
+    polished.querySelectorAll('.category-item').forEach((b) => b.classList.toggle('active', b.dataset.target === current.id));
+  }
+  window.addEventListener('scroll', () => { if (!shipSpyTicking) { shipSpyTicking = true; requestAnimationFrame(updateShipSpy); } }, { passive: true });
   state.shipWindow = null;
   state.sTipPct = 0;
   state.sTipCustom = 0;
@@ -6366,5 +6703,6 @@
   renderDrawer();
   navWhereReady = true;
   renderNavWhere();
+  setShipVersion(shipVersion);
   openFirstPage();
 })();
