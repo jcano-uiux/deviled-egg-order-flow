@@ -591,7 +591,12 @@
     const r = zipForm.getBoundingClientRect();
     return r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
   }
-  function syncFab() { setFabAway(viewEl.hidden || zipFieldVisible()); }
+  // The site footer is the end of the page: once it comes into view the button gets out of its links' way.
+  function footerOnScreen() {
+    const f = document.getElementById('site-footer');
+    return !!f && f.getBoundingClientRect().top < window.innerHeight - 24;
+  }
+  function syncFab() { setFabAway(viewEl.hidden || zipFieldVisible() || footerOnScreen()); }
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(syncFab).observe(zipForm);
   }

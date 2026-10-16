@@ -1,0 +1,238 @@
+/* =========================================================================
+   Deviled Egg Co. — Design System
+   =========================================================================
+   Reusable tokens and primitive components shared across every screen.
+   Audited from the live deviledeggco.com site: one gold accent as the only
+   saturated color, warm cream/neutral surfaces, near-universal pill/rounded
+   radius, Nunito 800 for headings & prices, Plus Jakarta Sans for everything
+   else.
+
+   This file is the portable system: link it before any page-specific
+   stylesheet (e.g. styles.css) so page styles can build on these tokens
+   and classes without redefining them. Page-specific layout (headers,
+   menu grids, checkout layout, modal chrome, etc.) belongs in the
+   consuming stylesheet, not here — only cross-screen primitives live in
+   this file.
+   ========================================================================= */
+
+:root {
+  /* Brand accent — the only saturated color in the system */
+  --deg-gold: #F7BA17;
+  --deg-gold-on-dark: #FFD426;
+
+  /* Ink */
+  --deg-ink-deep: #130D00;       /* dark button fills, footer base */
+  --deg-ink-deep-hover: #554523; /* colors/surface/action-2-hover — hover fill for dark icon buttons */
+  --deg-ink-body: #140F0A;       /* default body text */
+  --deg-ink-on-gold: #261A00;    /* text set directly on the gold accent */
+  --deg-ink-heading: #402D00;    /* secondary heading color on cream */
+  --deg-ink-muted: #635E57;      /* placeholders, helper text — colors/text/body-2 */
+  --deg-ink-placeholder: #7C766F; /* input placeholder text — colors/text/placeholder */
+  --deg-link: #8B5E00;           /* text links, eyebrows */
+
+  /* Surfaces */
+  --deg-cream: #FFF7EA;          /* dominant background */
+  --deg-white: #FFFFFF;
+  --deg-cream-alt: #FFF7E2;
+  --deg-cream-cool: #F5F0E8;
+  --deg-cream-deep: #FFEFD5;
+  --deg-dark: #1A1510;
+  --deg-gold-tint: #FFDEA0;      /* colors/surface/secondary — active nav-drawer item fill */
+  --deg-track-gray: #E8E8E8;     /* segmented-toggle track background */
+  --deg-error: #DC2626;          /* colors/icon/error — cart count badge (darkened from Figma's #F04438: white-on-fill only hit 3.8:1, below the 4.5:1 AA floor for the 11px bold badge text) */
+
+  /* Borders */
+  --deg-border: #DDDDDD;
+  --deg-border-input: #D9D1BF;
+  --deg-border-control: #968B76; /* the edge of a field or select-like button: 3.4:1 on white, so the control's boundary is findable (WCAG 1.4.11) */
+  --deg-border-chip: #E9E1D8;
+  --deg-border-card: #F3F3F3;    /* card borders — colors/border/neutral */
+  --deg-border-primary: #88754F; /* colors/border/primary — inputs, active drawer-item accent */
+  --deg-border-secondary: #CDC5BD; /* colors/border/secondary — heavier section dividers (item modal) */
+
+  /* Radius — nothing in the system is sharp-cornered */
+  --deg-radius-pill: 999px;      /* buttons, dropdowns, chips, badges, the ZIP search field */
+  --deg-radius-tight: 8px;       /* small controls: search field, active nav-drawer item */
+  --deg-radius-card: 12px;       /* dominant card radius (menu cards, feature card) */
+  --deg-radius-compact: 14px;    /* small tiles, selectable rows, text fields */
+  --deg-radius-media: 16px;      /* standalone photo/hero containers; also the store-info card */
+  --deg-radius-panel: 24px;      /* large feature panels, modals */
+
+  /* Elevation */
+  --deg-shadow-card: 0 3px 9px -1px rgba(17,24,39,.06), 0 1px 2px rgba(17,24,39,.04);
+  --deg-shadow-brand: 0 10px 12px rgba(247,186,23,.25); /* primary CTAs ONLY */
+  --deg-shadow-ambient: 0 12px 32px rgba(0,0,0,.08);
+  --deg-shadow-modal: 0 24px 64px rgba(19,13,0,.32);
+  --deg-shadow-float: 0 2px 12px rgba(0,0,0,.12); /* small floating controls over media */
+
+  --deg-font-display: 'Nunito', sans-serif;         /* headings & prices, weight 800 only */
+  --deg-font-body: 'Plus Jakarta Sans', sans-serif; /* everything else */
+}
+
+/* ---------- Base / reset ---------- */
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: var(--deg-font-body);
+  color: var(--deg-ink-body);
+  background: var(--deg-cream);
+}
+
+h1, h2, h3 { font-family: var(--deg-font-display); font-weight: 800; margin: 0; }
+
+button { font-family: var(--deg-font-body); cursor: pointer; }
+
+.muted { color: var(--deg-ink-muted); }
+
+/* Every focusable control gets this halo: a cream ring separates it from
+   its own fill, then a dark ring provides contrast against any background —
+   including gold primary buttons and active chips, where a flat outline in
+   the same gold would be invisible. */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep);
+}
+
+/* ---------- Fields ----------
+   Text input. Every text field in the product — search, contact info,
+   promo code, delivery address, item notes — uses this one rule. */
+input, select {
+  font-family: var(--deg-font-body);
+  font-size: 16px; /* iOS Safari zooms the page when a focused field is under 16px */
+  color: var(--deg-ink-body);
+  border-radius: var(--deg-radius-compact); /* text fields and the form dropdowns below; only the quantity dropdowns are pills */
+  border: 1px solid var(--deg-border-control);
+  padding: 14px 22px;
+  background: var(--deg-white);
+  min-width: 0; /* let inputs shrink inside a flex row instead of overflowing */
+}
+input::placeholder { color: var(--deg-ink-muted); }
+/* A multi-line field (delivery notes) matches the text fields: the same 14px radius, 16px text and Control Border. */
+textarea {
+  font-family: var(--deg-font-body); font-size: 16px; line-height: 24px; color: var(--deg-ink-body);
+  border-radius: var(--deg-radius-compact); border: 1px solid var(--deg-border-control);
+  padding: 12px 22px; background: var(--deg-white); width: 100%; min-width: 0; resize: vertical;
+}
+textarea::placeholder { color: var(--deg-ink-muted); }
+textarea:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+/* The browser's own dropdown arrow sits flush against whatever padding you
+   give it, with no visual gap of its own — a plain `select` reads as
+   cramped against the field's edge unless the arrow is drawn and placed
+   deliberately. Every dropdown in the product (quantity, country, and any
+   future one) inherits this rather than repeating it per field. */
+select {
+  border-radius: var(--deg-radius-compact); /* a dropdown in a form (State, Country, a flavor) is a field: it takes the field's corners */
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23130D00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 16px 16px;
+}
+
+/* The quantity dropdowns are compact controls, not fields: they stay pills. */
+.qty-select, .drawer-qty-select { border-radius: var(--deg-radius-pill); }
+
+/* A labeled field, or a small group of them (a "Choose your flavors" label
+   above a grid, a "Delivery instructions" label above its input). */
+.field-group { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; color: var(--deg-ink-body); }
+
+/* Small uppercase label above a control group (STORE, PICKUP TIME, DELIVERY OPTIONS). */
+.field-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Inline validation message below a field. */
+.field-error { color: #B3261E; font-size: 13px; margin: -8px 0 0; }
+
+/* Two or more inputs side by side; stacks on narrow viewports (see the
+   responsive block at the bottom of this file). */
+.input-row { display: flex; gap: 14px; }
+.input-row > * { flex-grow: 1; min-width: 0; }
+
+/* ---------- Buttons ----------
+   One base class, `.pill-btn`, with fill/weight modifiers. Never introduce
+   a new one-off button class for another filled or outlined pill — add a
+   modifier here instead. */
+.pill-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: none; border-radius: var(--deg-radius-pill);
+  font-weight: 700; font-size: 15px; padding: 14px 26px;
+  background: var(--deg-cream-cool); color: var(--deg-ink-body);
+  text-decoration: none;
+}
+.pill-btn.primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand); }
+.pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; font-weight: 500; }
+.pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); padding: 10px 20px; font-size: 13px; box-shadow: none; }
+.pill-btn.full { width: 100%; justify-content: center; padding: 17px; font-size: 16px; }
+.pill-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+
+/* Plain text action — tertiary, no fill (Sign in, Back to cart, Back to menu). */
+.text-btn { background: none; border: none; color: var(--deg-ink-body); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+
+/* Icon-only circular button. This base rule is intentionally applied to
+   every concrete icon button in the product (cart, close, quantity
+   steppers, add-to-cart) via one grouped selector, so they share centering
+   and shape from a single place — each one then sets only its own size,
+   color, and (if it needs one) fixed position in its page stylesheet. Use
+   `.icon-btn` directly for any new one rather than writing display/align/
+   justify/radius again. */
+.icon-btn, .close-btn, .cart-btn, .mini-step-btn, .add-btn, .pickup-date-nav, .nav-toggle {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: none; flex: none; padding: 0; line-height: 1;
+}
+
+/* ---------- Chips & segmented toggle ----------
+   `.chip` is the one single-select pill control in the system — it backs
+   the Pickup/Delivery toggle, store picker, pickup time, bagel toast/type
+   pickers, and tip percentage. Never fork a second "toggle button" class;
+   give it a `.chip` and, if it needs a track background (a 2–3 option
+   exclusive switch rather than a wrapping filter row), wrap it in
+   `.segmented` instead of `.chip-row`. */
+.chip-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip { background: var(--deg-cream-cool); border: none; border-radius: var(--deg-radius-pill); padding: 11px 24px; font-weight: 600; font-size: 14px; color: var(--deg-ink-body); }
+.chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
+
+.segmented { display: inline-flex; gap: 4px; background: var(--deg-cream-cool); padding: 4px; border-radius: var(--deg-radius-pill); }
+.segmented .chip { background: transparent; }
+.segmented .chip.active { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+
+/* ---------- Selectable rows ----------
+   Two variants for a full-width, single- or multi-select row. Pick by content
+   shape — don't merge them, they serve different jobs:
+     .radio-choice — single-select (payment method, pickup time, one-flavor
+                     products). Native radios inside a label, a circular
+                     indicator on the right, solid gold when selected. The
+                     whole card carries the focus halo; .radio-choice-extra
+                     holds anything that belongs to the selected choice (it
+                     can't sit inside the label when it contains buttons).
+     .flavor-row   — multi-select with a per-item quantity stepper (Build Your
+                     Own Dozen); the cap is enforced by disabling the +/-
+                     buttons, not the row itself. */
+.radio-list { display: flex; flex-direction: column; gap: 12px; }
+
+.radio-choice { background: var(--deg-cream-cool); border-radius: var(--deg-radius-card); transition: background-color .15s ease; }
+.radio-choice:hover { background: var(--deg-border-chip); }
+.radio-choice.selected, .radio-choice.selected:hover { background: var(--deg-gold); }
+.radio-choice:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.radio-choice-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; cursor: pointer; }
+.radio-choice-input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; box-shadow: none; }
+.radio-choice-text { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-width: 0; }
+.radio-choice-name { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); }
+.radio-choice-note { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-body); opacity: .7; }
+.radio-choice-ind { flex: none; display: grid; place-items: center; width: 24px; height: 24px; box-sizing: border-box; border: 2px solid var(--deg-border-primary); border-radius: 50%; transition: background-color .15s ease; }
+.radio-choice-ind::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: transparent; }
+.radio-choice.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.radio-choice.selected .radio-choice-ind::after { background: #fff; }
+.radio-choice-extra { padding: 0 16px 16px; }
+.radio-choice-extra:empty { display: none; }
+
+.flavor-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 13px 16px 13px 19px; border-radius: var(--deg-radius-compact); border: 1.5px solid var(--deg-border-chip); background: var(--deg-white); text-align: left; font-size: 14px; font-weight: 500; color: var(--deg-ink-body); width: 100%; }
+.flavor-row.selected { border-color: var(--deg-gold); background: var(--deg-cream); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .input-row { flex-direction: column; }
+}

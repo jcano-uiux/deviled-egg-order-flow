@@ -1,0 +1,156 @@
+/* ARCHIVE: CSS rules that style the Distilled flavor picker, pulled from styles.css (2026-10-16).
+ * Reference only, matched by class name: it can include rules shared with the Pair / Grow layouts, and it can miss a rule that reaches
+ * the rows through a parent selector. snapshot/styles.css is the complete file. */
+
+/* Progress through the pack: a count line over one slot per flavor the pack
+   allows, each slot filling as one step of eggs is added. */
+.flavor-meter { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
+.item-modal-footer .flavor-meter { padding-bottom: 12px; }
+.item-modal-footer .flavor-meter[hidden] { display: none; }
+.flavor-meter-count { font-size: 13px; font-weight: 600; line-height: 16px; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.flavor-meter-bar { display: flex; gap: 4px; }
+.flavor-meter-seg { flex: 1 1 0; height: 6px; border-radius: var(--deg-radius-pill); background: var(--deg-border-secondary); transition: background-color .2s ease; }
+.flavor-meter-seg.filled { background: var(--deg-gold); }
+.flavor-grid { display: flex; flex-direction: column; gap: 12px; }
+/* The dozen picker's flavor card can hold a second section (ingredient
+   exclusions) below its name+stepper header, so it overrides the shared
+   .flavor-row's row layout to stack instead — the bagel spread picker's
+   plain rows (no second section) are untouched. */
+.flavor-row.dozen-flavor-row { flex-direction: column; align-items: stretch; gap: 12px; }
+.flavor-row-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dozen-flavor-row { padding: 12px 16px 12px 12px; scroll-margin-block: 72px 104px; }
+.dozen-flavor-row .flavor-row-name { flex: 1 1 0; }
+/* Each flavor's clip. The poster in the row's head is the way in; it opens the
+   clip and its live description inline, in the same card as the stepper, so a
+   customer can watch and add without leaving the row. */
+.flavor-thumb { position: relative; flex: none; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+/* The corner icon sits flush in the thumbnail's bottom-right corner, a square with only its top-left corner rounded; the thumbnail's own rounded corner trims the rest. */
+.flavor-thumb-badge { position: absolute; right: 0; bottom: 0; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border-radius: 2px 0 0 0; background: var(--deg-ink-deep); color: #fff; }
+.flavor-thumb.open { box-shadow: 0 0 0 2px var(--deg-ink-deep); }
+.flavor-thumb:focus-visible, .flavor-watch-media:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-watch { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 16px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-watch-media { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-watch-media video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 44px; height: 44px; padding-left: 2px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; opacity: 0; transition: opacity .15s ease; }
+.flavor-watch-play svg { width: 18px; height: 18px; }
+.flavor-watch-media.is-paused .flavor-watch-play { opacity: 1; }
+.flavor-watch-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.flavor-watch-copy p { margin: 0; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--deg-ink-body); }
+.flavor-watch-hide { min-height: 44px; margin: -8px 0 -8px; padding: 8px 0; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* Reuses the .chip shape, but a checked exclusion isn't a positive pick —
+   it means "leave this out" — so it takes the dark pressed treatment
+   (same fill/text pairing as .pill-btn.dark) instead of the gold "yes"
+   accent, keeping gold reserved for actual selections. */
+.flavor-exclusions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
+/* Single-choice rows (.radio-choice, defined in design-system.css): inside the
+   gold selected card the usual muted label would fall under 4.5:1. */
+.radio-choice .flavor-exclusions { border-top-color: rgba(38,26,0,.18); }
+.radio-choice .flavor-exclusions-label { color: var(--deg-ink-heading); }
+.mini-stepper { display: flex; align-items: center; gap: 8px; }
+/* color (not just border) now matters: the +/- glyph is an inline SVG
+   with stroke="currentColor", not text, so it needs its own explicit
+   color to render in the same ink-deep tone its border already uses —
+   :disabled below already relies on `color` for exactly this. */
+.mini-step-btn { width: 26px; height: 26px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); color: var(--deg-ink-deep); }
+.mini-step-btn:disabled { opacity: .35; border-color: var(--deg-border-chip); color: var(--deg-ink-muted); cursor: not-allowed; }
+.mini-stepper span { font-family: var(--deg-font-body); font-weight: 700; font-size: 14px; line-height: 16px; min-width: 10px; text-align: center; }
+/* Once allocation is maxed, a flavor still at 0 isn't just missing its own
+   "+" — the whole row reads as unavailable, not a live option the user
+   could reach for. */
+.flavor-row.at-limit { opacity: .55; }
+/* Catering modals */
+.flavor-row-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.flavor-row-desc { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--deg-ink-muted); }
+/* TEMP: large-video flavor layouts, picked with the switcher above the list ([data-variant] on #flavor-grid). */
+.flavor-variant-switch { display: flex; gap: 4px; margin: 0 0 12px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; border-radius: 999px; background: var(--deg-cream-cool); }
+.flavor-variant-switch[hidden] { display: none; }
+.flavor-variant-switch button { flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-muted); cursor: pointer; }
+.flavor-variant-switch button[aria-pressed="true"] { background: var(--deg-ink-deep); color: #fff; }
+.flavor-grid[data-variant] { display: grid; gap: 12px; }
+.flavor-grid[data-variant="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.flavor-info-custom .flavor-exclusions { margin: 0; padding-top: 0; border-top: 0; }
+/* Big thumb rows (Grow): the flavor list, each thumbnail 140px (2.5× the usual 56px), playing, with no icon on it. */
+.flavor-grid[data-big] { gap: 12px; }
+.flavor-row-big { position: relative; overflow: hidden; }
+/* The thumbnail's corners are the card's own radius (12px): the card is inset by its stroke and padding (13.5px), more than its radius, so a
+   strictly concentric corner would be square; the same radius reads as one family. */
+.flavor-thumb-big { position: relative; width: 140px; height: 140px; border-radius: var(--deg-radius-card); }
+.flavor-thumb-big video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-row-big .fv-excl { margin: 12px 0 0; }
+.flavor-row-big .fv-excl[hidden] { display: none; }
+[data-big="a"] .is-open .flavor-thumb-big { width: 100%; height: auto; aspect-ratio: 1; }
+/* The flavor rows (Distilled and Grow alike): a Cool Linen row that steps to Border Chip on hover. A flavor in the mix becomes a white card with a 2px Deep Ink
+   stroke and a drop shadow. The full-pack state no longer dims the row: only its − and + are disabled. The stroke is always 2px
+   (transparent until selected) and the padding gives back the difference, so a row is the size it always was. */
+.dozen-flavor-row { position: relative; overflow: hidden; border: 2px solid transparent; border-radius: var(--deg-radius-card); padding: 11.5px 15.5px 11.5px 11.5px; background: var(--deg-cream-cool); transition: background-color .15s ease; }
+.dozen-flavor-row:not(.selected):hover { background: var(--deg-border-chip); }
+.dozen-flavor-row.selected, .dozen-flavor-row.selected:hover { background: var(--deg-white); border-color: var(--deg-ink-deep); box-shadow: 0 6px 16px rgba(19, 13, 0, .18); }
+.dozen-flavor-row.at-limit { opacity: 1; }
+.dozen-flavor-row.selected .flavor-exclusions, .dozen-flavor-row.selected .flavor-watch { border-top-color: var(--deg-border-chip); }
+/* The − and + buttons: 36px circles with a 44px tap area, the same outline and fill. */
+.dozen-flavor-row .mini-step-btn { position: relative; width: 36px; height: 36px; touch-action: manipulation; }
+.dozen-flavor-row .mini-step-btn::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+.dozen-flavor-row .mini-step-btn svg { width: 16px; height: 16px; }
+.dozen-flavor-row .mini-stepper { gap: 8px; }
+.dozen-flavor-row .mini-stepper span { min-width: 20px; }
+.flavor-variant-switch { width: 100%; max-width: 100%; contain: inline-size; }
+#item-modal[data-distilled="1"] .flavor-row-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-custom { display: flex; align-items: center; flex-wrap: wrap; gap: 0 12px; padding-left: 6px; }
+.fd-custom-btn { min-height: 44px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* The summary of what was left out ("No bacon, tomato") wraps onto as many lines as it needs: the section grows in height, never in width, so a long list can't widen the card. */
+.fd-custom-sum { flex: 1 1 160px; min-width: 0; padding-bottom: 6px; font-size: 13px; line-height: 18px; color: var(--deg-ink-body); overflow-wrap: anywhere; }
+.fd-custom-sum:empty { display: none; }
+.fd-custom:has(.fd-custom-sum:not(:empty)) .fd-custom-btn { margin-bottom: -6px; }
+.wrap-flavor-label .flavor-row-name { flex: 1 1 0; }
+.wrap-flavor-label .flavor-thumb { cursor: pointer; }
+.wrap-flavor-row .flavor-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.wrap-flavor-row.selected .radio-choice-ind, .box-flavor-row.selected .addon-row-box { background: var(--deg-ink-deep); }
+.wrap-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.wrap-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.wrap-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+.box-flavor-row .addon-row-box { transition: background-color .15s ease; }
+.box-flavor-row .addon-row-box svg { opacity: 0; }
+.box-flavor-row.selected .addon-row-box svg { opacity: 1; }
+/* The ingredient line is what a customer is choosing by: the chosen row shows all of it. */
+.wrap-flavor-row.selected .flavor-row-desc { display: block; -webkit-line-clamp: unset; overflow: visible; }
+/* The "No bacon, tomato, …" summary wraps instead of running on one line: a long list used to set the width of the whole column
+   and push the card past the screen. The column is held to the modal's width. */
+#wrap-modal .item-modal-content, .wrap-flavor-row, .wrap-flavor-extra { min-width: 0; max-width: 100%; }
+/* Remove ingredients, as a list: one full-width row per ingredient (its glyph, its name, and a circle-slash at the right that
+   is grey until the ingredient is left out, then red). The whole row is the button, 48px tall. */
+.excl-list { margin: 0; padding: 0; list-style: none; }
+.excl-list li + li { border-top: 1px solid var(--deg-border-chip); }
+.excl { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 4px; border: 0; background: none; font: inherit; text-align: left; color: var(--deg-ink-body); cursor: pointer; touch-action: manipulation; }
+.excl:focus-visible { outline: none; border-radius: 8px; box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+.excl-icon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-heading); }
+.excl-name { flex: 1 1 0; min-width: 0; font-size: 15px; line-height: 20px; font-weight: 500; }
+.excl-no { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-muted); transition: color .15s ease; }
+.excl:hover .excl-no { color: var(--deg-ink-deep); }
+.excl.active .excl-no { color: var(--deg-error); }
+.excl.active .excl-no circle { fill: rgba(220, 38, 38, .12); }
+.excl.active .excl-name { text-decoration: line-through; text-decoration-color: var(--deg-error); text-decoration-thickness: 1.5px; }
+/* On a gold (chosen) single-choice row the red needs to be darker to stay readable, and the dividers need to show. */
+.radio-choice .excl-list li + li { border-top-color: rgba(38, 26, 0, .18); }
+.radio-choice .excl:hover .excl-no { color: var(--deg-ink-deep); }
+.radio-choice .excl.active .excl-no { color: #B91C1C; }
+.fv-custom .fd-custom-sum { flex: 1 1 100%; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 8px; }
+[data-variant="2"] .fv-excl .excl { gap: 8px; padding: 6px 0; }
+[data-variant="2"] .fv-excl .excl-icon, [data-variant="2"] .fv-excl .excl-no { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-icon svg, [data-variant="2"] .fv-excl .excl-no svg { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-name { font-size: 14px; line-height: 18px; }
+#flavor-block.is-pending .flavor-variant-switch { display: none; }
+.flavor-info-media.flavor-watch-media { flex: none; width: 100%; height: auto; max-height: 62vh; aspect-ratio: 2 / 3; border-radius: 0; }
+.bagel-flavor-row .flavor-row-head { justify-content: flex-start; }
+.bagel-flavor-row .flavor-row-name { flex: 1 1 0; }
+.bagel-flavor-row .flavor-row-desc { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bagel-flavor-row.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.bagel-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.bagel-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.bagel-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+/* A flavor with no photo or clip yet: its expanded panel keeps the clip's 2:3 slot with a quiet label, not a play button. */
+.flavor-watch-photo { aspect-ratio: 1 / 1; cursor: default; }
+.flavor-watch-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: default; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-muted); text-align: center; }
+.flavor-watch-placeholder img { width: 56px; height: 56px; border-radius: 12px; }

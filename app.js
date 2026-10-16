@@ -210,8 +210,7 @@
   ];
 
   const CATERING = [
-    { id: 'classic-choice', name: 'The Classic Choice', price: 10, note: 'Per person · min 10 boxes', desc: 'A crowd-pleasing catering option with our classic deviled egg selection.' },
-    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 12.50, note: 'Per person · min 10 boxes', desc: 'The complete lunch experience — deviled eggs, sides, and drinks for your team.', image: 'assets/products/all-in-power-lunch.jpg' },
+    { id: 'all-in-power-lunch', name: 'The “All In” Power Lunch', price: 15, note: 'Per person · min 10 boxes', desc: 'The complete lunch experience — a sandwich or bowl, chips, a pickle and a drink for your team.', image: 'assets/products/all-in-power-lunch.jpg' },
     { id: 'coffee-bar', name: 'Catering Coffee Bar', price: 24.99, note: 'Per service · serves 10–12', desc: 'A full coffee bar service to complement your catering order.' },
     { id: 'power-pair', name: 'Power Pair Bundle', price: 59.99, note: 'Per bundle · serves 10', desc: 'Two of our most popular items bundled together for easy group ordering.' },
     { id: 'bagel-brew', name: 'Bagel & Brew Bundle', price: 69.99, note: 'Per bundle · serves 10', desc: 'Fresh bagels with deviled egg salad plus our coffee bar — perfect for morning meetings.' },
@@ -223,17 +222,18 @@
   const WRAP_IMAGE = 'assets/products/eggceptional-wraps.jpg';
   const WRAP_DESC = 'Fresh-pressed flatbread wraps built from our signature deviled egg flavors — pick your filling, then add sides.';
   // Sourced verbatim from deviledeggco.com/product/eggceptional-wraps: each flavor's own ingredient line.
-  // `photo` is the matching deviled egg flavor's still (assets/flavors): the wraps have no photos of their own.
+  // `photo` is the sandwich's own photo (assets/sandwiches) where the owner has supplied one (BLTE, The Caesar, Buffalo Chicken);
+  // Cali Roll still uses the matching deviled egg flavor's still until its photo arrives.
   // `exclusions` are the ingredients a customer can leave out, read off that line; the yolk or crab mix is the
   // base of the filling and stays (the live page lists no "NO:" toggles for this product, so confirm these).
   const WRAP_FLAVORS = [
-    { id: 'blte', label: 'BLTE', photo: 'assets/catering/flavors/blte-square-img.jpg', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+    { id: 'blte', label: 'BLTE', photo: 'assets/sandwiches/blte.jpg', ingredients: 'Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
       exclusions: ['Bacon', 'Cheddar cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
     { id: 'cali-roll', label: 'Cali Roll', photo: 'assets/catering/flavors/cali-roll-square-img.jpg', ingredients: 'Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame',
       exclusions: ['Sriracha aioli', 'Avocado', 'Cucumber', 'Teriyaki', 'Black sesame'] },
-    { id: 'the-caesar', label: 'The Caesar', photo: 'assets/catering/flavors/caesar-square-img.png', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
+    { id: 'the-caesar', label: 'The Caesar', photo: 'assets/sandwiches/caesar.jpg', ingredients: 'Caesar Yolk Mix, Grilled Chicken, Bacon, Parmesan Cheese, Lettuce, Tomato & House-Made Creamy Ranch',
       exclusions: ['Grilled chicken', 'Bacon', 'Parmesan cheese', 'Lettuce', 'Tomato', 'Creamy ranch'] },
-    { id: 'buffalo-chicken', label: 'Buffalo Chicken', photo: 'assets/catering/flavors/Buffalo-chicken-square-img.png', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch',
+    { id: 'buffalo-chicken', label: 'Buffalo Chicken', photo: 'assets/sandwiches/buffalo-chicken.jpg', ingredients: 'Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch',
       exclusions: ['Grilled chicken', 'Red onion', 'Buffalo sauce', 'Lettuce', 'Creamy ranch'] },
   ];
   // "Make it a Meal" is its own highlighted toggle on the live site, but it
@@ -260,18 +260,12 @@
   // The one product the modal builds (its photo, price, meal and add-ons); the menu shows it as one card per sandwich.
   const WRAP_PRODUCT = { id: 'eggceptional-wraps', name: 'Eggceptional Wraps', price: WRAP_PRICE, desc: WRAP_DESC, image: WRAP_IMAGE, wrapFlavors: WRAP_FLAVORS, meal: WRAP_MEAL, addOns: WRAP_ADDONS };
   // Sandwich/Wrap in the menu is a grid of the four sandwiches. Each card opens the wrap modal with its flavor already chosen
-  // (the flavor can still be changed there). The photo is the matching deviled egg flavor's still; the wraps have none of their own.
+  // (the flavor can still be changed there). The photo is the sandwich's own where supplied, else the matching deviled egg flavor's still.
   const SANDWICH_WRAP = WRAP_FLAVORS.map((f) => ({
     id: 'wrap-' + f.id, name: f.label, price: WRAP_PRICE, note: 'Wrap', desc: f.ingredients,
     image: f.photo, wrapFlavors: WRAP_FLAVORS, wrapProduct: WRAP_PRODUCT, wrapFlavorId: f.id,
   }));
 
-  const BAGEL_FLAVORS = [
-    'Traditional', 'Buffalo Chicken', 'Buffalo Blue Cheese', 'Walking Taco', 'South of the Border',
-    'Bacon Wrapped Jalapeño Popper', 'Everything Bagel', 'Smoked Salmon', 'Crab Rangoon', 'Cali Roll',
-    'Cheeseburger', 'Bangin’ Brisket', 'Chicken ’n a Pickle', 'Chicken Bacon Ranch', 'BLTE',
-    'Chicken Caesar Salad', 'Ball Park', 'Sriracha Bacon', 'Chicken and Waffle',
-  ];
   const BAGEL_PRICE = 7.49;
   const BAGEL_IMAGE = 'assets/products/full-size-bagel.jpg';
   const BAGEL_NOTE = '350 Cal.';
@@ -334,6 +328,37 @@
     'walking-taco': { file: 'Walking-Taco', desc: "Part taco, part deviled egg, fully addictive. Creamy yolk meets seasoned grilled chicken, refried beans, cheese, lettuce, and crushed nacho Doritos. Topped with sour cream, it’s flavor in every crunchy-creamy bite.", cal: 65, protein: '5' },
   };
 
+  // The bagels: one product per clip (the fast-motion videos in assets/bagels, cut from the originals to 540px wide). [menu name, clip file,
+  // the pack flavor whose "Remove ingredients" list it shares]. The still is the clip's last moments, the finished bagel.
+  const BAGEL_DEFS = [
+    ['Traditional', 'traditional', 'traditional'], ['Buffalo Chicken', 'buffalo-chicken', 'buffalo-chicken-ranch'],
+    ['Buffalo Blue Cheese', 'buffalo-blue', 'buffalo-blue-cheese'], ['Walking Taco', 'walking-taco', 'walking-taco'],
+    ['South of the Border', 'south-of-the-border', 'south-of-the-border'], ['Bacon Wrapped Jalapeño Popper', 'popper', 'jalapeno-popper'],
+    ['Everything Bagel', 'everything', 'everything-seasoning'], ['Smoked Salmon', 'smoked-salmon', 'smoked-salmon'],
+    ['Crab Rangoon', 'crab-rangoon', 'crab-rangoon'], ['Cali Roll', 'cali-roll', 'cali-roll'], ['Cheeseburger', 'cheeseburger', 'cheeseburger'],
+    ['Bangin’ Brisket', 'backyard-bbq', 'backyard-bbq'], ['Chicken ’n a Pickle', 'chicken-pickle', 'chicken-pickle-egg'],
+    ['Chicken Bacon Ranch', 'chicken-bacon-ranch', 'chicken-bacon-ranch'], ['BLTE', 'blte', 'blte'],
+    ['Chicken Caesar Salad', 'caesar', 'chicken-caesar'], ['Ball Park', 'ball-park', 'ballpark-special'],
+    ['Sriracha Bacon', 'sriracha-bacon', 'sriracha-bacon'], ['Chicken and Waffle', 'chicken-waffle', 'chicken-waffle'],
+  ];
+  // The line under a bagel's name is made from what is on it (its "Remove ingredients" list), so it never describes a deviled egg.
+  function bagelDesc(label, flavor) {
+    // The lists are capitalized unevenly, so each item is lowercased and the names that keep a capital get it back.
+    const proper = [[/\bdoritos\b/g, 'Doritos'], [/\blay’s\b/g, 'Lay’s'], [/\bcaesar\b/g, 'Caesar'], [/\bamerican\b/g, 'American'], [/\bbbq\b/g, 'BBQ']];
+    const on = flavor ? flavor.exclusions.map((x) => proper.reduce((t, [re, to]) => t.replace(re, to), x.toLowerCase())) : [];
+    if (!on.length) return BAGEL_DESC;
+    const list = on.length === 1 ? on[0] : `${on.slice(0, -1).join(', ')} and ${on[on.length - 1]}`;
+    return `A fresh bagel with our ${label} yolk spread, with ${list}.`;
+  }
+  const BAGEL_ITEMS = BAGEL_DEFS.map(([label, slug, flavorId]) => {
+    const flavor = FLAVORS.find((f) => f.id === flavorId);
+    return {
+      id: 'bagel-' + slug, bagel: true, label, name: /Bagel$/.test(label) ? label : `${label} Bagel`,
+      price: BAGEL_PRICE, note: BAGEL_NOTE, desc: bagelDesc(label, flavor),
+      image: `assets/bagels/${slug}.jpg`, video: `assets/bagels/${slug}.mp4`, exclusions: flavor ? flavor.exclusions : [],
+    };
+  });
+
   // Nationwide shipping kits (Nationwide Shipping page). Contents are the live
   // product pages' own: the kit copy, the 12 flavors those pages offer (each
   // with the same "NO:" ingredient toggles as FLAVORS above) and the shipping
@@ -375,7 +400,10 @@
   const CATERING_DELIVERY_FEE = 20;
   const CATERING_FREE_DELIVERY_AT = 200;
   // Delivery's placeholder rules, until real ones are approved: one flat fee, a minimum subtotal, and the ASAP estimate.
-  const DELIVERY_FEE = 4.99;
+  const DELIVERY_FEE = 1.99;
+  // Delivery menu prices are the pickup prices plus 30% (a $12.99 item is $16.89), each unit rounded to the cent. Catering is priced on its own
+  // (its flat fee, free over a threshold) and is not marked up.
+  const DELIVERY_MARKUP = 1.3;
   const DELIVERY_MINIMUM = 15;
   const DELIVERY_ASAP_LABEL = 'ASAP (35–50 min)';
 
@@ -414,7 +442,6 @@
     modalQty: 1,
     bagelToast: 'Not Toasted',
     bagelType: 'Plain',
-    bagelFlavor: null,
     bagelOptions: new Set(),
     bagelQty: 1,
     bowlAddOns: new Set(),
@@ -435,12 +462,13 @@
   // so an existing cart self-heals instead of staying stuck on the
   // placeholder icon until the user manually clears it.
   const PRODUCT_IMAGE_BY_NAME = {};
-  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, WRAP_PRODUCT].forEach((p) => {
+  [...DEVILED_EGGS, ...PROTEIN_BOWLS, ...EGG_SALADS, ...PLATTERS, ...CATERING, WRAP_PRODUCT, ...WRAP_FLAVORS.map((f) => ({ name: `${f.label} Eggceptional Wrap`, image: f.photo }))].forEach((p) => {
     if (p.image) PRODUCT_IMAGE_BY_NAME[p.name] = p.image;
   });
   // A product with options (the 6 Pack) is saved in the bag under the chosen option's own name.
   [...DEVILED_EGGS].forEach((p) => (p.options || []).forEach((o) => { PRODUCT_IMAGE_BY_NAME[o.name] = o.image; }));
   PRODUCT_IMAGE_BY_NAME['Full Size Bagel'] = BAGEL_IMAGE;
+  BAGEL_ITEMS.forEach((b) => { PRODUCT_IMAGE_BY_NAME[b.name] = b.image; });
   // The product with the options picked: its name, price, photo, description and picker become the option's.
   const resolveOption = (product, optionId) => {
     if (!product.options) return product;
@@ -449,7 +477,21 @@
   };
   // Lines saved before the two 6 Packs became one remember which one they were by their old ids.
   const LEGACY_OPTION = { '6-pack-3-flavors': ['6-pack', '3-flavors'], '6-pack-6-flavors': ['6-pack', '6-flavors'] };
-  const priceLabel = (item) => (item.options ? 'From ' : '') + money(item.price);
+  const round2 = (n) => Math.round(n * 100) / 100;
+  const forDelivery = (n) => round2(n * DELIVERY_MARKUP);
+  // Menu prices shown while ordering delivery; a catering item keeps its own.
+  const shownPrice = (item) => (!item.catering && orderKind() === 'delivery' ? forDelivery(item.price) : item.price);
+  const priceLabel = (item) => (item.options ? 'From ' : '') + money(shownPrice(item));
+  // A copy of an item with every price in it marked up (its options, add-ons, meal), so the modal that opens works in delivery prices throughout.
+  function deliveryPriced(v) {
+    if (Array.isArray(v)) return v.map(deliveryPriced);
+    if (v && typeof v === 'object') {
+      const o = {};
+      Object.keys(v).forEach((k) => { o[k] = k === 'price' && typeof v[k] === 'number' ? forDelivery(v[k]) : deliveryPriced(v[k]); });
+      return o;
+    }
+    return v;
+  }
   SHIPPING_KITS.forEach((k) => { PRODUCT_IMAGE_BY_NAME[k.name] = k.image; });
   // The Optimized Shipping page's card photos: WebP cut to the 161px they show (and twice that), with the size set up front.
   const SHIPPING_KITS_OPT = SHIPPING_KITS.map((k) => {
@@ -529,6 +571,7 @@
   // Saving an edit replaces the line where it sits, closes the modal and returns to the drawer.
   function commitLineEdit(fields, closeModal) {
     Object.assign(editingLine, fields);
+    if (!editingLine.catering && typeof fields.price === 'number') editingLine.basePrice = editingKind === 'delivery' ? round2(fields.price / DELIVERY_MARKUP) : fields.price;
     persistCart();
     renderCartBadge();
     closeModal();
@@ -536,6 +579,8 @@
   }
 
   function addToCart(entry) {
+    // The pickup price travels with the line, so moving the bag between pickup and delivery reprices it exactly.
+    if (!entry.catering) entry.basePrice = (entry.cart || orderKind()) === 'delivery' ? round2(entry.price / DELIVERY_MARKUP) : entry.price;
     const cart = state.carts[entry.cart || orderKind()];
     const before = cartCount();
     const existing = cart.find((c) => c.key === entry.key);
@@ -683,21 +728,26 @@
     renderShipKits('ship-kits-grid-p', SHIPPING_KITS);
     renderShipKits('ship-kits-grid-o', SHIPPING_KITS_OPT);
     renderShipHoliday();
-    renderBagelCard();
+    renderShopGrid('bagels-grid', BAGEL_ITEMS, 'bagel', 'Bagel');
+    renderHomeFeatured();
     renderFeatured();
   }
 
   // Every product opens its modal first (never an instant add); which modal depends on what it can customize.
   function openMenuItem(item, keyPrefix, cartCategory) {
     if (gateFulfillment(() => openMenuItem(item, keyPrefix, cartCategory), orderTargetFor(item, keyPrefix))) return;
-    if (item.wrapFlavors) {
-      openWrapModal(item.wrapProduct, null, item.wrapFlavorId);
-    } else if (item.pickerConfig || item.fixedFlavors) {
-      openDozenModal(item);
-    } else if (item.addOns) {
-      openBowlModal(item);
+    // While ordering delivery the modal is opened on a copy with delivery prices.
+    const priced = !item.catering && orderKind() === 'delivery' ? deliveryPriced(item) : item;
+    if (priced.bagel) {
+      openBagelModal(priced);
+    } else if (priced.wrapFlavors) {
+      openWrapModal(priced.wrapProduct, null, priced.wrapFlavorId);
+    } else if (priced.pickerConfig || priced.fixedFlavors) {
+      openDozenModal(priced);
+    } else if (priced.addOns) {
+      openBowlModal(priced);
     } else {
-      openQuickviewModal(item, { keyPrefix, cartCategory });
+      openQuickviewModal(priced, { keyPrefix, cartCategory });
     }
   }
 
@@ -767,6 +817,120 @@
     track.addEventListener('scroll', sync, { passive: true });
     window.addEventListener('resize', sync);
     sync();
+  }
+
+  // ---------- Home page: featured sections (the client's picks) ----------
+  // To change what Home features, edit HOME_FEATURED. A section has a title, a line under it, and either a row of items or one spotlight.
+  // An item is named by where it lives:
+  //   { group: 'protein-bowls', id: 'avo-chick-blt' }   an item on the order page (Pickup or Delivery, whichever the customer last used)
+  //   { catering: 'power-pair' }                          a catering item (opens on the Catering page)
+  //   { shipping: 'kit-24' }                              a shipping kit (opens on the Nationwide Shipping page)
+  // `see` is the link at the end of a section: { group, label } for an order page group, { page: 'catering' | 'shipping', label } for those pages.
+  // A spotlight shows one flavor (a key of FLAVOR_MEDIA) with its still and description, and the item its button opens. Nothing here adds a
+  // fifth way to order: every card goes into Pickup, Delivery, Catering or Nationwide Shipping.
+  const HOME_FEATURED = [
+    {
+      title: 'Featured bowls', sub: 'High-protein bowls built on egg whites.',
+      see: { group: 'protein-bowls', label: 'See all bowls' },
+      items: [{ group: 'protein-bowls', id: 'avo-chick-blt' }, { group: 'protein-bowls', id: 'bangin-brisket' }, { group: 'protein-bowls', id: 'buffalo' }, { group: 'protein-bowls', id: 'cheeseburger' }],
+    },
+    {
+      title: 'New: Bagels', sub: 'Fresh bagels piled with our yolk spreads. Pick toasted or not.',
+      see: { group: 'bagels', label: 'See all 19 bagels' },
+      items: [{ group: 'bagels', id: 'bagel-blte' }, { group: 'bagels', id: 'bagel-cali-roll' }, { group: 'bagels', id: 'bagel-sriracha-bacon' }, { group: 'bagels', id: 'bagel-buffalo-chicken' }],
+    },
+    {
+      title: 'Flavor of the month', sub: 'This month\'s pick, ready in a 6 Pack.',
+      spotlight: { flavor: 'chicken-waffle', name: 'Chicken and Waffle', cta: 'Order a 6 Pack', item: { group: 'deviled-eggs', id: '6-pack' } },
+    },
+  ];
+
+  // Resolves one HOME_FEATURED reference to what the card needs: the product, its order page group, and how it opens.
+  function homeResolve(ref) {
+    if (ref.group) {
+      const group = ORDER_GROUPS.find((g) => g.id === ref.group);
+      const item = group && group.items.find((i) => i.id === ref.id);
+      return item ? { item, group, open: () => homeOpenOrder({ group, item }) } : null;
+    }
+    if (ref.catering) {
+      const item = ORDER_GROUPS.find((g) => g.catering).items.find((i) => i.id === ref.catering);
+      return item ? { item, open: () => { pushPage('#catering'); showView('catering'); openCateringItem(item.id); } } : null;
+    }
+    if (ref.shipping) {
+      const item = SHIPPING_KITS.find((k) => k.id === ref.shipping);
+      return item ? { item, open: () => { pushPage('#shipping'); showView('shipping'); openMenuItem(item, 'kit', 'Shipping kit'); } } : null;
+    }
+    return null;
+  }
+  // A card (or "see all") on Home goes into Pickup or Delivery: with a valid order for the path last used it lands on the order page at once,
+  // otherwise the "where" modal comes first. Cancelling it forgets the tap, like a store page's.
+  function homeOpenOrder(target) {
+    const delivery = state.orderMode === 'delivery';
+    if (delivery ? deliverySessionValid() : pickupSessionValid()) { openOnOrderPage(target); return; }
+    pendingStoreOpen = () => openOnOrderPage(target);
+    openWhere(delivery ? 'delivery' : 'pickup', { returnTo: 'store' });
+  }
+
+  function renderHomeFeatured() {
+    const root = document.getElementById('home-featured');
+    if (!root) return;
+    root.innerHTML = '';
+    HOME_FEATURED.forEach((sec, i) => {
+      const section = document.createElement('section');
+      section.className = 'home-feat';
+      section.setAttribute('aria-labelledby', `home-feat-${i}`);
+      let seeHTML = '';
+      if (sec.see) seeHTML = `<button class="home-feat-see" type="button">${escapeHTML(sec.see.label)}${SHIP_KIT_ARROW}</button>`;
+      section.innerHTML = `<div class="home-feat-head"><div><h2 id="home-feat-${i}">${escapeHTML(sec.title)}</h2><p>${escapeHTML(sec.sub)}</p></div>${seeHTML}</div>`;
+      if (sec.see) {
+        section.querySelector('.home-feat-see').addEventListener('click', () => {
+          if (sec.see.group) homeOpenOrder({ group: ORDER_GROUPS.find((g) => g.id === sec.see.group), item: null });
+          else if (sec.see.page) { pushPage('#' + sec.see.page); showView(sec.see.page); }
+        });
+      }
+      if (sec.spotlight) {
+        const sp = sec.spotlight;
+        const media = FLAVOR_MEDIA[sp.flavor];
+        const target = homeResolve(sp.item);
+        const card = document.createElement('div');
+        card.className = 'home-spot';
+        card.innerHTML = `
+          <div class="home-spot-media"><img src="${media ? `assets/flavors/${media.file}.jpg` : 'assets/flavors/placeholder.svg'}" alt="" width="360" height="540" loading="lazy" decoding="async"></div>
+          <div class="home-spot-copy">
+            <h3>${escapeHTML(sp.name)}</h3>
+            ${media && media.desc ? `<p>${escapeHTML(media.desc)}</p>` : ''}
+            <button class="pill-btn dark" type="button">${escapeHTML(sp.cta)}</button>
+          </div>`;
+        if (target) card.querySelector('button').addEventListener('click', target.open);
+        section.appendChild(card);
+      } else {
+        const track = document.createElement('ul');
+        track.className = 'home-feat-track';
+        sec.items.forEach((ref) => {
+          const r = homeResolve(ref);
+          if (!r) return;
+          const { item } = r;
+          const li = document.createElement('li');
+          li.className = 'featured-card';
+          const media = document.createElement('div');
+          media.className = 'featured-media';
+          media.appendChild(productThumb(item));
+          const btn = document.createElement('button');
+          btn.className = 'add-btn';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', `${(item.pickerConfig || item.addOns || item.wrapFlavors || item.bagel) ? 'Customize' : 'View'} ${item.name}`);
+          btn.innerHTML = ADD_ICON;
+          media.appendChild(btn);
+          li.appendChild(media);
+          li.insertAdjacentHTML('beforeend', `<span class="featured-name">${escapeHTML(item.name)}</span><span class="featured-meta"><span class="featured-price">${priceLabel(item)}</span>${item.note ? `<span aria-hidden="true">•</span><span>${escapeHTML(item.note)}</span>` : ''}</span>`);
+          btn.addEventListener('click', r.open);
+          li.addEventListener('click', (e) => { if (!e.target.closest('.add-btn')) r.open(); });
+          track.appendChild(li);
+        });
+        section.appendChild(track);
+      }
+      root.appendChild(section);
+    });
   }
 
   // `open` replaces the menu's own modal choice (the catering cards open the catering modal); such items always customize.
@@ -844,40 +1008,6 @@
     });
   }
 
-  // On a store's page, the first thing added asks how the order is going (pickup or delivery) if that is not chosen yet.
-  const openBagelFromMenu = () => { if (!gateFulfillment(() => openBagelFromMenu(), { group: ORDER_GROUPS.find((g) => g.id === 'bagels') })) openBagelModal(); };
-
-  function renderBagelCard() {
-    const grid = document.getElementById('bagels-grid');
-    grid.innerHTML = '';
-    const card = document.createElement('div');
-    card.className = 'shop-card';
-
-    const body = document.createElement('div');
-    body.className = 'shop-card-body';
-    body.innerHTML = `<span class="shop-card-name">Full Size Bagel</span><span class="shop-card-meta"><span class="shop-card-price">${money(BAGEL_PRICE)}</span><span aria-hidden="true">•</span><span class="shop-card-note">${BAGEL_NOTE}</span></span><span class="shop-card-desc">${BAGEL_DESC}</span>`;
-    card.appendChild(body);
-
-    const media = document.createElement('div');
-    media.className = 'shop-card-media';
-    media.appendChild(productThumb({ image: BAGEL_IMAGE, name: 'Full Size Bagel' }));
-    const btn = document.createElement('button');
-    btn.className = 'add-btn';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', 'Customize Full Size Bagel');
-    btn.innerHTML = ADD_ICON;
-    btn.addEventListener('click', openBagelFromMenu);
-    media.appendChild(btn);
-    card.appendChild(media);
-
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.add-btn')) return;
-      openBagelFromMenu();
-    });
-
-    grid.appendChild(card);
-  }
-
   // ---------- Pickup order page (#order) ----------
   // The Pickup funnel's third step, laid out like Chipotle's mobile ordering: a list of category tiles, and a tile
   // that stands for several products (the pack sizes, the egg salad sizes, the bowls) opens a screen of rows.
@@ -886,14 +1016,14 @@
     { id: 'deviled-eggs', name: 'Deviled Eggs', image: 'assets/products/12-pack.jpg', items: DEVILED_EGGS, keyPrefix: 'egg', cartCategory: 'Deviled eggs' },
     { id: 'egg-salads', name: 'Egg Salads', image: 'assets/products/egg-salad-pint.jpg', items: EGG_SALADS, keyPrefix: 'saladcup', cartCategory: 'Egg salad' },
     { id: 'protein-bowls', name: 'Protein Bowls', image: 'assets/products/avo-chick-blt-bowl.jpg', items: PROTEIN_BOWLS, keyPrefix: 'bowl', cartCategory: 'Protein bowl' },
-    { id: 'bagels', name: 'Bagels', image: BAGEL_IMAGE, price: BAGEL_PRICE, open: () => openBagelModal() },
+    { id: 'bagels', name: 'Bagels', image: BAGEL_IMAGE, items: BAGEL_ITEMS, keyPrefix: 'bagel', cartCategory: 'Bagel' },
     { id: 'sandwich-wrap', name: 'Sandwich/Wrap', image: WRAP_IMAGE, items: SANDWICH_WRAP, keyPrefix: 'wrap', cartCategory: 'Sandwich/Wrap' },
   ];
   const orderGroupSingle = (g) => g.open || (g.items.length === 1 ? () => openMenuItem(g.items[0], g.keyPrefix, g.cartCategory) : null);
 
   // Where a menu card's item lives on the order page. The order page has no Platters group: the two platters are the
   // same products as the Deviled Eggs group's last two, under other ids, so they open there.
-  const ORDER_GROUP_OF = { egg: 'deviled-eggs', platter: 'deviled-eggs', saladcup: 'egg-salads', bowl: 'protein-bowls', wrap: 'sandwich-wrap' };
+  const ORDER_GROUP_OF = { egg: 'deviled-eggs', platter: 'deviled-eggs', saladcup: 'egg-salads', bowl: 'protein-bowls', wrap: 'sandwich-wrap', bagel: 'bagels' };
   const PLATTER_TWINS = { '24-count': '24-count-platter', 'try-them-all': 'try-them-all-platter' };
   function orderTargetFor(item, keyPrefix) {
     const group = ORDER_GROUPS.find((g) => g.id === ORDER_GROUP_OF[keyPrefix]);
@@ -908,7 +1038,7 @@
   function renderOrderTiles() {
     document.getElementById('order-tiles').innerHTML = ORDER_GROUPS.map((g) => {
       const single = !!orderGroupSingle(g);
-      const from = g.items ? Math.min(...g.items.map((i) => i.price)) : g.price;
+      const from = g.items ? Math.min(...g.items.map((i) => shownPrice(i))) : g.price;
       const sub = single ? money(from) : `${g.items.length} options · from ${money(from)}`;
       return `<li><button class="order-tile" type="button" data-group="${g.id}">
         <span class="order-tile-media"><img src="${g.image}" alt="" loading="lazy"></span>
@@ -921,6 +1051,7 @@
   const orderPageTitle = () => (state.orderMode === 'delivery' ? `Order delivery — ${SITE_NAME}` : PAGE_TITLES.order);
 
   function showOrderTiles() {
+    renderOrderTiles();
     orderTilesScreen.hidden = false;
     orderGroupScreen.hidden = true;
     document.title = orderPageTitle();
@@ -979,7 +1110,6 @@
     showOrderTiles();
     window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
   });
-  renderOrderTiles();
 
   // ---------- Nav menu toggle (tablet/mobile) ----------
   // A lightweight disclosure, not a modal: no backdrop dim or inert
@@ -1439,146 +1569,18 @@
     return Object.values(state.modalFlavorQty).reduce((sum, n) => sum + n, 0);
   }
 
-  // Single-flavor products (the egg salads): one pick, so radios instead of
-  // steppers. Exclusion chips live in the selected row's .radio-choice-extra and
-  // everything updates in place (a re-render would drop keyboard focus).
-  function renderSingleFlavorExtra(group, flavor) {
-    const extra = group.querySelector('.radio-choice-extra');
-    if (!flavor || !flavor.exclusions || !flavor.exclusions.length) { extra.innerHTML = ''; return; }
-    const excluded = state.modalExclusions[flavor.id] || new Set();
-    mountCustomize(extra, {
-      label: flavor.label, items: flavor.exclusions, excluded, open: fd.custom.has(flavor.id),
-      onToggleOpen: () => { if (fd.custom.has(flavor.id)) fd.custom.delete(flavor.id); else fd.custom.add(flavor.id); renderSingleFlavorExtra(group, flavor); },
-      onToggle: (ing) => {
-        const set = state.modalExclusions[flavor.id] || new Set();
-        toggleIn(set, ing);
-        state.modalExclusions[flavor.id] = set;
-        renderSingleFlavorExtra(group, flavor);
-      },
-    });
-  }
-
-  function renderSingleFlavorRadios(grid) {
-    const chosenId = Object.keys(state.modalFlavorQty)[0] || null;
-    const flavors = flavorList();
-    grid.innerHTML = flavors.map((f) => radioChoiceHTML({
-      group: 'dozen-flavor', value: f.id, label: f.label, selected: f.id === chosenId,
-    })).join('');
-    const groups = [...grid.querySelectorAll('.radio-choice')];
-    groups.forEach((group, i) => { if (flavors[i].id === chosenId) renderSingleFlavorExtra(group, flavors[i]); });
-    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        state.modalFlavorQty = { [input.value]: 1 };
-        state.modalExclusions = {};
-        groups.forEach((group, i) => {
-          const on = group.querySelector('.radio-choice-input').checked;
-          group.classList.toggle('selected', on);
-          renderSingleFlavorExtra(group, on ? flavors[i] : null);
-        });
-        renderModalFooter();
-        renderFlavorGuidance(dozenAllocated());
-      });
-    });
-    renderFlavorGuidance(dozenAllocated());
-  }
-
-  // One flavor's clip can be open at a time, inline in its own row. The <video>
-  // element outlives the grid re-renders (every + / - redraws the rows) so the
-  // clip keeps playing while the customer adds eggs.
+  // The clip's play mark, and whether the visitor asked for less motion (no clip starts by itself then).
   const PLAY_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg>';
   const flavorReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let flavorWatch = { id: null, wrap: null, playing: false };
 
-  function stopFlavorWatch() {
-    const video = flavorWatch.wrap && flavorWatch.wrap.querySelector('video');
-    if (video) video.pause();
-    flavorWatch = { id: null, wrap: null, playing: false };
-  }
-
-  // The expanded panel's stand-in for a flavor that has no clip yet: the same 2:3 slot, labeled.
-  // A flavor with a still photo but no clip (catering sandwiches) shows the photo itself, square.
-  function flavorWatchPlaceholder(photo) {
-    const el = document.createElement('div');
-    if (photo) {
-      el.className = 'flavor-watch-media flavor-watch-photo';
-      el.innerHTML = `<img src="${photo}" alt="" loading="lazy" decoding="async">`;
-      return el;
-    }
-    el.className = 'flavor-watch-media flavor-watch-placeholder';
-    el.innerHTML = '<img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Photo coming soon</span>';
-    return el;
-  }
-
-  function flavorWatchMedia(f) {
-    if (flavorWatch.wrap) return flavorWatch.wrap;
-    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
-    const wrap = document.createElement('button');
-    wrap.type = 'button';
-    wrap.className = 'flavor-watch-media';
-    wrap.innerHTML = `<video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span>`;
-    const video = wrap.querySelector('video');
-    const paint = () => {
-      const paused = video.paused;
-      wrap.classList.toggle('is-paused', paused);
-      wrap.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} the ${f.label} video`);
-    };
-    video.addEventListener('play', paint);
-    video.addEventListener('pause', paint);
-    wrap.addEventListener('click', () => {
-      flavorWatch.playing = video.paused;
-      if (video.paused) video.play().catch(() => {}); else video.pause();
-    });
-    paint();
-    flavorWatch.wrap = wrap;
-    return wrap;
-  }
-
-  function toggleFlavorWatch(id) {
-    const reopen = flavorWatch.id !== id;
-    stopFlavorWatch();
-    if (reopen) flavorWatch = { id, wrap: null, playing: !flavorReduceMotion.matches };
-    const inBagel = !bagelModal.hidden;
-    if (inBagel) renderBagelFlavors(); else renderFlavorGrid();
-    const row = document.querySelector(`${inBagel ? '#bagel-flavor-grid' : '#flavor-grid'} [data-flavor="${id}"]`);
-    if (!row) return;
-    row.querySelector('.flavor-thumb').focus({ preventScroll: true });
-    if (reopen) row.scrollIntoView({ block: 'nearest', behavior: flavorReduceMotion.matches ? 'auto' : 'smooth' });
-  }
-
-  // ---------- TEMP: large-video flavor layouts ----------
-  // Layouts compared with a switcher above the list: Distilled (the picker); Pair (two square clips across); and Grow,
-  // the Big thumb row that expands in place. Remove the ones that lose, and this switcher, once one is chosen.
-  const FLAVOR_VARIANTS = [['0', 'Distilled'], ['2', 'Pair'], ['4', 'Grow']];
-  const BIG_MODES = { 4: 'a' };
-  let flavorVariant = '0';
-  try { flavorVariant = localStorage.getItem('deg-flavor-variant') || '0'; } catch (e) { /* storage unavailable */ }
-  if (!FLAVOR_VARIANTS.some(([k]) => k === flavorVariant)) flavorVariant = '0';
-  const bigMode = () => BIG_MODES[flavorVariant] || null;
+  // ---------- The flavor picker: Pair ----------
+  // Two tiles across, each a clip (or a still, for a flavor with a photo and no clip), the name, one line, and a − / + stepper. It is the only flavor
+  // picker; the Distilled list and the Grow layout were retired on 2026-10-16 (a copy is in archive/distilled-flavor-picker/).
   const fv = { key: null, root: null, tiles: {}, observer: null };
   const FV_MINUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
   const FV_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 12h12M12 6v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 
-  // Only the 6 Pack Deviled Egg offers the three layouts to compare; every other flavor picker is Distilled.
-  const flavorVariantAvailable = () => activeProduct.id === '6-pack' && activeProduct.total > 1 && !activeProduct.fixedFlavors && flavorList().every((f) => FLAVOR_MEDIA[f.id]);
   const flavorStat = (f) => { const m = FLAVOR_MEDIA[f.id]; return f.desc || (m && m.cal ? `${m.cal} cal · ${m.protein}g protein each` : ''); };
-
-  (function initFlavorSwitch() {
-    const bar = document.createElement('div');
-    bar.id = 'flavor-variant-switch';
-    bar.className = 'card-variant-switch flavor-variant-switch';
-    bar.hidden = true;
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Flavor layout');
-    bar.innerHTML = FLAVOR_VARIANTS.map(([k, label]) => `<button type="button" data-v="${k}">${label}</button>`).join('');
-    bar.addEventListener('click', (e) => {
-      const b = e.target.closest('button');
-      if (!b) return;
-      flavorVariant = b.dataset.v;
-      try { localStorage.setItem('deg-flavor-variant', flavorVariant); } catch (err) { /* storage unavailable */ }
-      renderFlavorGrid();
-    });
-    document.getElementById('flavor-grid').before(bar);
-  })();
 
   function fvDispose() {
     if (fv.observer) fv.observer.disconnect();
@@ -1601,36 +1603,45 @@
     video.play().catch(() => {});
   }
 
+  // A tile's picture: the flavor's clip (a poster until it plays), or a still when it has none: its own photo (the catering lists), or the
+  // placeholder egg. The "i" in the corner opens the flavor sheet either way.
   function fvMedia(f) {
-    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
+    const clip = !f.photo && FLAVOR_MEDIA[f.id];
     const wrap = document.createElement('div');
-    wrap.className = 'fv-media is-paused';
-    wrap.innerHTML = `<video muted loop playsinline preload="none" poster="${file}.jpg" data-src="${file}.mp4" aria-hidden="true" tabindex="-1"></video>
-      <button class="fv-play" type="button" aria-label="Play the ${escapeHTML(f.label)} video"><span class="fv-play-icon" aria-hidden="true">${PLAY_ICON}</span></button>`;
-    const video = wrap.querySelector('video');
-    const button = wrap.querySelector('.fv-play');
     wrap.dataset.label = f.label;
-    const paint = () => {
-      wrap.classList.toggle('is-paused', video.paused);
-      button.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${wrap.dataset.label} video`);
-    };
-    video.addEventListener('play', paint);
-    video.addEventListener('pause', paint);
-    button.addEventListener('click', () => {
-      if (video.paused) { video.dataset.userPaused = '0'; video.dataset.userPlayed = '1'; fvPlay(video); } else { video.dataset.userPaused = '1'; video.pause(); }
-    });
-    // The corner "i": the whole clip, uncropped, with the flavor's description, in a sheet of its own.
+    if (clip) {
+      const file = `assets/flavors/${clip.file}`;
+      wrap.className = 'fv-media is-paused';
+      wrap.innerHTML = `<video muted loop playsinline preload="none" poster="${file}.jpg" data-src="${file}.mp4" aria-hidden="true" tabindex="-1"></video>
+        <button class="fv-play" type="button" aria-label="Play the ${escapeHTML(f.label)} video"><span class="fv-play-icon" aria-hidden="true">${PLAY_ICON}</span></button>`;
+      const video = wrap.querySelector('video');
+      const button = wrap.querySelector('.fv-play');
+      const paint = () => {
+        wrap.classList.toggle('is-paused', video.paused);
+        button.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${wrap.dataset.label} video`);
+      };
+      video.addEventListener('play', paint);
+      video.addEventListener('pause', paint);
+      button.addEventListener('click', () => {
+        if (video.paused) { video.dataset.userPaused = '0'; video.dataset.userPlayed = '1'; fvPlay(video); } else { video.dataset.userPaused = '1'; video.pause(); }
+      });
+    } else {
+      wrap.className = 'fv-media is-still' + (f.photo ? '' : ' is-empty');
+      wrap.innerHTML = `<img src="${f.photo || 'assets/flavors/placeholder.svg'}" alt="" width="${f.photo ? 320 : 56}" height="${f.photo ? 320 : 56}" loading="lazy" decoding="async">`;
+    }
+    // The corner "i": the whole clip (or the photo), uncropped, with the flavor's description, in a sheet of its own.
     const info = document.createElement('button');
     info.type = 'button';
     info.className = 'fv-info';
-    info.setAttribute('aria-label', `About ${f.label}: watch the full video and read the description`);
+    info.setAttribute('aria-label', `About ${f.label}: ${clip ? 'watch the full video and ' : ''}read the description`);
     info.setAttribute('aria-haspopup', 'dialog');
     info.innerHTML = FLAVOR_INFO_ICON;
     info.addEventListener('click', (e) => { e.stopPropagation(); openFlavorInfo(f, info); });
     wrap.appendChild(info);
-    if (fv.observer) fv.observer.observe(wrap);
+    if (clip && fv.observer) fv.observer.observe(wrap);
     return wrap;
   }
+
 
   // ----- Flavor info sheet: the full clip and the description over the open modal. -----
   // Pair opens it for one flavor. The Sampler's flavor grid opens it on a flavor and passes the whole list, so the customer can step
@@ -1662,18 +1673,27 @@
     const show = (i) => {
       index = i;
       const cur = list[i];
-      const media = FLAVOR_MEDIA[cur.id] || null;
+      const media = cur.photo ? null : FLAVOR_MEDIA[cur.id] || null;
       const file = media ? `assets/flavors/${media.file}` : '';
-      const stat = opts.noStat ? '' : flavorStat(cur);
+      // A flavor that carries its own description (the catering lists) shows it once, as the text; the rest show calories above theirs.
+      const stat = opts.noStat || cur.desc ? '' : flavorStat(cur);
       if (info.video) info.video.pause();
       stage.innerHTML = `
         ${media
           ? `<button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>`
-          : '<div class="flavor-watch-media flavor-info-media flavor-watch-placeholder"><img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Video coming soon</span></div>'}
+          : cur.photo
+            ? `<div class="flavor-watch-media flavor-info-media flavor-watch-photo"><img src="${cur.photo}" alt="" decoding="async"></div>`
+            : '<div class="flavor-watch-media flavor-info-media flavor-watch-placeholder"><img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Video coming soon</span></div>'}
         <div class="flavor-info-copy">
           <h2 id="flavor-info-title">${escapeHTML(cur.label)}</h2>
           ${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}
-          <p>${escapeHTML(media ? media.desc : 'The video and description are coming soon.')}</p>
+          <p>${escapeHTML(media ? media.desc : cur.desc || 'The video and description are coming soon.')}</p>
+          ${opts.customize ? `
+          <div class="flavor-info-custom">
+            <p class="flavor-info-custom-note" hidden>Add this flavor to your pack to customize it.</p>
+            <div class="flavor-exclusions" hidden></div>
+            <button class="pill-btn dark full flavor-info-done" type="button">Done</button>
+          </div>` : ''}
           ${list.length > 1 ? `
           <div class="flavor-info-nav">
             <button class="flavor-info-step" type="button" data-step="-1"${i === 0 ? ' disabled' : ''}>${FLAVOR_INFO_PREV}Previous</button>
@@ -1682,6 +1702,14 @@
           </div>` : ''}
         </div>`;
       stage.querySelectorAll('.flavor-info-step').forEach((btn) => btn.addEventListener('click', () => info.step(Number(btn.dataset.step))));
+      if (opts.customize) {
+        const box = stage.querySelector('.flavor-info-custom .flavor-exclusions');
+        const has = cur.exclusions && cur.exclusions.length > 0;
+        const qty = state.modalFlavorQty[cur.id] || 0;
+        if (has && qty > 0) fvSyncExclusions(box, cur, qty, () => updateFlavorVariant());
+        else if (has) stage.querySelector('.flavor-info-custom-note').hidden = false;
+        stage.querySelector('.flavor-info-done').addEventListener('click', () => closeFlavorInfo());
+      }
       const player = stage.querySelector('button.flavor-info-media');
       info.video = player ? player.querySelector('video') : null;
       if (player) {
@@ -1707,6 +1735,8 @@
       if (hadFocus) (stage.querySelector(`.flavor-info-step[data-step="${d}"]:not([disabled])`) || stage.querySelector('.flavor-info-step:not([disabled])') || root.querySelector('.flavor-info-close')).focus();
     };
     show(index);
+    // Opened from the tile's chip: the ingredient list is the point, so it is brought into view.
+    if (opts.scrollToCustom) { const box = stage.querySelector('.flavor-info-custom'); if (box) box.scrollIntoView({ block: 'center' }); }
     root.querySelector('.flavor-info-backdrop').addEventListener('click', () => closeFlavorInfo());
     root.querySelector('.flavor-info-close').addEventListener('click', () => closeFlavorInfo());
     root.querySelector('.flavor-info-close').focus();
@@ -1741,7 +1771,8 @@
       fv.root.querySelectorAll('.fv-media').forEach((m) => {
         const r = m.getBoundingClientRect();
         const seen = Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top);
-        if (r.height > 0 && seen / r.height >= 0.55) fvPlay(m.querySelector('video'));
+        const clip = m.querySelector('video');
+        if (clip && r.height > 0 && seen / r.height >= 0.55) fvPlay(clip);
       });
     });
   }
@@ -1754,6 +1785,11 @@
       if (current <= 0) return;
       const next = current - step;
       if (next <= 0) { delete state.modalFlavorQty[f.id]; delete state.modalExclusions[f.id]; } else state.modalFlavorQty[f.id] = next;
+    } else if (activeProduct.total === 1) {
+      // One flavor for the whole tub: choosing another replaces it, and the ingredients removed from the old one go with it.
+      if (current >= 1) return;
+      state.modalFlavorQty = { [f.id]: 1 };
+      state.modalExclusions = {};
     } else {
       if (dozenAllocated() >= activeProduct.total) return;
       state.modalFlavorQty[f.id] = current + step;
@@ -1777,10 +1813,11 @@
     const { step, total } = activeProduct;
     const [minus, plus] = el.querySelectorAll('.fv-step');
     el.querySelector('.fv-qty').textContent = String(qty);
+    const single = total === 1;
     minus.disabled = qty <= 0;
-    plus.disabled = allocated >= total;
-    minus.setAttribute('aria-label', `Remove ${step} ${f.label} ${eggWord(step)}`);
-    plus.setAttribute('aria-label', `Add ${step} ${f.label} ${eggWord(step)}`);
+    plus.disabled = single ? qty >= 1 : allocated >= total;
+    minus.setAttribute('aria-label', single ? `Remove ${f.label}` : `Remove ${step} ${f.label} ${eggWord(step)}`);
+    plus.setAttribute('aria-label', single ? `Choose ${f.label}` : `Add ${step} ${f.label} ${eggWord(step)}`);
   }
 
   // "Remove ingredients" chips for a flavor that has some, shown once it is in the mix.
@@ -1804,6 +1841,9 @@
   }
 
   // Pair: one square clip per flavor, two across, the stepper under the name. Built once, updated in place.
+  // Pair's tile has four fixed regions, so every tile is the same height whatever it holds: the clip (a square), the name (two lines
+  // reserved), one line for calories (or, once ingredients are removed, what was removed), and the stepper. Customize is not on the tile:
+  // a chip on the clip opens the flavor sheet, where the "Remove ingredients" list is.
   function fvBuildTile(f) {
     const el = document.createElement('div');
     el.className = 'fv-tile';
@@ -1812,51 +1852,56 @@
     const stepper = fvStepper(() => f);
     const body = document.createElement('div');
     body.className = 'fv-body';
-    const stat = flavorStat(f);
-    body.innerHTML = `<span class="fv-name">${escapeHTML(f.label)}</span>${stat ? `<span class="fv-stat">${escapeHTML(stat)}</span>` : ''}`;
+    body.innerHTML = '<span class="fv-name"></span><span class="fv-stat"></span>';
+    body.querySelector('.fv-name').textContent = f.label;
     body.appendChild(stepper);
-    // As in Distilled and Grow: a chosen flavor shows a "Customize" link, and the ingredient list opens only when it is tapped.
-    const custom = document.createElement('div');
-    custom.className = 'fd-custom fv-custom';
-    custom.hidden = true;
-    custom.innerHTML = `<button class="fd-custom-btn" type="button" aria-expanded="false" aria-label="Customize ${escapeHTML(f.label)}">Customize</button><span class="fd-custom-sum"></span>`;
-    custom.querySelector('.fd-custom-btn').addEventListener('click', () => {
-      if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
-      updateFlavorVariant();
-    });
-    const excl = document.createElement('div');
-    excl.className = 'flavor-exclusions fv-excl';
-    excl.hidden = true;
-    el.append(media, body, custom, excl);
-    fv.tiles[f.id] = { el, stepper, excl, custom };
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'fv-chip';
+    chip.hidden = true;
+    chip.setAttribute('aria-haspopup', 'dialog');
+    chip.addEventListener('click', (e) => { e.stopPropagation(); openFlavorInfo(f, chip, { customize: true, scrollToCustom: true }); });
+    media.appendChild(chip);
+    el.append(media, body);
+    fv.tiles[f.id] = { el, stepper, chip, stat: body.querySelector('.fv-stat') };
     return el;
+  }
+
+  // Calories and protein, short enough for one line on a 144px tile ("each" is dropped; the clip's sheet has the rest).
+  function pairStat(f) {
+    const m = FLAVOR_MEDIA[f.id];
+    return !f.photo && m && m.cal ? `${m.cal} cal · ${m.protein}g protein` : (f.desc || '');
+  }
+
+  // "No bacon, tomato +2": the first two removed, then how many more. The whole list is in the sheet.
+  function removedSummary(set) {
+    const list = [...set];
+    return `No ${list.slice(0, 2).join(', ').toLowerCase()}${list.length > 2 ? ` +${list.length - 2}` : ''}`;
   }
 
   function updateFlavorVariant() {
     const allocated = dozenAllocated();
-    const total = activeProduct.total;
     flavorList().forEach((f) => {
       const qty = state.modalFlavorQty[f.id] || 0;
       const t = fv.tiles[f.id];
       t.el.classList.toggle('selected', qty > 0);
-      t.el.classList.toggle('at-limit', qty <= 0 && allocated >= total);
       fvSyncStepper(t.stepper, f, qty, allocated);
-      const hasExcl = qty > 0 && f.exclusions && f.exclusions.length > 0;
-      const open = hasExcl && fd.custom.has(f.id);
-      const paintSum = () => {
-        const ex = state.modalExclusions[f.id];
-        t.custom.querySelector('.fd-custom-sum').textContent = ex && ex.size ? `No ${[...ex].join(', ').toLowerCase()}` : '';
-      };
-      t.custom.hidden = !hasExcl;
-      t.custom.querySelector('.fd-custom-btn').setAttribute('aria-expanded', String(open));
-      paintSum();
-      fvSyncExclusions(t.excl, f, open ? qty : 0, paintSum);
+      const removed = qty > 0 ? state.modalExclusions[f.id] : null;
+      const changed = !!(removed && removed.size);
+      // The calorie line gives way to what was removed; calories are in the sheet.
+      t.stat.textContent = changed ? removedSummary(removed) : pairStat(f);
+      t.stat.title = changed ? `No ${[...removed].join(', ').toLowerCase()}` : '';
+      t.stat.classList.toggle('is-changed', changed);
+      const customizable = qty > 0 && f.exclusions && f.exclusions.length > 0;
+      t.chip.hidden = !customizable;
+      t.chip.textContent = changed ? 'Customized' : 'Customize';
+      t.chip.setAttribute('aria-label', changed ? `Customize ${f.label}, ${removed.size} removed` : `Customize ${f.label}`);
     });
     renderFlavorGuidance(allocated);
   }
 
   function renderFlavorVariant(grid) {
-    const key = `${flavorVariant}|${activeProduct.id}|${activeProduct.optionId || ''}`;
+    const key = `${activeProduct.id}|${activeProduct.optionId || ''}`;
     if (!(fv.root && fv.key === key && grid.contains(fv.root))) {
       fvDispose();
       grid.innerHTML = '';
@@ -1864,6 +1909,7 @@
       fv.root = grid;
       fv.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
         const video = entry.target.querySelector('video');
+        if (!video) return;
         if (entry.intersectionRatio >= 0.55) fvPlay(video); else video.pause();
       }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
       flavorList().forEach((f) => grid.appendChild(fvBuildTile(f)));
@@ -1874,269 +1920,14 @@
     updateFlavorVariant();
   }
 
-  // ----- Big thumb rows (A, B, C): the Current list with each thumbnail 2.5× larger and playing. -----
-  // The thumbnails outlive the list's redraws (every + / − rebuilds the rows), so they are kept in `fb` and put
-  // back into each new row; a clip is never reloaded by a tap. `fb.open` is the row A has expanded.
-  const fb = { thumbs: {}, observer: null, open: null };
-
-  function fbDispose() {
-    if (fb.observer) fb.observer.disconnect();
-    Object.values(fb.thumbs).forEach((t) => t.querySelector('video').pause());
-    Object.assign(fb, { thumbs: {}, observer: null, open: null });
-  }
-
-  function fbThumb(f) {
-    if (fb.thumbs[f.id]) return fb.thumbs[f.id];
-    const file = `assets/flavors/${FLAVOR_MEDIA[f.id].file}`;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'flavor-thumb flavor-thumb-big';
-    // The name button beside it is the one control for screen readers and the keyboard; this is its bigger twin.
-    btn.tabIndex = -1;
-    btn.setAttribute('aria-hidden', 'true');
-    btn.innerHTML = `<video muted loop playsinline preload="none" poster="${file}.jpg" data-src="${file}.mp4" aria-hidden="true" tabindex="-1"></video>`;
-    btn.addEventListener('click', () => toggleBig(f.id));
-    if (!fb.observer) {
-      fb.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
-        const video = entry.target.querySelector('video');
-        if (entry.intersectionRatio >= 0.55) fvPlay(video); else video.pause();
-      }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
-    }
-    fb.observer.observe(btn);
-    fb.thumbs[f.id] = btn;
-    return btn;
-  }
-
-  // A thumbnail put back after a redraw is paused by the move; start the ones on screen again.
-  function fbKick() {
-    requestAnimationFrame(() => {
-      const scroller = document.querySelector('#item-modal .item-modal-scroll');
-      if (!scroller) return;
-      const box = scroller.getBoundingClientRect();
-      Object.values(fb.thumbs).forEach((t) => {
-        const r = t.getBoundingClientRect();
-        const seen = Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top);
-        if (r.height > 0 && seen / r.height >= 0.55) fvPlay(t.querySelector('video'));
-      });
-    });
-  }
-
-  function renderBigRows(grid) {
-    grid.innerHTML = '';
-    const allocated = dozenAllocated();
-    flavorList().forEach((f) => {
-      const qty = state.modalFlavorQty[f.id] || 0;
-      const atLimit = qty <= 0 && allocated >= activeProduct.total;
-      const open = fb.open === f.id;
-      const hasExcl = qty > 0 && f.exclusions && f.exclusions.length > 0;
-      const row = document.createElement('div');
-      row.className = 'flavor-row dozen-flavor-row flavor-row-big' + (open ? ' is-open' : '') + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
-      row.dataset.flavor = f.id;
-      const stat = flavorStat(f);
-      row.innerHTML = `
-        <div class="fb-head">
-          <span class="fb-thumb-slot"></span>
-          <div class="fb-main">
-            <button class="fb-open" type="button" aria-expanded="${open}" aria-controls="fb-details-${f.id}">
-              <span class="fb-name">${escapeHTML(f.label)}</span>
-              ${stat ? `<small class="fb-stat">${escapeHTML(stat)}</small>` : ''}
-              <span class="fb-link">${open ? 'Less' : 'Details'}</span>
-            </button>
-            <span class="fb-step-slot"></span>
-          </div>
-        </div>
-        ${open ? `<div class="fb-details" id="fb-details-${f.id}"><p class="fb-desc">${escapeHTML(FLAVOR_MEDIA[f.id].desc)}</p></div>` : ''}
-        ${hasExcl ? `<div class="fd-custom"><button class="fd-custom-btn" type="button" aria-expanded="${fd.custom.has(f.id)}" aria-label="Customize ${escapeHTML(f.label)}">Customize</button><span class="fd-custom-sum"></span></div>` : ''}
-        <div class="flavor-exclusions fv-excl" hidden></div>`;
-      const thumb = fbThumb(f);
-      thumb.classList.toggle('open', open);
-      thumb.querySelector('video').dataset.userPaused = '0';
-      row.querySelector('.fb-thumb-slot').replaceWith(thumb);
-      const stepper = fvStepper(() => f);
-      fvSyncStepper(stepper, f, qty, allocated);
-      row.querySelector('.fb-step-slot').replaceWith(stepper);
-      // Ingredient choices work as in Distilled: a "Customize" link per selected flavor opens the chips, and a choice already made
-      // shows as a short line beside the link.
-      const sum = row.querySelector('.fd-custom-sum');
-      const paintSum = () => {
-        const ex = state.modalExclusions[f.id];
-        if (sum) sum.textContent = ex && ex.size ? `No ${[...ex].join(', ').toLowerCase()}` : '';
-      };
-      paintSum();
-      if (hasExcl) {
-        row.querySelector('.fd-custom-btn').addEventListener('click', () => {
-          if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id);
-          renderFlavorGrid();
-        });
-        if (fd.custom.has(f.id)) fvSyncExclusions(row.querySelector('.fv-excl'), f, qty, paintSum);
-      }
-      row.querySelector('.fb-open').addEventListener('click', () => toggleBig(f.id));
-      grid.appendChild(row);
-    });
-    renderFlavorGuidance(allocated);
-    fbKick();
-  }
-
-  // Expand or fold a row. The thumbnail is the same element before and after, so it is moved from where it
-  // was to where it is now (a FLIP), and its clip keeps playing.
-  function toggleBig(id) {
-    const prev = fb.open;
-    const next = prev === id ? null : id;
-    const first = {};
-    [prev, next].filter(Boolean).forEach((k) => { if (fb.thumbs[k]) first[k] = fb.thumbs[k].getBoundingClientRect(); });
-    fb.open = next;
-    renderFlavorGrid();
-    const row = document.querySelector(`#flavor-grid [data-flavor="${id}"]`);
-    if (next && row) row.scrollIntoView({ block: 'nearest' });
-    if (!flavorReduceMotion.matches) {
-      Object.keys(first).forEach((k) => {
-        const t = fb.thumbs[k];
-        const a = first[k];
-        const b = t && t.getBoundingClientRect();
-        if (!b || !b.width || !b.height) return;
-        t.animate([
-          { transformOrigin: '0 0', transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})` },
-          { transformOrigin: '0 0', transform: 'none' },
-        ], { duration: 260, easing: 'cubic-bezier(.16, 1, .3, 1)' });
-      });
-    }
-    if (row) row.querySelector('.fb-open').focus({ preventScroll: true });
-  }
-
-  // ----- Distilled: the flavor picker, cut down to adding and reviewing -----
-  // A compact header (the photo is untouched), a two-segment 3-or-6 control, shorter rows with the calorie line cut to one
-  // line and ingredient chips behind a "Customize" link. The "Flavor n" strip is not used here: the footer's list says the same.
-  const fd = { custom: new Set() };
-
-  function setDistilledChrome(on) {
-    itemModal.dataset.distilled = on ? '1' : '';
-  }
+  // Draws (or updates) the picker for the open product.
   function renderFlavorGrid() {
     const grid = document.getElementById('flavor-grid');
-    const single = activeProduct.total === 1;
-    grid.classList.toggle('addon-list', single);
-    if (single) {
-      setDistilledChrome(false);
-      document.getElementById('flavor-variant-switch').hidden = true;
-      delete grid.dataset.variant;
-      delete grid.dataset.big;
-      fvDispose();
-      fbDispose();
-      grid.setAttribute('role', 'radiogroup');
-      grid.setAttribute('aria-label', 'Flavor');
-      renderSingleFlavorRadios(grid);
-      return;
-    }
+    grid.classList.remove('addon-list');
     grid.removeAttribute('role');
     grid.removeAttribute('aria-label');
-    const variantOn = flavorVariant === '2' && flavorVariantAvailable();
-    const mode = flavorVariantAvailable() ? bigMode() : null;
-    // The distilled picker is the picker; Pair and Grow are the layouts still being compared against it.
-    const distilled = !(flavorVariant === '2' && flavorVariantAvailable()) && !mode;
-    setDistilledChrome(distilled);
-    if (!mode) fbDispose();
-    document.getElementById('flavor-variant-switch').hidden = !flavorVariantAvailable();
-    document.querySelectorAll('#flavor-variant-switch button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === flavorVariant)));
-    if (mode) {
-      delete grid.dataset.variant;
-      fvDispose();
-      grid.dataset.big = mode;
-      renderBigRows(grid);
-      return;
-    }
-    delete grid.dataset.big;
-    if (variantOn) {
-      grid.dataset.variant = flavorVariant;
-      renderFlavorVariant(grid);
-      return;
-    }
-    delete grid.dataset.variant;
-    fvDispose();
-    grid.innerHTML = '';
-    const allocated = dozenAllocated();
-    flavorList().forEach((f) => {
-      const qty = state.modalFlavorQty[f.id] || 0;
-      const atLimit = qty <= 0 && allocated >= activeProduct.total;
-      const showExclusions = qty > 0 && f.exclusions && f.exclusions.length > 0;
-      const excluded = state.modalExclusions[f.id] || new Set();
-
-      // Selecting a flavor and excluding an ingredient from it are one
-      // continuous card — the exclusion chips live inside the same
-      // .flavor-row button, not a separate block stacked below it.
-      // A flavor with no photo or clip yet gets a placeholder thumbnail, and its expanded panel a placeholder in the clip's place.
-      // A flavor with its own photo (the catering lists) shows that photo, not a pack clip that happens to share its id.
-      const media = f.photo ? null : FLAVOR_MEDIA[f.id] || null;
-      const watching = flavorWatch.id === f.id;
-      const thumbSrc = media ? `assets/flavors/${media.file}.jpg` : f.photo || 'assets/flavors/placeholder.svg';
-      const thumbLabel = media ? `${watching ? 'Hide' : 'Watch'} the ${f.label} video` : `${watching ? 'Hide' : 'Show'} details for ${f.label}`;
-      const statLine = f.desc || (media && media.cal ? `${media.cal} cal · ${media.protein}g protein each` : '');
-      const row = document.createElement('div');
-      row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '') + (atLimit ? ' at-limit' : '');
-      row.dataset.flavor = f.id;
-      row.innerHTML = `
-        <div class="flavor-row-head">
-          <button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${escapeHTML(thumbLabel)}"><img src="${thumbSrc}" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>
-          <span class="flavor-row-name">${f.label}${statLine ? `<small class="flavor-row-desc">${escapeHTML(statLine)}</small>` : ''}</span>
-          <div class="mini-stepper">
-            <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Remove ' + f.label : 'Remove ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${qty <= 0 ? 'disabled' : ''}>${STEP_MINUS_ICON}</button>
-            <span>${qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="${activeProduct.total === 1 ? 'Choose ' + f.label : 'Add ' + activeProduct.step + ' ' + f.label + ' ' + eggWord(activeProduct.step)}" ${allocated >= activeProduct.total ? 'disabled' : ''}>${STEP_PLUS_ICON}</button>
-          </div>
-        </div>
-        ${watching ? `
-          <div class="flavor-watch" id="flavor-watch-${f.id}">
-            <div class="flavor-watch-slot"></div>
-            <div class="flavor-watch-copy">
-              <p>${escapeHTML(media ? media.desc : f.desc || 'Details coming soon.')}</p>
-              <button class="flavor-watch-hide" type="button">${media ? 'Hide video' : 'Hide details'}</button>
-            </div>
-          </div>
-        ` : ''}
-        ${showExclusions ? '<div class="fd-custom-box"></div>' : ''}
-      `;
-      row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
-      if (watching) {
-        row.querySelector('.flavor-watch-hide').addEventListener('click', () => toggleFlavorWatch(f.id));
-        row.querySelector('.flavor-watch-slot').replaceWith(media ? flavorWatchMedia(f) : flavorWatchPlaceholder(f.photo));
-      }
-      const [decBtn, incBtn] = row.querySelectorAll('.mini-step-btn');
-      decBtn.addEventListener('click', () => {
-        const current = state.modalFlavorQty[f.id] || 0;
-        if (current <= 0) return;
-        const next = current - activeProduct.step;
-        if (next <= 0) {
-          delete state.modalFlavorQty[f.id];
-          delete state.modalExclusions[f.id];
-        } else {
-          state.modalFlavorQty[f.id] = next;
-        }
-        renderFlavorGrid();
-        renderModalFooter();
-      });
-      incBtn.addEventListener('click', () => {
-        if (dozenAllocated() >= activeProduct.total) return;
-        state.modalFlavorQty[f.id] = (state.modalFlavorQty[f.id] || 0) + activeProduct.step;
-        renderFlavorGrid();
-        renderModalFooter();
-      });
-      if (showExclusions) {
-        mountCustomize(row.querySelector('.fd-custom-box'), {
-          label: f.label, items: f.exclusions, excluded, open: fd.custom.has(f.id),
-          onToggleOpen: () => { if (fd.custom.has(f.id)) fd.custom.delete(f.id); else fd.custom.add(f.id); renderFlavorGrid(); },
-          onToggle: (ing) => {
-            const set = state.modalExclusions[f.id] || new Set();
-            toggleIn(set, ing);
-            state.modalExclusions[f.id] = set;
-            renderFlavorGrid();
-          },
-        });
-      }
-
-      grid.appendChild(row);
-      // The grid redraws on every + / -, which pauses a re-attached video; pick the clip up again unless the customer paused it.
-      if (watching && media && flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
-    });
-    renderFlavorGuidance(allocated);
+    grid.dataset.variant = '2';
+    renderFlavorVariant(grid);
   }
 
   function populateQtySelect(select, max = 10) {
@@ -2238,7 +2029,6 @@
     lastFocusedEl = document.activeElement;
     activeBase = product;
     activeProduct = buildActiveProduct(product, line && line.edit.optionId);
-    stopFlavorWatch();
     state.modalFlavorQty = {};
     state.modalExclusions = {};
     state.modalQty = 1;
@@ -2323,11 +2113,7 @@
   function closeDozenModal() {
     endLineEdit();
     closeFlavorInfo(false);
-    stopFlavorWatch();
     fvDispose();
-    fbDispose();
-    fd.custom.clear();
-    setDistilledChrome(false);
     modalBackdrop.hidden = true;
     itemModal.hidden = true;
     updateInert();
@@ -2400,84 +2186,17 @@
   wireHeaderTitleReveal(itemModal, 'dozen-modal-title');
   wireHeaderTitleReveal(bagelModal, 'bagel-modal-title');
 
-  // The bagel's yolk spread is the same eleven-plus-eight flavors as the packs, so it gets the pack picker's row: the clip's still
-  // (tap it to watch, as in Distilled), the name, a pick-one radio, and for the chosen flavor a "Customize" link that opens the
-  // "Remove ingredients" list. The bagel menu's own names are kept; each is matched to the pack flavor it is.
-  const BAGEL_FLAVOR_ID = {
-    'Traditional': 'traditional', 'Buffalo Chicken': 'buffalo-chicken-ranch', 'Buffalo Blue Cheese': 'buffalo-blue-cheese',
-    'Walking Taco': 'walking-taco', 'South of the Border': 'south-of-the-border', 'Bacon Wrapped Jalapeño Popper': 'jalapeno-popper',
-    'Everything Bagel': 'everything-seasoning', 'Smoked Salmon': 'smoked-salmon', 'Crab Rangoon': 'crab-rangoon', 'Cali Roll': 'cali-roll',
-    'Cheeseburger': 'cheeseburger', 'Bangin’ Brisket': 'backyard-bbq', 'Chicken ’n a Pickle': 'chicken-pickle-egg',
-    'Chicken Bacon Ranch': 'chicken-bacon-ranch', 'BLTE': 'blte', 'Chicken Caesar Salad': 'chicken-caesar', 'Ball Park': 'ballpark-special',
-    'Sriracha Bacon': 'sriracha-bacon', 'Chicken and Waffle': 'chicken-waffle',
-  };
-  const bagelFlavorData = (name) => {
-    const base = FLAVORS.find((f) => f.id === BAGEL_FLAVOR_ID[name]) || { id: BAGEL_FLAVOR_ID[name], exclusions: [] };
-    return { ...base, label: name };
-  };
+  // One bagel per card, like the bowls and sandwiches: its own name, its clip playing at the top of the modal, Toasted or not, the bagel
+  // type, the same "Remove ingredients" Customize list as the other items, and the options. There is no flavor to pick inside.
+  let activeBagel = null;
   let bagelExcl = new Set();
   let bagelCustomOpen = false;
 
-  function renderBagelFlavors() {
-    const grid = document.getElementById('bagel-flavor-grid');
-    grid.innerHTML = BAGEL_FLAVORS.map((name) => {
-      const f = bagelFlavorData(name);
-      const media = FLAVOR_MEDIA[f.id];
-      const watching = !!media && flavorWatch.id === f.id;
-      return `
-      <div class="flavor-row dozen-flavor-row bagel-flavor-row" data-flavor="${f.id}" data-name="${escapeHTML(name)}">
-        <div class="flavor-row-head">
-          ${media ? `<button class="flavor-thumb${watching ? ' open' : ''}" type="button" aria-expanded="${watching}" aria-controls="flavor-watch-${f.id}" aria-label="${watching ? 'Hide' : 'Watch'} the ${escapeHTML(name)} video"><img src="assets/flavors/${media.file}.jpg" alt="" width="56" height="56" loading="lazy" decoding="async"><span class="flavor-thumb-badge" aria-hidden="true">${watching ? FLAVOR_COLLAPSE_ICON : FLAVOR_EXPAND_ICON}</span></button>` : ''}
-          <label class="bagel-pick">
-            <input class="radio-choice-input" type="radio" name="bagel-flavor" value="${escapeHTML(name)}">
-            <span class="flavor-row-name">${escapeHTML(name)}${media ? `<small class="flavor-row-desc">${escapeHTML(media.desc)}</small>` : ''}</span>
-            <span class="radio-choice-ind" aria-hidden="true"></span>
-          </label>
-        </div>
-        ${watching ? `
-        <div class="flavor-watch" id="flavor-watch-${f.id}">
-          <div class="flavor-watch-slot"></div>
-          <div class="flavor-watch-copy">
-            <p>${escapeHTML(media.desc)}</p>
-            <button class="flavor-watch-hide" type="button">Hide video</button>
-          </div>
-        </div>` : ''}
-        <div class="wrap-flavor-extra"></div>
-      </div>`;
-    }).join('');
-    grid.querySelectorAll('.bagel-flavor-row').forEach((row) => {
-      const f = bagelFlavorData(row.dataset.name);
-      const media = FLAVOR_MEDIA[f.id];
-      if (media) row.querySelector('.flavor-thumb').addEventListener('click', () => toggleFlavorWatch(f.id));
-      if (media && flavorWatch.id === f.id) {
-        row.querySelector('.flavor-watch-hide').addEventListener('click', () => toggleFlavorWatch(f.id));
-        row.querySelector('.flavor-watch-slot').replaceWith(flavorWatchMedia(f));
-        if (flavorWatch.playing) flavorWatch.wrap.querySelector('video').play().catch(() => {});
-      }
-      row.querySelector('.radio-choice-input').addEventListener('change', (e) => {
-        state.bagelFlavor = e.target.value;
-        bagelExcl = new Set();
-        bagelCustomOpen = false;
-        syncBagelFlavorRows();
-        renderBagelModalFooter();
-      });
-    });
-    syncBagelFlavorRows();
-  }
-
-  function syncBagelFlavorRows() {
-    document.querySelectorAll('#bagel-flavor-grid .bagel-flavor-row').forEach((row) => {
-      const f = bagelFlavorData(row.dataset.name);
-      const chosen = state.bagelFlavor === row.dataset.name;
-      row.classList.toggle('selected', chosen);
-      row.querySelector('.radio-choice-input').checked = chosen;
-      const extra = row.querySelector('.wrap-flavor-extra');
-      if (!chosen || !f.exclusions.length) { extra.innerHTML = ''; return; }
-      mountCustomize(extra, {
-        label: f.label, items: f.exclusions, excluded: bagelExcl, open: bagelCustomOpen,
-        onToggleOpen: () => { bagelCustomOpen = !bagelCustomOpen; syncBagelFlavorRows(); },
-        onToggle: (ing) => { toggleIn(bagelExcl, ing); syncBagelFlavorRows(); },
-      });
+  function renderBagelCustomize() {
+    mountCustomize(document.getElementById('bagel-customize'), {
+      label: activeBagel.label, items: activeBagel.exclusions, excluded: bagelExcl, open: bagelCustomOpen,
+      onToggleOpen: () => { bagelCustomOpen = !bagelCustomOpen; renderBagelCustomize(); },
+      onToggle: (ing) => { toggleIn(bagelExcl, ing); renderBagelCustomize(); },
     });
   }
 
@@ -2514,48 +2233,62 @@
 
   function renderBagelModalFooter() {
     document.getElementById('bagel-qty-select').value = String(state.bagelQty);
-    const total = BAGEL_PRICE * state.bagelQty;
+    const total = activeBagel.price * state.bagelQty;
     const btn = document.getElementById('add-bagel-to-order');
-    btn.disabled = !state.bagelFlavor;
-    btn.textContent = state.bagelFlavor ? `${editingLine ? 'Update order' : `Add ${state.bagelQty} to order`} · ${money(total)}` : 'Choose a flavor to continue';
+    btn.disabled = false;
+    btn.textContent = `${editingLine ? 'Update order' : `Add ${state.bagelQty} to order`} · ${money(total)}`;
   }
 
-  function openBagelModal(line = null) {
+  // A bagel line saved before bagels were separate products named "Full Size Bagel" and kept its flavor by menu name in `flavor`.
+  const bagelFor = (line) => BAGEL_ITEMS.find((b) => line.edit.bagelId === b.id || (line.edit.flavor && line.edit.flavor === b.label)) || BAGEL_ITEMS[0];
+
+  function openBagelModal(item, line = null) {
+    if (item && item.edit) { line = item; item = bagelFor(item); }
     lastFocusedEl = document.activeElement;
     editingLine = line;
-    document.getElementById('bagel-modal-image').src = BAGEL_IMAGE;
-    document.getElementById('bagel-modal-price').textContent = money(BAGEL_PRICE);
-    document.getElementById('bagel-modal-desc').textContent = BAGEL_DESC;
+    activeBagel = item;
+    document.getElementById('bagel-modal-title').textContent = item.name;
+    document.getElementById('bagel-modal-header-title').textContent = item.name;
+    document.getElementById('bagel-modal-price').textContent = money(item.price);
+    document.getElementById('bagel-modal-desc').textContent = item.desc;
+    // The clip plays muted and looped over its still; under reduced motion it waits, paused, for a tap.
+    const video = document.getElementById('bagel-modal-video');
+    video.poster = item.image;
+    video.src = item.video;
+    const still = document.getElementById('bagel-modal-image');
+    still.src = item.image;
     state.bagelToast = 'Not Toasted';
     state.bagelType = 'Plain';
-    state.bagelFlavor = null;
     state.bagelOptions = new Set();
     state.bagelQty = 1;
     bagelExcl = new Set();
     if (line) {
       const e = line.edit;
-      Object.assign(state, { bagelToast: e.toast, bagelType: e.bagelType, bagelFlavor: e.flavor, bagelOptions: new Set(e.options), bagelQty: line.qty });
+      Object.assign(state, { bagelToast: e.toast, bagelType: e.bagelType, bagelOptions: new Set(e.options), bagelQty: line.qty });
       bagelExcl = new Set(e.excl || []);
     }
     bagelCustomOpen = bagelExcl.size > 0;
-    stopFlavorWatch();
     populateQtySelect(document.getElementById('bagel-qty-select'));
+    renderBagelCustomize();
     renderBagelRadios('bagel-toast-picker', 'bagel-toast', ['Not Toasted', 'Toasted'], state.bagelToast, (v) => { state.bagelToast = v; });
     renderBagelRadios('bagel-type-picker', 'bagel-type', ['Plain', 'Everything'], state.bagelType, (v) => { state.bagelType = v; });
     renderBagelOptions();
-    renderBagelFlavors();
     renderBagelModalFooter();
     bagelModal.querySelector('.item-modal-scroll').scrollTop = 0;
     bagelModal.querySelector('.item-modal-header-title').classList.remove('visible');
     bagelModalBackdrop.hidden = false;
     bagelModal.hidden = false;
     updateInert();
+    if (!flavorReduceMotion.matches) video.play().catch(() => {});
     document.getElementById('close-bagel-modal').focus();
   }
 
   function closeBagelModal() {
     endLineEdit();
-    stopFlavorWatch();
+    const video = document.getElementById('bagel-modal-video');
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
     bagelModalBackdrop.hidden = true;
     bagelModal.hidden = true;
     updateInert();
@@ -2565,29 +2298,36 @@
   document.getElementById('close-bagel-modal').addEventListener('click', closeBagelModal);
   bagelModalBackdrop.addEventListener('click', closeBagelModal);
 
+  // Tapping the clip plays or pauses it.
+  document.getElementById('bagel-modal-video').addEventListener('click', (e) => {
+    const video = e.currentTarget;
+    if (video.paused) video.play().catch(() => {}); else video.pause();
+  });
+
   document.getElementById('bagel-qty-select').addEventListener('change', (e) => {
     state.bagelQty = Number(e.target.value);
     renderBagelModalFooter();
   });
 
   document.getElementById('add-bagel-to-order').addEventListener('click', () => {
-    if (!state.bagelFlavor) return;
-    const parts = [state.bagelType, state.bagelToast, bagelExcl.size ? `${state.bagelFlavor} (no ${[...bagelExcl].join(', ').toLowerCase()})` : state.bagelFlavor];
+    // The name carries the bagel; the detail line carries the choices made.
+    const parts = [state.bagelType, state.bagelToast];
+    if (bagelExcl.size) parts.push(`No ${[...bagelExcl].join(', ').toLowerCase()}`);
     if (state.bagelOptions.size) parts.push(Array.from(state.bagelOptions).join(', '));
     const entry = {
-      name: 'Full Size Bagel',
+      name: activeBagel.name,
       sub: parts.join(' · '),
-      price: BAGEL_PRICE,
+      price: activeBagel.price,
       qty: state.bagelQty,
-      image: BAGEL_IMAGE,
-      edit: { type: 'bagel', toast: state.bagelToast, bagelType: state.bagelType, flavor: state.bagelFlavor, excl: [...bagelExcl], options: Array.from(state.bagelOptions) },
+      image: activeBagel.image,
+      edit: { type: 'bagel', bagelId: activeBagel.id, toast: state.bagelToast, bagelType: state.bagelType, excl: [...bagelExcl], options: Array.from(state.bagelOptions) },
     };
     if (editingLine) { commitLineEdit(entry, closeBagelModal); return; }
     addToCart({
       ...entry,
-      key: 'bagel-' + JSON.stringify({ t: state.bagelType, toast: state.bagelToast, f: state.bagelFlavor, o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
+      key: 'bagel-' + JSON.stringify({ b: activeBagel.id, t: state.bagelType, toast: state.bagelToast, x: [...bagelExcl], o: Array.from(state.bagelOptions) }) + '-' + Date.now(),
     });
-    celebrateAdd(bagelModal, closeBagelModal, BAGEL_IMAGE, state.bagelQty);
+    celebrateAdd(bagelModal, closeBagelModal, activeBagel.image, state.bagelQty);
   });
 
   // ---------- Bowl customization modal ----------
@@ -2753,49 +2493,19 @@
   let activeWrap = null;
   wireHeaderTitleReveal(wrapModal, 'wrap-modal-title');
 
-  // One flavor, chosen with native radios, in the same rows as the deviled egg picker: a photo, the name and what is on it,
-  // and once chosen a "Customize" link that opens the "NO:" ingredient chips. Rows are built once per open and updated in
-  // place: re-rendering would destroy the focused radio and break arrow-key navigation within the group.
+  // The sandwich this modal is for (each card opens its own; there is no switching sandwiches inside the modal): its "Customize" link
+  // opens the "Remove ingredients" list under the ingredient line.
   let wrapExcl = new Set();
   let wrapCustomOpen = false;
+  const wrapFlavor = () => activeWrap.wrapFlavors.find((f) => f.id === state.wrapFlavor) || activeWrap.wrapFlavors[0];
+  const wrapFullName = (f) => `${f.label} Eggceptional Wrap`;
 
-  function renderWrapFlavorGrid() {
-    const grid = document.getElementById('wrap-flavor-grid');
-    grid.innerHTML = activeWrap.wrapFlavors.map((f) => `
-      <div class="flavor-row dozen-flavor-row wrap-flavor-row" data-flavor="${f.id}">
-        <label class="flavor-row-head wrap-flavor-label">
-          <input class="radio-choice-input" type="radio" name="wrap-flavor" value="${f.id}">
-          <span class="flavor-thumb" aria-hidden="true"><img src="${f.photo}" alt="" width="56" height="56" loading="lazy" decoding="async"></span>
-          <span class="flavor-row-name">${escapeHTML(f.label)}<small class="flavor-row-desc">${escapeHTML(f.ingredients)}</small></span>
-          <span class="radio-choice-ind" aria-hidden="true"></span>
-        </label>
-        <div class="wrap-flavor-extra"></div>
-      </div>`).join('');
-    grid.querySelectorAll('.radio-choice-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        state.wrapFlavor = input.value;
-        wrapExcl = new Set();
-        wrapCustomOpen = false;
-        syncWrapFlavorRows();
-        renderWrapModalFooter();
-      });
-    });
-    syncWrapFlavorRows();
-  }
-
-  function syncWrapFlavorRows() {
-    document.querySelectorAll('#wrap-flavor-grid .wrap-flavor-row').forEach((row) => {
-      const f = activeWrap.wrapFlavors.find((w) => w.id === row.dataset.flavor);
-      const chosen = state.wrapFlavor === f.id;
-      row.classList.toggle('selected', chosen);
-      row.querySelector('.radio-choice-input').checked = chosen;
-      const extra = row.querySelector('.wrap-flavor-extra');
-      if (!chosen) { extra.innerHTML = ''; return; }
-      mountCustomize(extra, {
-        label: f.label, items: f.exclusions, excluded: wrapExcl, open: wrapCustomOpen,
-        onToggleOpen: () => { wrapCustomOpen = !wrapCustomOpen; syncWrapFlavorRows(); },
-        onToggle: (ing) => { toggleIn(wrapExcl, ing); syncWrapFlavorRows(); renderWrapModalFooter(); },
-      });
+  function renderWrapCustomize() {
+    const f = wrapFlavor();
+    mountCustomize(document.getElementById('wrap-customize'), {
+      label: f.label, items: f.exclusions, excluded: wrapExcl, open: wrapCustomOpen,
+      onToggleOpen: () => { wrapCustomOpen = !wrapCustomOpen; renderWrapCustomize(); },
+      onToggle: (ing) => { toggleIn(wrapExcl, ing); renderWrapCustomize(); renderWrapModalFooter(); },
     });
   }
 
@@ -2833,16 +2543,15 @@
     const unitPrice = activeWrap.price + wrapAddOnsTotal();
     const total = unitPrice * state.wrapQty;
     const btn = document.getElementById('add-wrap-to-order');
-    const complete = Boolean(state.wrapFlavor);
-    btn.disabled = !complete;
-    btn.textContent = complete ? `${editingLine ? 'Update order' : `Add ${state.wrapQty} to order`} · ${money(total)}` : 'Choose a flavor to continue';
+    btn.disabled = false;
+    btn.textContent = `${editingLine ? 'Update order' : `Add ${state.wrapQty} to order`} · ${money(total)}`;
   }
 
   function openWrapModal(item, line = null, presetFlavor = null) {
     lastFocusedEl = document.activeElement;
     activeWrap = item;
     editingLine = line;
-    state.wrapFlavor = line ? line.edit.flavor : presetFlavor;
+    state.wrapFlavor = (line ? line.edit.flavor : presetFlavor) || item.wrapFlavors[0].id;
     wrapExcl = new Set(line && line.edit.excl ? line.edit.excl : []);
     wrapCustomOpen = wrapExcl.size > 0;
     // A line saved before the meal became its own choice kept it as add-on 0 ("Make it a Meal"), with the others after it.
@@ -2852,13 +2561,14 @@
     state.wrapQty = line ? line.qty : 1;
     populateQtySelect(document.getElementById('wrap-qty-select'));
 
-    document.getElementById('wrap-modal-title').textContent = item.name;
+    const flavor = wrapFlavor();
+    document.getElementById('wrap-modal-title').textContent = wrapFullName(flavor);
     document.getElementById('wrap-modal-price').textContent = money(item.price);
-    document.getElementById('wrap-modal-image').src = item.image;
-    document.getElementById('wrap-modal-desc').textContent = item.desc || '';
-    document.getElementById('wrap-modal-header-title').textContent = item.name;
+    document.getElementById('wrap-modal-image').src = flavor.photo;
+    document.getElementById('wrap-modal-desc').textContent = flavor.ingredients;
+    document.getElementById('wrap-modal-header-title').textContent = wrapFullName(flavor);
 
-    renderWrapFlavorGrid();
+    renderWrapCustomize();
     renderWrapMealPicker();
     renderWrapAddOns();
     renderWrapModalFooter();
@@ -2887,15 +2597,16 @@
   });
 
   document.getElementById('add-wrap-to-order').addEventListener('click', () => {
-    const flavor = activeWrap.wrapFlavors.find((f) => f.id === state.wrapFlavor);
-    if (!flavor) return;
+    const flavor = wrapFlavor();
     const addOnLabels = Array.from(state.wrapAddOns).map((i) => activeWrap.addOns[i].label);
-    const parts = [wrapExcl.size ? `${flavor.label} (no ${[...wrapExcl].join(', ').toLowerCase()})` : flavor.label];
+    // The name carries the sandwich; the detail line carries only what was changed or added.
+    const parts = [];
+    if (wrapExcl.size) parts.push(`No ${[...wrapExcl].join(', ').toLowerCase()}`);
     if (state.wrapMeal) parts.push(activeWrap.meal.label);
     if (addOnLabels.length) parts.push(addOnLabels.join(', '));
     const unitPrice = activeWrap.price + wrapAddOnsTotal();
     const entry = {
-      name: activeWrap.name,
+      name: wrapFullName(flavor),
       sub: parts.join(' · '),
       price: unitPrice,
       qty: state.wrapQty,
@@ -2983,11 +2694,13 @@
   // Every catering "Order Now" opens its own modal and adds to the Catering
   // cart. Contents are the live catering order form's own (flavor lists with
   // descriptions, sides and prices, drinks, minimums).
-  const CATERING_SANDWICHES = [{"id": "blte-sw", "photo": "assets/catering/flavors/blte-square-img.jpg", "label": "BLTE", "desc": "Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "cali-sw", "photo": "assets/catering/flavors/cali-roll-square-img.jpg", "label": "Cali Roll", "desc": "Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame"}, {"id": "veggie-sw", "label": "Vegetarian", "desc": "Cream Cheese, Cucumbers, Tomato & Everything Seasoning"}, {"id": "caesar-sw", "photo": "assets/catering/flavors/caesar-square-img.png", "label": "The Caesar", "desc": "Caesar Yolk Mix, Grilled Chicken, Bacon, Parmean Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "bbq-sw", "photo": "assets/catering/flavors/backyard-bbq-square-img.jpg", "label": "Backyard BBQ", "desc": "Traditional Yolk Mix, BBQ Brisket, Lettuce, Pickled Jalapeno, Red Onion, BBQ Sauce, Cheddar Cheese"}, {"id": "buffalo-sw", "photo": "assets/catering/flavors/Buffalo-chicken-square-img.png", "label": "Buffalo Chicken", "desc": "Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch"}];
+  const CATERING_SANDWICHES = [{"id": "blte-sw", "photo": "assets/sandwiches/blte.jpg", "label": "BLTE", "desc": "Ranch Yolk Mix, Bacon, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "cali-sw", "photo": "assets/catering/flavors/cali-roll-square-img.jpg", "label": "Cali Roll", "desc": "Imitation Crab Mix, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki & Black Sesame"}, {"id": "veggie-sw", "label": "Vegetarian", "desc": "Cream Cheese, Cucumbers, Tomato & Everything Seasoning"}, {"id": "caesar-sw", "photo": "assets/sandwiches/caesar.jpg", "label": "The Caesar", "desc": "Caesar Yolk Mix, Grilled Chicken, Bacon, Parmean Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "bbq-sw", "photo": "assets/catering/flavors/backyard-bbq-square-img.jpg", "label": "Backyard BBQ", "desc": "Traditional Yolk Mix, BBQ Brisket, Lettuce, Pickled Jalapeno, Red Onion, BBQ Sauce, Cheddar Cheese"}, {"id": "buffalo-sw", "photo": "assets/sandwiches/buffalo-chicken.jpg", "label": "Buffalo Chicken", "desc": "Buffalo Yolk Mix, Grilled Chicken, Red Onion, Buffalo Sauce, Lettuce & House-Made Creamy Ranch"}];
   const CATERING_BOWLS = [{"id": "avo-blt-bowl", "label": "Avocado Chicken BLT", "desc": "Egg Whites, Grilled Chicken, Bacon, Fresh Avocado, Cheddar Cheese, Lettuce, Tomato & House-Made Creamy Ranch"}, {"id": "buffalo-bowl", "label": "Buffalo Chicken Bowl", "desc": "Egg Whites, Lettuce, Grilled Chicken, Red Onion, Buffalo Sauce, Cheddar Cheese & House-Made Creamy Ranch"}, {"id": "caesar-bowl", "label": "The Caesar Bowl", "desc": "Egg Whites, Grilled Chicken, Capers, Romaine Lettuce, Red Onion, Creamy Caesar & Parmesan Cheese"}, {"id": "brisket-bowl", "label": "Banging Brisket Bowl", "desc": "Egg Whites, BBQ Brisket, Lettuce, Pickled Jalapeño, Red Onion, BBQ Sauce & Cheddar Cheese"}, {"id": "poke-bowl", "label": "Poke-Egg-Bowl", "desc": "Egg Whites, Imitation Crab, Sriracha Aioli, Fresh Avocado, Cucumber, Teriyaki Sauce & Black Sesame Seeds"}, {"id": "walking-taco-bowl", "label": "Walking Taco Bowl", "desc": "Egg Whites, Refried Beans, Grilled Chicken, Lettuce, Cheddar Cheese, Cholula Hot Sauce, Sour Cream & Doritos"}];
   const CATERING_EGGS = [{"id": "buffalo-blue", "photo": "assets/catering/flavors/buffalo-blue-square-img.jpg", "label": "Buffalo Blue", "desc": "Hot Sauce Yolk Mix, Blue Cheese Crumbles & A Hot Sauce Drizzle"}, {"id": "buffalo-chicken", "photo": "assets/catering/flavors/Buffalo-chicken-square-img.png", "label": "Buffalo Chicken Egg", "desc": "Buffalo Sauce Infused Yolk Mix, Grilled Chicken, Red Onion & A Buffalo Sauce Drizzle"}, {"id": "walking-taco", "photo": "assets/catering/flavors/walking-taco-square-img.jpg", "label": "Walking Taco Egg", "desc": "Cholula Infused Yolk Mix, Grilled Chicken, Refried Beans, Lettuce, Sour Cream, Cheddar Cheese & Crumbled Doritos"}, {"id": "jalapeno-popper", "photo": "assets/catering/flavors/popper-square-img.png", "label": "Jalapeño Popper", "desc": "Cream Cheese Yolk Mix, Bacon Crumbles, Fresh Jalapeño Slice & A Chipotle Sauce Drizzle"}, {"id": "chicken-pickle", "photo": "assets/catering/flavors/chicken-a-pickle-square-img.jpg", "label": "Chicken N A Pickle", "desc": "Sweet Chicken Sauce Yolk Mix, Grilled Chicken, A Dill Pickle Slice & A Sweet Chicken Sauce Drizzle"}, {"id": "smoked-salmon", "photo": "assets/catering/flavors/smoked-salmon-square-img.png", "label": "Smoked Salmon", "desc": "Cream Cheese Infused Yolk Mix, Capers, Red Onion & Fully Cooked Wild Caught Smoked Salmon"}, {"id": "crab-rangoon", "photo": "assets/catering/flavors/crab-rangoon-square-img.png", "label": "Crab Rangoon", "desc": "Sweet Crab Mix, Cream Cheese Infused Yolk Mix, Crispy Wontons & A Sweet & Sour Sauce Drizzle"}, {"id": "cali-roll", "photo": "assets/catering/flavors/cali-roll-square-img.jpg", "label": "Cali Roll Egg", "desc": "Spicy Mayo Crab Mix, Fresh Cucumber Slice, Black Sesame Seeds & A Teriyaki Sauce Drizzle"}, {"id": "sriracha-bacon", "photo": "assets/catering/flavors/srircha-bacon-square-img.png", "label": "Sriracha Bacon", "desc": "Sriracha Yolk Mix, Bacon Crumbles & A Sriracha Drizzle"}, {"id": "blte", "photo": "assets/catering/flavors/blte-square-img.jpg", "label": "BLTE Egg", "desc": "Ranch Yolk Mix, Bacon Crumbles, Lettuce, Cherry Tomato Slice & A Ranch Sauce Drizzle"}, {"id": "south-border", "photo": "assets/catering/flavors/south-of-the-border-square-img.jpg", "label": "South of the Border", "desc": "Cholula Infused Yolk Mix, Cheddar Cheese & Fresh Jalapeño Slice"}, {"id": "chicken-caesar", "photo": "assets/catering/flavors/caesar-square-img.png", "label": "Chicken Caesar", "desc": "Caesar Infused Yolk Mix, Grilled Chicken, Lettuce, Parmesan Cheese & A Caesar Drizzle"}, {"id": "backyard-bbq", "photo": "assets/catering/flavors/backyard-bbq-square-img.jpg", "label": "Backyard BBQ Egg", "desc": "Smokey BBQ In The Base, Traditional Yolk Mix, Dill Pickle Slice & A BBQ Sauce Drizzle"}, {"id": "chicken-bacon-ranch", "photo": "assets/catering/flavors/chicken-bacon-ranch-square-img.jpg", "label": "Chicken Bacon Ranch", "desc": "Ranch Yolk Mix, Grilled Chicken, Bacon Crumbles, Cheddar Cheese & A Ranch Sauce Drizzle"}, {"id": "traditional", "photo": "assets/catering/flavors/traditional-square-img.jpg", "label": "Traditional", "desc": "Mayo & Dijon Infused Yolk Mix, Paprika Seasoning"}, {"id": "everything", "photo": "assets/catering/flavors/everything-square-img.jpg", "label": "Everything Seasoning", "desc": "Cream Cheese Infused Yolk Mix, Everything Seasoning"}];
   const CATERING_COFFEE_NOTE = 'The Coffee Bar Included';
-  const CATERING_DRINKS = { price: 3, choices: ['Water', 'Sprite', 'Coke', 'Unsweet Tea', 'Sweet Tea'], maxEach: 10 };
+  // One bottled drink per box is included; RedBull is +$1 each.
+  const CATERING_DRINKS = { choices: [{ name: 'Fiji Water' }, { name: 'Coke' }, { name: 'Coke Zero' }, { name: 'Dr Pepper' }, { name: 'Sweet Tea' }, { name: 'Unsweet Tea' }, { name: 'RedBull', price: 1 }] };
+  const drinkUpcharge = (name) => (CATERING_DRINKS.choices.find((c) => c.name === name) || {}).price || 0;
   // Sides a box can add. `flavor` ones ask which deviled egg flavor goes in them.
   const SIDE_COOKIE = { id: 'cookie', label: 'Cookie', price: 2 };
   const SIDE_PICKLE = { id: 'pickle', label: 'Kosher Dill Pickle', price: 1 };
@@ -2999,17 +2712,19 @@
   ];
 
   const CATERING_ITEMS = {
+    // Retired from the menu (2026-10-16): kept only so a bag saved before then still shows and edits its line.
     classic: {
+      retired: true,
       kind: 'box', id: 'classic', name: 'The Classic Choice', price: 10, minQty: 10, image: 'assets/catering/classic.jpg',
       desc: 'Choose sandwich or bowl, up to 2 flavors, then a side.',
       included: ['Kettle Cooked Chips'],
       sides: [SIDE_COOKIE, SIDE_PICKLE, { id: 'eggs-2pack', label: '2-Pack of Gourmet Deviled Eggs', price: 4, flavor: true }, SIDE_EGG_SALAD],
     },
     allin: {
-      kind: 'box', id: 'allin', name: 'The "All In" Power Lunch', price: 12.5, minQty: 10, image: 'assets/catering/allin.jpg',
-      desc: 'Choose sandwich or bowl, up to 2 flavors, then pick your sides.',
-      included: ['Kettle Cooked Chips', 'Cookie'],
-      sides: [{ id: 'eggs-2pack', label: 'Gourmet 2-Pack of Deviled Eggs', price: 4, flavor: true }, SIDE_PICKLE, SIDE_EGG_SALAD, { id: 'bag-chips', label: 'Bag of Chips', price: 2 }],
+      kind: 'box', id: 'allin', name: 'The "All In" Power Lunch', price: 15, minQty: 10, image: 'assets/catering/allin.jpg',
+      desc: 'Choose sandwich or bowl, up to 2 flavors, then a drink for every box and any extra sides.',
+      included: ['Signature Full Sandwich or ½ Lunch Size Bowl', 'Kettle Cooked Chips', '½ Kosher Dill Pickle', 'Bottled Beverage'],
+      sides: [{ id: 'eggs-2pack', label: 'Gourmet 2-Pack of Deviled Eggs', price: 4, flavor: true }, { ...SIDE_EGG_SALAD, label: '4oz Side of House-Made Egg Salad' }],
       drinks: CATERING_DRINKS,
     },
     'power-pair': {
@@ -3054,23 +2769,22 @@
   }));
   // The catering items also have a tile on the pickup and delivery order page. (Added here because the catering data is
   // defined here; the tiles are drawn again once it is in.)
-  const CATERING_ORDER_IDS = ['classic', 'allin', 'power-pair', 'bagel-brew', 'hungry-team', 'light-lunch', 'coffee-bar'];
+  const CATERING_ORDER_IDS = ['allin', 'power-pair', 'bagel-brew', 'hungry-team', 'light-lunch', 'coffee-bar'];
   ORDER_GROUPS.push({
     id: 'catering', name: 'Catering', image: 'assets/catering/power-pair.jpg', catering: true,
     items: CATERING_ORDER_IDS.map((id) => {
       const c = CATERING_ITEMS[id];
       return {
-        id, name: c.name, price: c.price, image: c.image, icon: c.icon,
+        id, name: c.name, price: c.price, image: c.image, icon: c.icon, catering: true,
         note: c.kind === 'box' ? 'per box · 10-box minimum' : c.kind === 'bundle' ? 'Serves 10' : 'Serves 10–12',
         desc: c.kind === 'bundle' ? (c.details && c.details[0]) || '' : c.desc,
       };
     }),
   });
-  renderOrderTiles();
 
   // The Catering page's cards: the same cards as the menu, each opening the catering modal.
   const CATERING_PAGE_SECTIONS = {
-    'cater-boxes-grid': ['classic', 'allin'],
+    'cater-boxes-grid': ['allin'],
     'cater-mornings-grid': ['power-pair', 'bagel-brew'],
     'cater-brunch-grid': ['hungry-team', 'light-lunch'],
     'cater-coffee-grid': ['coffee-bar'],
@@ -3130,7 +2844,7 @@
 
   const BOX_PROTEINS = [
     { id: 'sandwich', label: 'Signature Full Sandwich', note: '', flavors: CATERING_SANDWICHES },
-    { id: 'bowl', label: 'Lunch Size Bowl', note: 'High protein', flavors: CATERING_BOWLS },
+    { id: 'bowl', label: '½ Lunch Size Bowl', note: 'High protein', flavors: CATERING_BOWLS },
   ];
   // 10 to 40 one at a time, then bigger steps up to a 200-box event.
   const BOX_QTY_OPTIONS = [...Array.from({ length: 31 }, (_, i) => 10 + i), 45, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200];
@@ -3138,7 +2852,7 @@
   const boxDrinkCount = () => Object.values(box.drinks).reduce((a, n) => a + n, 0);
   const boxSides = () => box.item.sides.filter((side) => box.sides.has(side.id));
   const boxUnitPrice = () => box.item.price + boxSides().reduce((sum, side) => sum + side.price, 0);
-  const boxDrinkCost = () => boxDrinkCount() * CATERING_DRINKS.price;
+  const boxDrinkCost = () => Object.entries(box.drinks).reduce((sum, [name, n]) => sum + n * drinkUpcharge(name), 0);
 
   // The boxes split as evenly as they can between the chosen flavors, the extra one going to the first.
   function boxSplit() {
@@ -3253,24 +2967,29 @@
     });
   }
 
+  // The included drink: one per box, any mix, so the count has to reach the box count (RedBull is +$1 each).
   function renderBoxDrinks() {
     const block = document.getElementById('box-drinks-block');
     block.hidden = !box.item.drinks;
     if (!box.item.drinks) return;
-    document.getElementById('box-drinks-sub').textContent = `${money(CATERING_DRINKS.price)} each. Choose any mix.`;
+    const have = boxDrinkCount();
+    const left = box.qty - have;
+    document.getElementById('box-drinks-sub').textContent = left > 0
+      ? `One bottled drink per box is included. Choose ${left} more. RedBull is +${money(1)} each.`
+      : `All ${box.qty} drinks chosen. Tap − to change the mix.`;
     const grid = document.getElementById('box-drinks-grid');
     grid.innerHTML = '';
-    CATERING_DRINKS.choices.forEach((name) => {
+    CATERING_DRINKS.choices.forEach(({ name, price }) => {
       const qty = box.drinks[name] || 0;
       const row = document.createElement('div');
       row.className = 'flavor-row dozen-flavor-row' + (qty > 0 ? ' selected' : '');
       row.innerHTML = `
         <div class="flavor-row-head">
-          <span class="flavor-row-name">${escapeHTML(name)}</span>
+          <span class="flavor-row-name">${escapeHTML(name)}${price ? `<small class="flavor-row-desc">+${money(price)} each</small>` : ''}</span>
           <div class="mini-stepper">
             <button class="mini-step-btn" type="button" aria-label="Remove one ${escapeHTML(name)}"${qty <= 0 ? ' disabled' : ''}>${STEP_MINUS_ICON}</button>
             <span>${qty}</span>
-            <button class="mini-step-btn" type="button" aria-label="Add one ${escapeHTML(name)}"${qty >= CATERING_DRINKS.maxEach ? ' disabled' : ''}>${STEP_PLUS_ICON}</button>
+            <button class="mini-step-btn" type="button" aria-label="Add one ${escapeHTML(name)}"${left <= 0 ? ' disabled' : ''}>${STEP_PLUS_ICON}</button>
           </div>
         </div>`;
       const [dec, inc] = row.querySelectorAll('.mini-step-btn');
@@ -3280,12 +2999,24 @@
     });
   }
 
+  // A smaller box count can leave more drinks than boxes: take the extras off the end.
+  function trimBoxDrinks() {
+    let over = boxDrinkCount() - box.qty;
+    Object.keys(box.drinks).reverse().forEach((name) => {
+      if (over <= 0) return;
+      const cut = Math.min(over, box.drinks[name]);
+      box.drinks[name] -= cut; over -= cut;
+      if (!box.drinks[name]) delete box.drinks[name];
+    });
+  }
+
   // What still has to be chosen before the box can go in the cart, or null.
   function boxMissing() {
     if (!box.protein) return 'Choose a protein to continue';
     if (!box.flavors.length) return 'Pick a flavor to continue';
     const needFlavor = boxSides().find((side) => side.flavor && !box.sideFlavor[side.id]);
     if (needFlavor) return `Choose a flavor for your ${needFlavor.id === 'egg-salad' ? 'egg salad' : 'deviled eggs'} to continue`;
+    if (box.item.drinks && boxDrinkCount() < box.qty) { const n = box.qty - boxDrinkCount(); return `Choose ${n} more drink${n === 1 ? '' : 's'} to continue`; }
     return null;
   }
 
@@ -3301,7 +3032,7 @@
     const sides = boxSides();
     if (sides.length) rows.push(['Added sides', sides.map((side) => side.label).join(', ')]);
     const drinks = Object.entries(box.drinks).map(([name, n]) => `${n} ${name}`);
-    if (drinks.length) rows.push(['Drinks', drinks.join(', ')]);
+    if (drinks.length) rows.push(['Drinks (included)', drinks.join(', ')]);
     document.getElementById('box-summary').innerHTML = `
       <p class="box-summary-title">Your order</p>
       <dl class="box-summary-list">${rows.map(([k, v]) => `<div><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl>
@@ -3335,7 +3066,7 @@
       flavors: cfg ? [...cfg.flavors] : [],
       sides: new Set(cfg ? cfg.sides : []),
       sideFlavor: cfg ? { ...cfg.sideFlavor } : {},
-      drinks: cfg ? { ...cfg.drinks } : {},
+      drinks: cfg ? Object.fromEntries(Object.entries(cfg.drinks).filter(([name]) => CATERING_DRINKS.choices.some((c) => c.name === name))) : {},
       qty: line ? line.qty : item.minQty,
     });
     document.getElementById('box-modal-title').textContent = item.name;
@@ -3378,13 +3109,17 @@
   boxModalBackdrop.addEventListener('click', closeBoxModal);
   document.getElementById('box-qty-select').addEventListener('change', (e) => {
     box.qty = Number(e.target.value);
+    trimBoxDrinks();
     renderBoxFlavors();
+    renderBoxDrinks();
     renderBoxFooter();
   });
   document.getElementById('box-qty-presets').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
     if (!chip) return;
     box.qty = Number(chip.dataset.qty);
+    trimBoxDrinks();
+    renderBoxDrinks();
     renderBoxFooter();
   });
 
@@ -3425,8 +3160,12 @@
     }
     const bowl = PROTEIN_BOWLS.find((b) => b.name === line.name);
     if (bowl) return { type: 'bowl', productId: bowl.id, addOns: [], exclusions: [], options: [], blank: true };
-    if (line.name === 'Full Size Bagel') return { type: 'bagel', toast: 'Not Toasted', bagelType: 'Plain', flavor: null, options: [], blank: true };
-    if (line.name === WRAP_PRODUCT.name) return { type: 'wrap', productId: WRAP_PRODUCT.id, flavor: null, addOns: [], blank: true };
+    const bagel = BAGEL_ITEMS.find((b) => b.name === line.name);
+    if (bagel || line.name === 'Full Size Bagel') return { type: 'bagel', bagelId: bagel && bagel.id, toast: 'Not Toasted', bagelType: 'Plain', flavor: null, options: [], blank: true };
+    if (line.name === WRAP_PRODUCT.name || / Eggceptional Wrap$/.test(line.name)) {
+      const f = WRAP_FLAVORS.find((w) => line.name.startsWith(w.label));
+      return { type: 'wrap', productId: WRAP_PRODUCT.id, flavor: f ? f.id : null, addOns: [], blank: true };
+    }
     return null;
   }
   const canEditLine = (line) => !!(line.config || line.edit || blankEditSpec(line));
@@ -3438,10 +3177,11 @@
     if (!line.edit) line.edit = blankEditSpec(line);
     const e = line.edit;
     if (LEGACY_OPTION[e.productId] && !e.optionId) e.optionId = LEGACY_OPTION[e.productId][1];
-    if (e.type === 'dozen') openDozenModal(findDozenProduct(e.productId), line);
-    else if (e.type === 'bowl') openBowlModal(PROTEIN_BOWLS.find((b) => b.id === e.productId), line);
-    else if (e.type === 'bagel') openBagelModal(line);
-    else if (e.type === 'wrap') openWrapModal(WRAP_PRODUCT, line);
+    const priced = (p) => (kind === 'delivery' && !line.catering ? deliveryPriced(p) : p);
+    if (e.type === 'dozen') openDozenModal(priced(findDozenProduct(e.productId)), line);
+    else if (e.type === 'bowl') openBowlModal(priced(PROTEIN_BOWLS.find((b) => b.id === e.productId)), line);
+    else if (e.type === 'bagel') openBagelModal(priced(bagelFor(line)), line);
+    else if (e.type === 'wrap') openWrapModal(priced(WRAP_PRODUCT), line);
   }
 
   // Duplicate puts a copy right under the original, same choices, as its own line so one copy can be changed.
@@ -3753,6 +3493,14 @@
     confirmation: `Order confirmed — ${SITE_NAME}`,
   };
 
+  // The menu cards show delivery prices while delivery is being ordered; they are drawn again when that changes.
+  let gridsPricedFor = 'pickup';
+  function refreshGridPrices() {
+    const kind = orderKind();
+    if (kind === gridsPricedFor) return;
+    gridsPricedFor = kind;
+    renderGrids();
+  }
   function showView(name) {
     // The pickup order page is the Pickup funnel's third step: without a chosen store, day and time, start the funnel
     // instead. The products page (#menu) stays open to everyone.
@@ -3775,6 +3523,7 @@
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
     document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
+    syncSiteFooter(name);
     renderNavWhere();
     // The order summary opens expanded at every width; the customer can fold it.
     if (name === 'checkout') setOrderSummaryOpen(true);
@@ -3796,6 +3545,7 @@
     syncHeroVideos();
     updateBarReveal();
     syncPageHash(name);
+    refreshGridPrices();
     if (window.degLocationPicker && window.degLocationPicker.sync) window.degLocationPicker.sync();
   }
 
@@ -3805,6 +3555,13 @@
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
   const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
+  // Going to a page on purpose adds a history entry, so Back returns to the page the customer came from (Home, a store page, the
+  // menu). Replacing is only for tidying the address while the app starts up, or after a redirect.
+  let pageHistoryReady = false;
+  function pushPage(hash) {
+    if ((location.hash || '') === (hash || '')) return;
+    history.pushState(null, '', location.pathname + location.search + hash);
+  }
   function syncPageHash(name) {
     if (!PAGE_VIEWS.includes(name)) return;
     // #order/<group> is the order page too (see openOrderGroup).
@@ -3813,7 +3570,7 @@
     const want = name === 'home' ? '' : (PAGE_HASH_OF[name] || '#' + name);
     if (location.hash === want || (name === 'home' && (location.hash === '' || location.hash === '#home'))) return;
     const url = location.pathname + location.search + want;
-    if (CHECKOUT_VIEWS.includes(name)) history.pushState(null, '', url);
+    if (CHECKOUT_VIEWS.includes(name) || pageHistoryReady) history.pushState(null, '', url);
     else history.replaceState(null, '', url);
   }
 
@@ -3838,7 +3595,7 @@
 
   // The logo is the way home; the tiles are the front doors to each order path.
   const goHome = () => {
-    history.replaceState(null, '', '#home');
+    pushPage('');
     showView('home');
   };
   // Two logos, one shown at a time: the wordmark, and on phones the egg submark (the checkout bar keeps the wordmark).
@@ -3893,6 +3650,7 @@
     showView('order');
     if (views.order.hidden || !g) return;
     if (!single) openOrderGroup(g.id, { push: false });
+    if (!target.item) { window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' }); return; }
     requestAnimationFrame(() => {
       const opener = single ? document.querySelector(`.order-tile[data-group="${g.id}"]`) : document.querySelector(`#order-rows .order-row[data-item="${target.item.id}"]`);
       if (opener) { opener.scrollIntoView({ block: 'center' }); opener.focus({ preventScroll: true }); }
@@ -3913,7 +3671,8 @@
   // session the "where" modal comes first; with one whose time is too soon only the day and time are asked again, for the same store
   // or address. A valid session that meets the notice opens the item at once. The customer stays on the Catering page.
   function gateCatering(resume) {
-    if (views.catering.hidden) return false;
+    // On the Catering page, and on the order page's Catering group (where a session always exists, so only a too-soon time can arise).
+    if (views.catering.hidden && views.order.hidden) return false;
     const delivery = state.orderMode === 'delivery';
     const kind = delivery ? 'delivery' : 'pickup';
     const chosen = delivery ? deliverySessionValid() : pickupSessionValid();
@@ -4077,12 +3836,12 @@
     // A catering flag left over from a funnel that never finished must not send this customer to Catering.
     if (cateringIntent && !toCatering) setCateringIntent(false);
     if (toCatering) {
-      history.replaceState(null, '', '#order/catering');
+      pushPage('#order/catering');
       showView('order');
       openOrderGroup('catering', { push: false });
       return;
     }
-    history.replaceState(null, '', '#order');
+    pushPage('#order');
     showView('order');
   }
 
@@ -4107,7 +3866,7 @@
     if (path === 'catering') { setCateringIntent(true); startFunnel('pickup'); funnelForCatering = true; return; }
     setCateringIntent(false);
     if (path === 'shipping') {
-      history.replaceState(null, '', '#' + path);
+      pushPage('#' + path);
       showView(path);
       return;
     }
@@ -4119,7 +3878,7 @@
   // The location picker's "Nationwide Shipping" link for searches with no store nearby.
   if (window.degLocationPicker) {
     window.degLocationPicker.onNavigate = (page) => {
-      history.replaceState(null, '', '#' + page);
+      pushPage('#' + page);
       showView(page);
     };
   }
@@ -4145,7 +3904,7 @@
     if (!link) return;
     e.preventDefault();
     const name = link.dataset.view;
-    history.replaceState(null, '', '#' + name);
+    pushPage(name === 'home' ? '' : '#' + name);
     showView(name);
   });
   // Refreshing always starts over at Home. A link opened fresh (a bookmark, a shared #shipping) still goes
@@ -4209,6 +3968,26 @@
       form.querySelector('.page-success').hidden = false;
       form.querySelectorAll('input, button').forEach((el) => { el.disabled = true; });
     });
+  });
+
+  // ---------- Site footer ----------
+  // One footer under every page. Browsing pages get the full one, checkout and Confirmation the slim line, and
+  // Nationwide Shipping leaves out the sign-up (it has its own).
+  const siteFooter = document.getElementById('site-footer');
+  function syncSiteFooter(name) {
+    siteFooter.dataset.mode = CHECKOUT_VIEWS.includes(name) || name === 'confirmation' ? 'slim' : 'full';
+    siteFooter.dataset.view = name;
+  }
+  siteFooter.addEventListener('click', (e) => {
+    if (e.target.closest('[data-open-where]')) { e.preventDefault(); intentBeforeFunnel = cateringIntent; setCateringIntent(false); openWhere(wm.tab); return; }
+    const store = e.target.closest('[data-store]');
+    if (store) { e.preventDefault(); pushPage('#store/' + store.dataset.store); showStorePage(store.dataset.store); return; }
+    const link = e.target.closest('a[data-view]');
+    if (!link) return;
+    e.preventDefault();
+    const name = link.dataset.view;
+    pushPage(name === 'home' ? '' : '#' + name);
+    showView(name);
   });
 
   // Which cart the open checkout belongs to — its back link returns there.
@@ -4731,10 +4510,79 @@
     wrap.classList.toggle('can-scroll-right', list.scrollLeft < max - 1);
   }
 
+  // The day tiles are the next week; a day chosen from the full calendar beyond them gets a tile at the end, selected.
+  const PICKUP_HORIZON_DAYS = 60;
+  function dateInfoFor(key) {
+    const [y, m, dd] = key.split('-').map(Number);
+    const d = new Date(y, m - 1, dd);
+    const tileTop = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const tileSub = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return { key, label: `${tileTop}, ${tileSub}`, tileTop, tileSub };
+  }
+  const ldDateTiles = () => (ld && ld.dateKey && !pickupDatesCache.some((d) => d.key === ld.dateKey) ? [...pickupDatesCache, dateInfoFor(ld.dateKey)] : pickupDatesCache);
+  const horizonKey = () => { const n = new Date(); return dateKey(new Date(n.getFullYear(), n.getMonth(), n.getDate() + PICKUP_HORIZON_DAYS)); };
+
+  // "View full calendar": a month at a time, up to PICKUP_HORIZON_DAYS ahead. A day with no times (closed, or too soon for catering) is dimmed.
+  let ldCalMonth = null;
+  function renderLdCalendar() {
+    const first = ldCalMonth;
+    const todayKey = dateKey(new Date());
+    const last = horizonKey();
+    document.getElementById('ld-cal-title').textContent = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const lead = first.getDay();
+    const days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    let html = '<span></span>'.repeat(lead);
+    for (let i = 1; i <= days; i++) {
+      const d = new Date(first.getFullYear(), first.getMonth(), i);
+      const key = dateKey(d);
+      const off = key < todayKey || key > last || ldTimeOptions(key).length === 0;
+      const on = ld && key === ld.dateKey;
+      html += `<button class="ld-cal-day${on ? ' is-on' : ''}${key === todayKey ? ' is-today' : ''}" type="button" data-key="${key}" aria-pressed="${on}" aria-label="${d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}"${off ? ' disabled' : ''}>${i}</button>`;
+    }
+    const grid = document.getElementById('ld-cal-grid');
+    grid.innerHTML = html;
+    grid.querySelectorAll('.ld-cal-day:not([disabled])').forEach((btn) => btn.addEventListener('click', () => {
+      ld.dateKey = btn.dataset.key;
+      ld.timeId = null;
+      ld.timeLabel = null;
+      closeLdCalendar();
+      renderLdDates();
+      renderLdTimes();
+      renderLdFooter();
+      const active = document.querySelector('#ld-date-list .pickup-date-tile.active');
+      if (active) active.scrollIntoView({ block: 'nearest', inline: 'center' });
+    }));
+    const thisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const lastDay = new Date(last.split('-')[0], Number(last.split('-')[1]) - 1, 1);
+    document.getElementById('ld-cal-prev').disabled = first <= thisMonth;
+    document.getElementById('ld-cal-next').disabled = first >= lastDay;
+  }
+  function closeLdCalendar() {
+    document.getElementById('ld-calendar').hidden = true;
+    const link = document.getElementById('ld-calendar-open');
+    link.setAttribute('aria-expanded', 'false');
+    link.textContent = 'View full calendar';
+  }
+  document.getElementById('ld-calendar-open').addEventListener('click', (e) => {
+    const panel = document.getElementById('ld-calendar');
+    if (!panel.hidden) { closeLdCalendar(); return; }
+    const from = ld && ld.dateKey ? dateInfoFor(ld.dateKey).key : dateKey(new Date());
+    const [y, m] = from.split('-').map(Number);
+    ldCalMonth = new Date(y, m - 1, 1);
+    renderLdCalendar();
+    panel.hidden = false;
+    e.currentTarget.setAttribute('aria-expanded', 'true');
+    e.currentTarget.textContent = 'Hide calendar';
+  });
+  [['ld-cal-prev', -1], ['ld-cal-next', 1]].forEach(([id, step]) => document.getElementById(id).addEventListener('click', () => {
+    ldCalMonth = new Date(ldCalMonth.getFullYear(), ldCalMonth.getMonth() + step, 1);
+    renderLdCalendar();
+  }));
+
   function renderLdDates() {
     const list = document.getElementById('ld-date-list');
     list.innerHTML = '';
-    pickupDatesCache.forEach((d) => {
+    ldDateTiles().forEach((d) => {
       const closed = ldTimeOptions(d.key).length === 0; // e.g. today after the store has closed
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -4804,6 +4652,7 @@
     document.getElementById('ld-hours').textContent = bagHasCatering(noticeKind) ? `${hoursText}. Catering in your bag needs ${cateringNoticeText(noticeKind)}.`
       : cateringIntent || cateringTap ? `${hoursText}. Catering orders need ${cateringNoticeText(noticeKind)}.${cateringTap && cartCount(noticeKind) > 0 ? ' Your whole order will be ready at the time you choose.' : ''}` : hoursText;
     document.getElementById('ld-change').textContent = delivery ? 'Change address' : 'Change store';
+    closeLdCalendar();
     renderLdDates();
     renderLdTimes();
     renderLdFooter();
@@ -6259,6 +6108,8 @@
           ? `Order {number} · We're preparing it now — arriving ${whenPhrase}`
           : `Order {number} · Scheduled for delivery ${whenPhrase}`,
         steps: ['Preparing', 'Delivered'],
+        name: document.getElementById('dc-name').value,
+        cheer: 'Your order is about to hit the road.',
         items, total,
         cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
         backLabel: '← Back to home', backView: 'home',
@@ -6273,7 +6124,73 @@
   let confirmBack = 'order';
   const orderNumber = () => '#DE-' + Math.floor(10000 + Math.random() * 89999);
 
-  function showConfirmation({ number, subHTML, steps, items, total, cardHTML, backLabel, backView }) {
+  // The moment after an order is placed: a greeting by first name and a line of the brand's voice, then the page is "stamped" (see
+  // "Confirmation: the order is stamped" in styles.css) with a burst of yolk-colored confetti. None of it waits on anything: the page
+  // is complete and usable the whole time, and with reduced motion it simply is the finished page.
+  const motionReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const firstNameOf = (full) => {
+    const first = String(full || '').trim().split(/\s+/)[0] || '';
+    return first && first === first.toLowerCase() ? first.charAt(0).toUpperCase() + first.slice(1) : first;
+  };
+  const CONFETTI_COLORS = ['#F7BA17', '#FFD426', '#FFDEA0', '#8B5E00', '#130D00'];
+  function confettiBurst(origin) {
+    const layer = document.createElement('div');
+    layer.className = 'confetti-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    const g = 1500; // px/s², so the pieces arc up and then fall
+    let longest = 0;
+    for (let i = 0; i < 34; i += 1) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      const size = 6 + Math.random() * 7;
+      const yolk = i % 3 === 0;
+      piece.style.width = `${size}px`;
+      piece.style.height = `${yolk ? size : size * 1.35}px`;
+      piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+      piece.style.borderRadius = yolk ? '50%' : '50% 50% 50% 50% / 62% 62% 38% 38%'; // a yolk, or a little egg
+      const angle = (-90 + (Math.random() - .5) * 150) * Math.PI / 180;
+      const speed = 380 + Math.random() * 520;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      const life = 1.5 + Math.random() * .8;
+      const spin = (Math.random() - .5) * 900;
+      const frames = [];
+      for (let k = 0; k <= 12; k += 1) {
+        const t = (k / 12) * life;
+        frames.push({
+          transform: `translate(${origin.x + vx * t}px, ${origin.y + vy * t + .5 * g * t * t}px) rotate(${spin * t}deg)`,
+          opacity: k / 12 > .72 ? 1 - (k / 12 - .72) / .28 : 1,
+          offset: k / 12,
+        });
+      }
+      piece.animate(frames, { duration: life * 1000, delay: 380 + Math.random() * 90, easing: 'linear', fill: 'both' });
+      longest = Math.max(longest, life * 1000 + 470);
+      layer.appendChild(piece);
+    }
+    document.body.appendChild(layer);
+    window.setTimeout(() => layer.remove(), longest + 100);
+  }
+  let celebrateTimer = null;
+  function celebrateOrder() {
+    const view = views.confirmation;
+    window.clearTimeout(celebrateTimer);
+    view.classList.remove('is-celebrating');
+    if (motionReduced()) return;
+    view.querySelectorAll('.recap .summary-line').forEach((line, i) => line.style.setProperty('--i', String(Math.min(i, 8))));
+    void view.offsetWidth; // restart the sequence for an order placed after another
+    view.classList.add('is-celebrating');
+    celebrateTimer = window.setTimeout(() => view.classList.remove('is-celebrating'), 3600);
+    const badge = view.querySelector('.success-badge').getBoundingClientRect();
+    if (badge.width && view.querySelector('.success-badge').animate) confettiBurst({ x: badge.left + badge.width / 2, y: badge.top + badge.height / 2 });
+    if (navigator.vibrate) navigator.vibrate([14, 50, 22]);
+  }
+
+  function showConfirmation({ number, subHTML, steps, items, total, cardHTML, backLabel, backView, name, cheer }) {
+    const who = firstNameOf(name);
+    document.getElementById('confirm-title').textContent = who ? `Order confirmed, ${who}!` : 'Order confirmed!';
+    const cheerEl = document.getElementById('confirm-cheer');
+    cheerEl.textContent = cheer || '';
+    cheerEl.hidden = !cheer;
     document.getElementById('confirm-sub').innerHTML = subHTML.replace('{number}', `<strong>${number}</strong>`);
     document.getElementById('progress-step2-label').textContent = steps[0];
     document.getElementById('progress-step3-label').textContent = steps[1];
@@ -6295,6 +6212,7 @@
     const heading = document.querySelector('#view-confirmation h1');
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
+    celebrateOrder();
   }
 
   // A catering box keeps its choices in .config, not in .sub, so its detail comes from lineSub like the bag's; the text is already safe HTML.
@@ -6305,7 +6223,10 @@
   function moveCart(from, to) {
     const lines = state.carts[from];
     if (!lines.length) return 0;
-    lines.forEach((line) => { if (line.cart) line.cart = to; });
+    lines.forEach((line) => {
+      if (line.cart) line.cart = to;
+      if (!line.catering && typeof line.basePrice === 'number') line.price = to === 'delivery' ? forDelivery(line.basePrice) : line.basePrice;
+    });
     state.carts[to].push(...lines);
     state.carts[from] = [];
     persistCart();
@@ -6377,6 +6298,8 @@
           ? `Order {number} · We're preparing it now — ready for pickup at <strong>${state.location}</strong> ${whenPhrase}`
           : `Order {number} · Scheduled for pickup at <strong>${state.location}</strong> ${whenPhrase}`,
         steps: ['Preparing', 'Ready'],
+        name: document.getElementById('co-name').value,
+        cheer: state.pickupTimeId === ASAP_ID ? 'We’re already deviling your order.' : 'We’ll have it deviled and waiting.',
         items, total,
         cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
         backLabel: '← Back to home', backView: 'home',
@@ -6685,6 +6608,8 @@
       number: orderNumber(),
       subHTML: `Order {number} · We'll email your tracking link the morning we ship. Your kit is reserved for the <strong>${chosen.label} window (${chosen.range})</strong>.`,
       steps: ['Packing', 'Shipped'],
+      name: f('name').value,
+      cheer: 'Your kit is reserved. Good egg.',
       items, total: t.total,
       cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
       backLabel: '← Back to Nationwide Shipping', backView: 'shipping',
@@ -6705,4 +6630,5 @@
   renderNavWhere();
   setShipVersion(shipVersion);
   openFirstPage();
+  pageHistoryReady = true;
 })();

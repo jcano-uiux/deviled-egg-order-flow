@@ -1,0 +1,1894 @@
+/* Tokens and shared primitives (buttons, chips, fields, selectable rows)
+   live in design-system.css, linked before this file. Everything below is
+   page-specific layout that builds on that system. */
+
+/* ---------- Header ---------- */
+/* Sticky at every width — stays above the mobile/tablet category pill bar
+   (z-index 30, which offsets its own top by this header's own stable
+   69px height below) but under overlays/modals (40+), so cart and item
+   modals still cover it as expected. Height is explicit (not padding-
+   derived) so it holds at exactly 69px regardless of content — .nav-
+   inner fills it and centers its own children vertically. */
+.site-header { position: sticky; top: 0; z-index: 35; height: 69px; background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card); }
+/* Full-bleed on purpose — unlike .view below it,
+   which stays in a contained column, the nav bar itself spans the entire
+   viewport. .nav-links is already flex-grow:1 + justify-content:center,
+   so it fills and re-centers in whatever width is left between the logo
+   and cart button rather than needing any other structural change.
+   position:relative is permanent (not compact-only) since app.js's
+   hidden .nav-links-probe anchors off of it in every mode. */
+.nav-inner { position: relative; display: flex; align-items: center; height: 100%; padding: 0 32px; }
+.logo { height: 37px; width: auto; flex: none; margin-right: 16px; }
+.logo-mark { display: none; }
+/* On the checkout pages the bar keeps its 69px and its logo but sheds the way out: no menu, no links, no cart, just a
+   round back-to-cart button on the left and the logo centered (set by body.is-checkout in app.js). */
+/* .order-back (the shared round button) sets display later in the file, so the hidden state needs the extra specificity. */
+.nav-inner .nav-back { display: none; }
+body.is-checkout .nav-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+body.is-checkout .nav-inner .nav-back { display: grid; grid-column: 1; grid-row: 1; justify-self: start; }
+body.is-checkout .nav-inner .logo { grid-column: 2; grid-row: 1; justify-self: center; margin-right: 0; }
+body.is-checkout .nav-inner .nav-links, body.is-checkout .nav-inner .nav-backdrop, body.is-checkout .nav-inner .nav-toggle, body.is-checkout .nav-inner .cart-btn, body.is-checkout .nav-inner .nav-where { display: none; }
+.nav-links { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
+/* Exists only so the compact dropdown has a single child to measure for
+   the grid-rows open/close animation below — at desktop width .nav-links
+   itself is still the flex row, so this stays transparent to layout. */
+.nav-links-inner { display: contents; }
+.nav-link { padding: 10px; font-size: 14px; line-height: 16px; font-weight: 700; text-transform: uppercase; color: var(--deg-ink-body); white-space: nowrap; text-decoration: none; }
+.nav-where { flex: none; display: inline-flex; align-items: center; gap: 8px; max-width: 220px; min-height: 44px; margin-left: 16px; padding: 0 4px; background: none; border: 0; border-radius: var(--deg-radius-compact); color: var(--deg-ink-deep); text-align: left; }
+.nav-where:hover .nav-where-name { text-decoration: underline; text-underline-offset: 3px; }
+.nav-where-pin { flex: none; }
+.nav-where[data-path="delivery"] .nav-where-ico-pickup, .nav-where:not([data-path="delivery"]) .nav-where-ico-delivery { display: none; }
+.nav-where-text { display: flex; flex-direction: column; min-width: 0; }
+.nav-where-verb { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-muted); white-space: nowrap; }
+.nav-where-name { font-size: 14px; line-height: 18px; font-weight: 700; color: var(--deg-ink-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-btn { position: relative; width: 40px; height: 40px; background: var(--deg-ink-deep); margin-left: 16px; }
+.cart-badge {
+  position: absolute; top: -4px; right: -6px; background: var(--deg-error); color: var(--deg-white);
+  font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* The add-to-order moment (see celebrateAdd in app.js): the token that flies from
+   the product to the cart, then the cart button and count react when it lands. */
+.fly-thumb { position: fixed; z-index: 90; border-radius: 50%; background-color: var(--deg-gold); background-size: cover; background-position: center; box-shadow: 0 8px 20px rgba(19,13,0,.28); pointer-events: none; will-change: transform; }
+.cart-btn.is-pop { animation: cart-pop .6s cubic-bezier(.22,1,.36,1); }
+.cart-badge[hidden] { display: none; }
+.cart-badge.is-bump { animation: badge-bump .5s cubic-bezier(.22,1,.36,1); }
+@keyframes cart-pop {
+  0% { transform: scale(1) rotate(0); }
+  22% { transform: scale(1.22) rotate(-9deg); }
+  48% { transform: scale(.94) rotate(6deg); }
+  74% { transform: scale(1.05) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes badge-bump { 0% { transform: scale(1); } 35% { transform: scale(1.6); } 100% { transform: scale(1); } }
+@keyframes cart-calm { 0% { opacity: .45; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .cart-btn.is-pop, .cart-badge.is-bump { animation: cart-calm .5s ease; }
+}
+
+/* Off-screen, unfocusable (aria-hidden + inert, set in app.js) clone of
+   the link list, forced onto one line — its scrollWidth is how app.js
+   measures whether the real, visible links would wrap to a second line
+   at the current width, independent of which mode (full or compact) is
+   presently rendered. See "Nav menu toggle" in app.js. */
+.nav-links-probe { position: absolute; top: -9999px; left: -9999px; display: flex; flex-wrap: nowrap; visibility: hidden; }
+
+/* Content-driven, not a viewport breakpoint: app.js measures the real
+   link set against .nav-links-probe and applies .nav-compact the moment
+   it would wrap to a second line, whatever width that happens to be at —
+   a phone, a squeezed desktop window, 200% zoom, all the same rule. */
+.nav-toggle { display: none; width: 40px; height: 40px; margin-left: 8px; background: transparent; color: var(--deg-ink-deep); }
+.nav-toggle:hover { background: var(--deg-cream-cool); }
+.nav-toggle .icon-close { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+/* Same "1fr auto 1fr" centering grid as .item-modal-header and
+   .view — the one proven way in this codebase to
+   center an item between two others of unequal width, rather than
+   flex justify-content:space-between quietly relying on the toggle
+   and cart buttons happening to be the same size. */
+.nav-inner.nav-compact { display: flex; align-items: center; }
+/* The compact bar follows Chipotle's: logo, then the menu button, then the order indicator pushed right up against the
+   cart (the free space sits between the menu button and the indicator), then the cart. The row is plain flex; the absolutely positioned .nav-links sits outside it. */
+.nav-compact .logo { order: 1; margin-right: 8px; }
+.nav-compact .nav-toggle { order: 2; display: flex; margin-left: 0; }
+.nav-compact .nav-where { order: 3; flex: 0 1 auto; justify-content: flex-start; max-width: none; margin-left: auto; margin-right: 0; min-width: 0; }
+.nav-compact .cart-btn { order: 4; margin-left: 12px; }
+/* The order indicator is hidden where it means nothing (the Shipping page, the location finder, the confirmation, a shipping-only bag); the cart keeps the right edge. */
+body.no-nav-where .nav-where { display: none; }
+body.no-nav-where .nav-compact .cart-btn { margin-left: auto; }
+/* A passed time or a bag short of the delivery minimum is flagged in the indicator's first line. */
+.nav-where[data-alert="true"] .nav-where-verb { color: var(--deg-error); font-weight: 700; }
+.nav-where[data-note="true"] .nav-where-verb { color: var(--deg-ink-body); font-weight: 700; }
+/* Collapses into an anchored dropdown instead of wrapping onto extra
+   header rows — .nav-compact only turns on once the full link set has
+   nowhere near enough room to wrap gracefully, so it's hidden until
+   .nav-toggle opens it rather than half-shown.
+   Animates grid-template-rows (0fr → 1fr), not height/max-height —
+   a layout property whose animation forces layout on every frame.
+   grid-template-rows is composited like transform/opacity, so the
+   open/close motion stays off the layout thread. max-height + auto
+   overflow below is a static (unanimated) safety cap for a short
+   viewport, not part of the transition. */
+.nav-compact .nav-links {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 40;
+  /* grid-template-columns:1fr is load-bearing, not tidiness: left unset,
+     the single column defaults to content-hugging width, and the base
+     (desktop) .nav-links rule's justify-content:center — meant to center
+     the inline link row between the logo and cart — was still cascading
+     in here uncontested, centering that narrow hugged column in the
+     dropdown. Reading as "the menu is centered" even though each link's
+     own text was already text-align:start the whole time. */
+  display: grid; grid-template-columns: 1fr; grid-template-rows: 0fr; justify-content: normal;
+  background: var(--deg-white); border-bottom: 1px solid var(--deg-border-card);
+  box-shadow: var(--deg-shadow-ambient);
+  max-height: 70vh; overflow-y: auto; opacity: 0;
+  transition: grid-template-rows .22s ease, opacity .18s ease;
+}
+.nav-compact .nav-links.open { grid-template-rows: 1fr; opacity: 1; }
+.nav-compact .nav-links-inner {
+  display: flex; flex-direction: column; align-items: stretch;
+  min-height: 0; overflow: hidden; padding: 4px 32px;
+}
+/* Bigger and bolder, closer to crumblcookies.com's mobile menu (their
+   rows run ~34px/40px, extrabold, plain case) — reusing this project's
+   own display type (Nunito 800, the project's one heading weight) rather
+   than their font, and sized to this project's existing 20px/28px
+   headline step so it stays on the established type scale instead of a
+   one-off size. Uppercase+tracking (the desktop nav's own treatment)
+   dropped here: at this size/weight the case itself carries the
+   emphasis, the way Crumbl's does. */
+.nav-compact .nav-link {
+  width: 100%; text-align: left; padding: 14px 0; border-bottom: 1px solid var(--deg-border-chip);
+  font-family: var(--deg-font-display); font-size: 20px; line-height: 28px; font-weight: 800; text-transform: none;
+}
+.nav-compact .nav-link:last-child { border-bottom: none; }
+/* Close button for the mobile drawer only, and the dimmed page behind it (see the 640px block). */
+.nav-panel-head { display: none; }
+.nav-backdrop { display: none; }
+
+/* ---------- Menu view ---------- */
+/* Tracks .view's own side padding so the mobile nav's edge-to-edge bleed
+   (below) can cancel exactly whatever that padding currently is, rather
+   than a hardcoded value that would go stale wherever the padding itself
+   changes at a narrower breakpoint. */
+.view { --deg-view-pad-x: 40px; max-width: 1280px; margin: 0 auto; padding: 24px var(--deg-view-pad-x) 60px; }
+
+.menu-layout { display: flex; gap: 40px; align-items: flex-start; }
+
+/* ---- Store sidebar: location card + menu-category drawer ---- */
+/* top: 93px = .site-header's own 69px height + the original 24px of
+   breathing room — now that the header is sticky too, stopping at a
+   bare 24px would tuck the sidebar's top behind it. */
+.store-sidebar { width: 276px; flex: none; position: sticky; top: 93px; }
+/* Previously unset — .menu-content's width came only from its grid
+   children's own intrinsic size, which the old `repeat(2, minmax(0,1fr))`
+   happened to over-report (via long description text), so flex-shrink
+   quietly clamped it down to fill the row. `repeat(auto-fill, ...)`
+   can't do that: auto-repeat has no definite container width to divide
+   into tracks during intrinsic sizing, so it resolves to a single track
+   and reports a much smaller size — with nothing forcing growth, .menu-
+   content just sat at that size instead of filling the row. flex-grow
+   makes the fill explicit instead of relying on oversized content to
+   trigger a shrink to the same result. Below 900px, .menu-layout
+   switches to flex-direction:column, which swaps which axis is "main" —
+   width becomes the CROSS axis there, so flex-grow stops applying to it
+   and the very same shrink-to-fit gap reappears (visible on the sparse
+   delivery-partner grid, whose small intrinsic width no longer gets
+   forced to fill the row, while the product grids' larger intrinsic
+   width happened to still reach full width by coincidence). align-self:
+   stretch covers the width in column mode without disturbing flex-grow's
+   handling of it in row mode, where width is main-axis instead. */
+.menu-content { flex: 1 1 0%; align-self: stretch; min-width: 0; }
+.store-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 24px 8px; }
+/* Figma annotation (node 231:6791, mobile frame): "in mobile the shop
+   title and the badge is centered." Centers the whole card's text, not
+   just the title — tagline/address directly under a centered heading in
+   this narrow a column read unfinished left-aligned on their own. */
+.store-name { font-size: 32px; line-height: 40px; font-weight: 700; }
+.store-address { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
+.store-info-btn { margin-top: 16px; padding: 8px 16px; font-size: 14px; }
+
+.sidebar-divider { height: 1px; background: var(--deg-border-primary); }
+
+.sidebar-menu-head { display: flex; flex-direction: column; gap: 2px; padding: 16px 0 16px 8px; }
+.sidebar-menu-label { font-size: 16px; font-weight: 500; color: var(--deg-ink-body); }
+.sidebar-menu-hours { font-size: 12px; line-height: 20px; color: var(--deg-ink-muted); }
+
+.drawer-nav { display: flex; flex-direction: column; }
+.category-item {
+  text-align: left; background: transparent; border: none; border-left: 4px solid transparent;
+  border-radius: 0; padding: 14px 12px 14px 16px; margin-left: 8px;
+  font-size: 16px; font-weight: 500; line-height: 24px; color: var(--deg-ink-muted);
+}
+.category-item.active { background: var(--deg-gold-tint); border-left-color: var(--deg-border-primary); color: var(--deg-ink-heading); }
+/* Mobile-only twin of .drawer-nav — see the markup comment in index.html.
+   Hidden above the mobile breakpoint (see the ≤640px block) so it never
+   competes with the desktop/tablet copy nested in .store-sidebar. */
+.drawer-nav-mobile { display: none; }
+
+/* ---- Hero, pickup/delivery toggle ---- */
+/* Flush with the sidebar+content row below it (not a wider full-bleed) —
+   same left/right edges as .menu-layout, both simply inset by .view's own
+   padding, so the banner reads as the top of one aligned column instead
+   of a wider strip sitting above it. */
+/* ---------- Pickup order page (#order) ----------
+   Chipotle's mobile ordering structure in our own system: a list of wide category tiles, and a screen of rows for a
+   tile that stands for several products. Quiet white cards, one dark Add circle, no gold. */
+.order-title { margin: 0 0 16px; font-size: 28px; line-height: 36px; }
+.order-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.order-tile { display: flex; align-items: center; width: 100%; padding: 0; text-align: left; color: inherit; background: var(--deg-white); border: 1px solid var(--deg-border-card); box-shadow: var(--deg-shadow-card); }
+.order-tile { gap: 16px; min-height: 112px; padding-right: 16px; border-radius: var(--deg-radius-media); overflow: hidden; }
+.order-tile:hover { border-color: var(--deg-border-chip); }
+.order-tile-media { position: relative; flex: none; align-self: stretch; width: 128px; background: var(--deg-cream-cool); }
+.order-tile-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.order-tile-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.order-tile-name { font-family: var(--deg-font-display); font-weight: 800; font-size: 22px; line-height: 28px; color: var(--deg-ink-heading); }
+.order-tile-sub { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.order-tile-chevron { flex: none; color: var(--deg-ink-muted); }
+.order-group-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.order-group-head .order-title { margin: 0; }
+.order-back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.order-back:hover { background: var(--deg-border-chip); }
+/* A group's screen is a photo grid, two across even on a phone: the photo leads, the Add circle sits on its corner. */
+.order-rows { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.order-rows li { display: flex; }
+.order-row { position: relative; container-type: inline-size; display: flex; flex-direction: column; align-items: stretch; width: 100%; height: 100%; padding: 0; overflow: hidden; text-align: left; color: inherit; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-card); }
+.order-row:hover { border-color: var(--deg-border-chip); }
+.order-row-media { position: relative; flex: none; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--deg-cream-cool); }
+.order-row-media > .shop-card-photo, .order-row-media > .thumb { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
+.order-row-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 12px 14px 16px; }
+.order-row-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-family: var(--deg-font-display); font-weight: 800; font-size: 16px; line-height: 22px; color: var(--deg-ink-heading); }
+.order-row-meta { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.order-row-price { font-weight: 600; color: var(--deg-ink-heading); }
+.order-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.order-row-add { position: absolute; right: 10px; top: calc(75cqw - 46px); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; box-shadow: 0 0 0 3px var(--deg-white); transition: background-color .15s ease; }
+.order-row:hover .order-row-add { background: var(--deg-ink-deep-hover); }
+
+@media (min-width: 900px) {
+  .order-rows { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+}
+.option-block { margin-bottom: 24px; }
+.order-view { padding-bottom: 112px; } /* clears the pinned View cart pill */
+@media (min-width: 900px) {
+  .order-title { font-size: 32px; line-height: 40px; }
+  .order-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .order-tile { flex-direction: column; align-items: stretch; gap: 0; min-height: 0; padding: 0; }
+  .order-tile-media { width: auto; aspect-ratio: 4 / 3; }
+  .order-tile-text { padding: 16px 20px 0; }
+  .order-tile-chevron { display: none; }
+  .order-tile-sub { padding-bottom: 20px; }
+}
+
+.store-hero { position: relative; margin: 0 0 24px; border-radius: var(--deg-radius-media); aspect-ratio: 1200 / 250; background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); overflow: hidden; }
+.hero-media { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hero-more-btn { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+
+.thumb { border-radius: var(--deg-radius-card); background: linear-gradient(135deg, var(--deg-cream-deep), var(--deg-cream-cool)); display: flex; align-items: center; justify-content: center; flex: none; }
+.price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 26px; color: var(--deg-ink-deep); }
+
+/* ---- Featured items ----
+   The delivery-app carousel: heading with round prev/next arrows, then a
+   row of square-photo cards that scrolls (and snaps) sideways. Photo leads,
+   the Quick Add sits on the photo's corner, name and price sit beneath it
+   with no card chrome — the photo is the card. Four and a bit cards show on
+   desktop so the row reads as "there's more"; phones show ~2.3. */
+.featured { margin-top: 32px; }
+.featured-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.featured-head h2 { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+.featured-nav { display: flex; gap: 8px; }
+.featured-arrow {
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center;
+  background: var(--deg-cream-cool); color: var(--deg-ink-deep); transition: background-color .15s ease, opacity .15s ease;
+}
+.featured-arrow:hover:not(:disabled) { background: var(--deg-border-chip); }
+.featured-arrow:disabled { opacity: .35; cursor: default; }
+.featured-arrow:focus-visible { outline: 2px solid var(--deg-ink-deep); outline-offset: 2px; }
+
+.featured-track {
+  --featured-gap: 16px;
+  list-style: none; margin: 0; padding: 4px 0 8px;
+  display: grid; grid-auto-flow: column; gap: var(--featured-gap);
+  grid-auto-columns: calc((100% - 3.5 * var(--featured-gap)) / 4.25);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.featured-track::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { .featured-track { scroll-behavior: auto; } }
+
+.featured-card { display: flex; flex-direction: column; gap: 10px; scroll-snap-align: start; cursor: pointer; min-width: 0; }
+.featured-media { position: relative; aspect-ratio: 1; border-radius: var(--deg-radius-card); overflow: hidden; background: var(--deg-cream-cool); }
+.featured-media .shop-card-photo, .featured-media .thumb { width: 100%; height: 100%; border-radius: 0; }
+.featured-media .shop-card-photo { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.featured-card:hover .featured-media .shop-card-photo { transform: scale(1.04); }
+.featured-card:hover .add-btn, .featured-card:focus-within .add-btn { background: var(--deg-ink-deep-hover); }
+.featured-badge {
+  position: absolute; top: 10px; left: 10px; z-index: 1;
+  background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 12px; font-weight: 700; line-height: 1;
+  padding: 6px 10px; border-radius: var(--deg-radius-pill);
+}
+.featured-name {
+  font-weight: 600; font-size: 15px; line-height: 20px; color: var(--deg-ink-deep);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.featured-meta { display: flex; align-items: baseline; gap: 6px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); margin-top: -6px; }
+.featured-price { font-weight: 600; color: var(--deg-ink-body); font-variant-numeric: tabular-nums; }
+
+/* scroll-margin-top matches .store-sidebar's own sticky top (93px =
+   .site-header's 69px + its 24px breathing room) — clicking a category
+   pill calls scrollIntoView on this element directly, and without this
+   the sticky header now covers exactly that much of whatever lands at
+   the very top of the viewport, hiding the heading it just navigated to. */
+#menu-top, .menu-section { scroll-margin-top: 93px; }
+.menu-section { margin-top: 56px; }
+.menu-section h2 { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); margin-bottom: 14px; }
+
+/* ---- Unified shop card — used by every menu category ---- */
+/* A flat `repeat(2, ...)` forces two columns at any container width, so
+   between the ≤900px stacked-sidebar breakpoint and the ~1280px design
+   width, each card gets squeezed below its comfortable size — the fixed
+   161px media stays full-size while the body's share keeps shrinking.
+   auto-fill lets a track drop to one full-width column once two can no
+   longer fit at a sane minimum, instead of forcing both into a squeeze;
+   unlike auto-fit, an unfilled second track still reserves its space
+   rather than stretching a lone card (e.g. Bagels, Sandwich/Wrap) to the
+   full row. 380px keeps two columns exactly at Figma's own 434px card
+   width and collapses to one before the squeeze sets in. */
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+.shop-card { display: flex; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); overflow: hidden; min-height: 162px; cursor: pointer; text-decoration: none; color: inherit; }
+.shop-card-body { flex-grow: 1; min-width: 0; padding: 16px 16px 12px; display: flex; flex-direction: column; }
+.shop-card-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 16px; font-weight: 600; line-height: 24px; color: var(--deg-ink-heading); overflow: hidden; }
+.shop-card-meta { display: flex; align-items: center; gap: 6px; padding-top: 4px; font-size: 14px; }
+.shop-card-price { flex: none; font-weight: 600; color: var(--deg-ink-heading); }
+/* Every other product's note is short ("70g Protein", "1680 Cal.") and
+   sits on one line without help. Catering-style notes ("Per person · min
+   10 boxes") are long enough that, without a nowrap+ellipsis floor, a
+   flex item's default min-width:auto falls back to its longest word as
+   the shrink limit — collapsing the whole meta row into a jagged 3-4
+   line wrap instead of the single-line meta every other card gets. */
+.shop-card-note { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--deg-ink-muted); }
+.shop-card-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; padding-top: 4px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.shop-card-media { position: relative; flex: none; width: 161px; align-self: stretch; }
+.shop-card-media .thumb { width: 100%; height: 100%; border-radius: 0; }
+.shop-card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The media box is stretched by the card (align-self: stretch), which isn't a
+   definite height — so height:100% on the photo can't resolve and the image
+   falls back to its own aspect ratio, letting a tall or square photo set the
+   card's height (the portrait wrap photo pushed its card to 184px; square
+   bagel/bowl photos to 163px, against 162px for everything else). Pulling
+   the photo out of flow makes card height depend only on the text and the
+   shared min-height. */
+.shop-card-media > .shop-card-photo, .shop-card-media > .thumb { position: absolute; inset: 0; }
+.add-btn { position: absolute; right: 8px; bottom: 8px; width: 36px; height: 36px; background: var(--deg-ink-deep); color: #fff; border: 2px solid var(--deg-white); box-shadow: var(--deg-shadow-float); transition: background-color .15s ease; }
+/* The Figma shop_list_item component's hover state is defined on the whole
+   card, not the button alone — hovering (or focusing) anywhere on the card
+   previews the same darker fill as hovering the button itself. */
+.shop-card:hover .add-btn, .shop-card:focus-within .add-btn { background: var(--deg-ink-deep-hover); }
+
+/* ---------- Item modal ----------
+   Dialog chrome matches the Figma "Item customize" popup: a cream surface
+   with 32px corners, a plain icon-button header, and a fixed-width square
+   media panel beside a scrolling content column. Header and footer stay
+   put while .item-modal-row scrolls as one unit — the media panel scrolls
+   with the copy rather than staying pinned, matching the reference. */
+.overlay { position: fixed; inset: 0; background: rgba(19,13,0,.5); z-index: 40; }
+.item-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: stretch; justify-content: center; padding: 20px; }
+.item-modal-inner { width: min(1000px, 100%); height: 100%; background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal); display: flex; flex-direction: column; overflow: hidden; }
+/* Sits outside .item-modal-scroll, so it's already pinned above the
+   scrolling content by ordinary flex layout — no position:sticky needed.
+   The product name only fades in here once the real h1 has scrolled out
+   of view, so it isn't shown twice at once on open. */
+.item-modal-header { flex: none; height: 64px; display: grid; grid-template-columns: 1fr minmax(0, 1fr) 1fr; align-items: center; padding: 0 24px; }
+.item-modal-header .close-btn { justify-self: start; }
+.item-modal-header-title {
+  /* A percentage max-width here resolves against the grid's own auto-sized
+     track, not the header's real width — on a 1000px modal it collapsed to
+     ~116px and truncated "12 Pack Deviled Egg" down to "12 Pack D…". A
+     fixed ceiling sizes against the actual viewport instead, comfortably
+     fitting real product names; min-width:0 lets the grid track still
+     shrink it (rather than overflow) on narrow screens where it's needed.
+     justify-self must stay stretch (not center): centered, the box sizes
+     to its own text instead of the track, so a long name (the bowls'
+     "___ Eggceptional Bowl" titles) rendered at full width and collided
+     with the close button on a phone instead of ellipsizing — stretch
+     fills the actual track width first, then text-align centers the text
+     within it, so overflow/ellipsis has a real box to clip against. */
+  justify-self: stretch; text-align: center; min-width: 0; max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--deg-ink-deep);
+  opacity: 0; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease;
+}
+.item-modal-header-title.visible { opacity: 1; transform: translateY(0); }
+.item-modal-header-spacer { justify-self: end; }
+.close-btn { width: 48px; height: 48px; background: transparent; color: var(--deg-ink-deep); transition: background-color .15s ease; }
+.close-btn:hover { background: var(--deg-cream-cool); }
+.item-modal-scroll { flex-grow: 1; overflow-y: auto; }
+.item-modal-row { display: flex; gap: 24px; align-items: flex-start; padding: 4px 24px 24px; }
+.item-modal-media { width: 420px; aspect-ratio: 1; flex: none; align-self: flex-start; position: sticky; top: 16px; border-radius: 24px; background: rgba(0,0,0,.02); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+/* One rhythm for every product modal: --modal-gap separates groups (intro,
+   each divider side, each option section). The description is pulled up to
+   sit 8px under the price regardless of that gap. */
+.item-modal-content { --modal-gap: 24px; flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--modal-gap); }
+.item-modal-title-block + .modal-desc { margin-top: calc(8px - var(--modal-gap)); }
+.item-modal-title-block { display: flex; flex-direction: column; gap: 4px; }
+.item-modal-content h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+.modal-price { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 32px; color: var(--deg-ink-muted); }
+.modal-desc { color: var(--deg-ink-muted); font-size: 15px; margin: 0; }
+.divider { height: 1px; background: var(--deg-border-chip); }
+.divider.thick { height: 2px; background: var(--deg-border-secondary); }
+.modal-section-head { display: flex; flex-direction: column; gap: 2px; padding-bottom: 12px; }
+.modal-section-title { font-weight: 600; font-size: 16px; line-height: 24px; color: var(--deg-ink-body); }
+.modal-section-sub { font-weight: 400; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+
+/* Progress through the pack: a count line over one slot per flavor the pack
+   allows, each slot filling as one step of eggs is added. */
+.flavor-meter { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; }
+.item-modal-footer .flavor-meter { padding-bottom: 12px; }
+.item-modal-footer .flavor-meter[hidden] { display: none; }
+.flavor-meter-count { font-size: 13px; font-weight: 600; line-height: 16px; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.flavor-meter-bar { display: flex; gap: 4px; }
+.flavor-meter-seg { flex: 1 1 0; height: 6px; border-radius: var(--deg-radius-pill); background: var(--deg-border-secondary); transition: background-color .2s ease; }
+.flavor-meter-seg.filled { background: var(--deg-gold); }
+.flavor-grid { display: flex; flex-direction: column; gap: 12px; }
+/* The dozen picker's flavor card can hold a second section (ingredient
+   exclusions) below its name+stepper header, so it overrides the shared
+   .flavor-row's row layout to stack instead — the bagel spread picker's
+   plain rows (no second section) are untouched. */
+.flavor-row.dozen-flavor-row { flex-direction: column; align-items: stretch; gap: 12px; }
+.flavor-row-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dozen-flavor-row { padding: 12px 16px 12px 12px; scroll-margin-block: 72px 104px; }
+.dozen-flavor-row .flavor-row-name { flex: 1 1 0; }
+
+/* Each flavor's clip. The poster in the row's head is the way in; it opens the
+   clip and its live description inline, in the same card as the stepper, so a
+   customer can watch and add without leaving the row. */
+.flavor-thumb { position: relative; flex: none; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+/* The corner icon sits flush in the thumbnail's bottom-right corner, a square with only its top-left corner rounded; the thumbnail's own rounded corner trims the rest. */
+.flavor-thumb-badge { position: absolute; right: 0; bottom: 0; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border-radius: 2px 0 0 0; background: var(--deg-ink-deep); color: #fff; }
+.flavor-thumb.open { box-shadow: 0 0 0 2px var(--deg-ink-deep); }
+.flavor-thumb:focus-visible, .flavor-watch-media:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-watch { display: grid; grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr); gap: 16px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-watch-media { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--deg-cream-cool); cursor: pointer; }
+.flavor-watch-media video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-play { position: absolute; inset: 0; margin: auto; display: grid; place-items: center; width: 44px; height: 44px; padding-left: 2px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; opacity: 0; transition: opacity .15s ease; }
+.flavor-watch-play svg { width: 18px; height: 18px; }
+.flavor-watch-media.is-paused .flavor-watch-play { opacity: 1; }
+.flavor-watch-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.flavor-watch-copy p { margin: 0; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--deg-ink-body); }
+.flavor-watch-hide { min-height: 44px; margin: -8px 0 -8px; padding: 8px 0; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* Reuses the .chip shape, but a checked exclusion isn't a positive pick —
+   it means "leave this out" — so it takes the dark pressed treatment
+   (same fill/text pairing as .pill-btn.dark) instead of the gold "yes"
+   accent, keeping gold reserved for actual selections. */
+.flavor-exclusions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-exclusions-label { font-size: 12.5px; font-weight: 700; color: var(--deg-ink-muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* Priced add-ons (bowl + wrap modals) as full-width checkbox rows, per the
+   Figma "Item customize" spec (node 262:1749): cream-cool row, 12px radius,
+   name over a muted price line, 24px checkbox on the right. Selected fills
+   the whole row gold and turns the box solid dark with a white check. */
+.addon-list { display: flex; flex-direction: column; gap: 12px; }
+.addon-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; padding: 16px; border: none; border-radius: var(--deg-radius-card);
+  background: var(--deg-cream-cool); color: var(--deg-ink-body); text-align: left;
+  transition: background-color .15s ease;
+}
+.addon-row:not(.selected):hover { background: var(--deg-border-chip); }
+.addon-row.selected { background: var(--deg-gold); }
+.addon-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.addon-row-name { font-size: 14px; font-weight: 600; }
+.addon-row-note { font-size: 12px; font-weight: 500; opacity: .7; }
+.addon-row-box {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border: 2px solid var(--deg-border-primary); border-radius: 4px;
+  color: #fff; transition: background-color .15s ease;
+}
+.addon-row.selected .addon-row-box { background: var(--deg-ink-deep); }
+
+/* Single-choice rows (.radio-choice, defined in design-system.css): inside the
+   gold selected card the usual muted label would fall under 4.5:1. */
+.radio-choice .flavor-exclusions { border-top-color: rgba(38,26,0,.18); }
+.radio-choice .flavor-exclusions-label { color: var(--deg-ink-heading); }
+
+/* The bowl's intro (title block + description) is its own wrapper with an 8px
+   gap, so the shared pull-up above must not apply a second time inside it. */
+.bowl-modal-intro { display: flex; flex-direction: column; gap: 8px; }
+.bowl-modal-intro .modal-desc { margin-top: 0; }
+
+.qty-field { max-width: 220px; }
+/* Otherwise inherits the shared select styling (pill radius, chevron,
+   focus ring) — the only intentional override is 16px, not this system's
+   usual 15px, which keeps mobile Safari from zooming in on focus. */
+.qty-select { font-size: 16px; }
+
+/* Cream, not white: .item-modal-inner (the modal body/header behind it)
+   is already --deg-cream, so a white footer used to read as a separate
+   raised card-within-a-card. Matching it makes the whole modal one
+   continuous surface, with depth coming from the shadow alone — the
+   same "elevation separates, not color" pattern the rest of this
+   system already uses. */
+.item-modal-footer { flex: none; padding: 16px 24px; background: var(--deg-cream); box-shadow: 0 -4px 8px rgba(0,0,0,.12); }
+.item-modal-footer .pill-btn { width: 100%; }
+.item-modal-footer .pill-btn { transition: transform .12s cubic-bezier(.22,1,.36,1), background-color .15s ease; }
+.item-modal-footer .pill-btn:active:not(:disabled) { transform: scale(.975); }
+
+/* ---------- Cart drawer ----------
+   The panel starts translated fully off-screen and the backdrop starts
+   transparent; JS removes `hidden` first (so these become the actual
+   starting state, not a snap-in), then adds `.is-open` a frame later to
+   trigger the transition to their resting state. Exit reverses that and
+   is quicker, per the "exit faster than entrance" motion guidance. */
+#cart-backdrop { opacity: 0; transition: opacity .2s ease; }
+#cart-backdrop.is-open { opacity: 1; transition: opacity .28s cubic-bezier(.16,1,.3,1); }
+
+.cart-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 92vw;
+  background: var(--deg-white); box-shadow: var(--deg-shadow-modal); z-index: 51;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateX(100%); transition: transform .2s cubic-bezier(.4,0,1,1);
+}
+.cart-drawer.is-open { transform: translateX(0); transition: transform .32s cubic-bezier(.16,1,.3,1); }
+
+/* Three fixed bands, not one uniformly-padded scrolling column: a golden-wash
+   header, an independently-scrolling cream item list that consumes whatever
+   space is left (flex: 1 1 auto), and a raised white footer that always sits
+   flush at the bottom — never pushed there by a margin-auto hack, which left
+   a dead gap on a short cart instead of a properly pinned bar. */
+.drawer-band { flex: none; background: var(--deg-white); padding: 24px; display: flex; flex-direction: column; }
+.drawer-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; background: var(--deg-cream); padding: 16px 24px; }
+.drawer-header h2 { font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+
+@media (prefers-reduced-motion: reduce) {
+  #cart-backdrop, .cart-drawer, .cart-drawer.is-open, #cart-backdrop.is-open { transition-duration: .15s; transition-timing-function: ease; }
+  .cart-drawer { transform: none; opacity: 0; }
+  .cart-drawer.is-open { transform: none; opacity: 1; }
+  .order-summary-collapse, .order-summary-chevron, .item-modal-header-title { transition-duration: .01ms; }
+  .drawer-nav-mobile { transition-duration: .01ms; }
+  .cart-bar { transition-duration: .01ms; }
+}
+.drawer-header { display: flex; align-items: center; justify-content: space-between; }
+/* The header row is 48px tall only because of the close button, which leaves
+   ~8px of empty space under the 32px title line; the negative margin tucks the
+   pickup line up against the title instead of floating below that gap. */
+.pickup-chip { margin-top: -8px; font-size: 13.5px; line-height: 20px; color: var(--deg-ink-body); }
+.drawer-items { display: flex; flex-direction: column; gap: 14px; }
+.drawer-item { display: flex; gap: 14px; align-items: flex-start; border-bottom: 1px solid var(--deg-border-chip); padding-bottom: 14px; }
+.drawer-item:last-child { border-bottom: none; }
+.drawer-item .thumb { width: 56px; height: 56px; flex: none; }
+.drawer-item .shop-card-photo { border-radius: var(--deg-radius-card); flex: none; }
+.drawer-item-body { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.drawer-item-name { font-weight: 700; font-size: 14px; }
+.drawer-item-sub { font-size: 12.5px; color: var(--deg-ink-muted); }
+.drawer-item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.item-price { font-size: 14px; }
+.mini-stepper { display: flex; align-items: center; gap: 8px; }
+/* color (not just border) now matters: the +/- glyph is an inline SVG
+   with stroke="currentColor", not text, so it needs its own explicit
+   color to render in the same ink-deep tone its border already uses —
+   :disabled below already relies on `color` for exactly this. */
+.mini-step-btn { width: 26px; height: 26px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); color: var(--deg-ink-deep); }
+.mini-step-btn:disabled { opacity: .35; border-color: var(--deg-border-chip); color: var(--deg-ink-muted); cursor: not-allowed; }
+.mini-stepper span { font-family: var(--deg-font-body); font-weight: 700; font-size: 14px; line-height: 16px; min-width: 10px; text-align: center; }
+/* Once allocation is maxed, a flavor still at 0 isn't just missing its own
+   "+" — the whole row reads as unavailable, not a live option the user
+   could reach for. */
+.flavor-row.at-limit { opacity: .55; }
+.remove-btn { background: none; border: none; padding: 2px; }
+.empty-cart { text-align: center; padding: 32px 0; color: var(--deg-ink-muted); font-size: 14px; }
+
+.drawer-footer {
+  flex: none; display: flex; flex-direction: column; gap: 16px;
+  padding: 20px 24px 24px; background: var(--deg-white); box-shadow: 0 -4px 8px rgba(0,0,0,.12);
+}
+.drawer-totals { display: flex; flex-direction: column; gap: 8px; }
+.summary-line { display: flex; justify-content: space-between; font-size: 14px; }
+.summary-line.total { font-family: var(--deg-font-body); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--deg-ink-deep); }
+.summary-divider { height: 1px; background: var(--deg-border-chip); }
+
+/* The order dialog's own Total is smaller than checkout's — per the Figma
+   source, it stays flush with its Subtotal/Tax neighbors (14px) and reads
+   as a total only through weight and color, not a jump in scale. Checkout's
+   Total is a bigger, standalone card heading and keeps the 20px rule. */
+.drawer-totals .summary-line.total { font-size: 14px; line-height: 20px; }
+
+/* ---------- Floating cart bar (mobile) ----------
+   Reuses .pill-btn.dark.full as-is (see design-system.css's own "never
+   introduce a new one-off button class" rule) — same dark fill, radius,
+   and centered layout as "Go to checkout" above, since this is the other
+   end of the same action; both moved off gold to the secondary dark/black
+   button style along with the rest of the cart→checkout flow, keeping
+   gold reserved for the menu/browsing flow's own CTAs. This class only
+   adds the floating placement and the show/hide transition on top of it. Unlike
+   .drawer-nav-mobile, which hides/reveals on scroll position, this bar
+   reacts only to the cart itself (see updateCartBar() in app.js) and stays
+   up the entire time the customer keeps browsing with items in the cart.
+   [hidden] and .is-visible are toggled together, not interchangeably:
+   [hidden] drops it from layout/tab order between uses, .is-visible drives
+   the fade/rise so the transition has a starting state to animate from
+   once unhidden. Desktop/tablet already have the header's own
+   always-visible cart badge for this, so it stays display:none above
+   640px — this is a true-mobile-only affordance, not a ≤900px one. */
+.cart-bar { display: none; }
+
+@media (max-width: 640px) {
+  /* #cart-bar (not .cart-bar): .pill-btn.full is a two-class selector, so
+     its own width:100% and display:inline-flex outrank a single-class
+     .cart-bar regardless of source order — the id is the cheapest way to
+     win that specificity fight without an !important. */
+  #cart-bar {
+    /* Restores .pill-btn's own inline-flex (the bare .cart-bar rule above
+       zeroes it out at every other width) so the icon/label/count row
+       actually lays out instead of collapsing to nothing. */
+    display: inline-flex;
+    position: fixed; left: 16px; right: 16px;
+    /* Matches Uber Eats' own floating "View order" pill, measured directly
+       off their live mobile site: 32px between the pill's bottom edge and
+       the viewport bottom (their left/right insets and pill radius already
+       matched ours at 16px / full pill, so this was the one real gap). */
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    /* .full's own width:100% would resolve against the viewport, not the
+       16px insets, and overshoot the right edge — cancel it so left/right
+       govern width instead. */
+    width: auto;
+    /* Above ordinary content and the sticky header/category bar (30/35),
+       below every overlay and modal (40+) — the cart drawer itself (51)
+       already covers this exact screen region once open, so no separate
+       hide-while-cart-open rule is needed. */
+    z-index: 32;
+    opacity: 0; transform: translateY(16px); pointer-events: none;
+    transition: opacity .22s cubic-bezier(0,0,.2,1), transform .22s cubic-bezier(0,0,.2,1);
+  }
+  #cart-bar.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+}
+
+/* Checkout labels read as plain sentence-case labels (the system keeps tracked caps for the top nav only). */
+.checkout-card .field-label, .summary-panel .field-label, .wm-panel .field-label, .dd-form .field-label { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--deg-ink-heading); }
+
+/* One plain line above Place order: when and where the order is ready, then a short prototype notice. */
+.pay-note { margin: 0; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
+.pay-note #pay-note-ready { display: block; font-size: 14px; font-weight: 600; color: var(--deg-ink-heading); }
+.pill-btn[aria-busy="true"] { cursor: progress; }
+
+/* ---------- Checkout ----------
+   Checkout keeps the site's own top bar (the same 69px bar as every other page); the way back to the cart sits
+   beside the page title below. */
+/* The page's own heading: what this is and where, above the form and the summary. */
+.checkout-title { margin: 0 0 20px; }
+.checkout-title h1 { font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); }
+.checkout-title-sub { margin: 4px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.checkout-title-sub strong { font-weight: 600; color: var(--deg-ink-heading); }
+@media (max-width: 640px) { .checkout-title { text-align: center; } .checkout-title h1 { font-size: 28px; line-height: 36px; } }
+.checkout-layout { display: flex; gap: 40px; padding-top: 8px; align-items: flex-start; }
+.checkout-main { flex-grow: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.checkout-card { background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-card); padding: 26px; display: flex; flex-direction: column; gap: 16px; }
+.checkout-card h2 { font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+
+.pickup-time-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 13px 16px; border-radius: var(--deg-radius-compact); border: 1px solid var(--deg-border-control); background: var(--deg-white); font-size: 15px; font-weight: 600; color: var(--deg-ink-body); text-align: left; }
+.pickup-time-btn:hover { border-color: var(--deg-border-primary); }
+/* Same hover vocabulary as .pickup-time-btn above, so every tappable row in
+   the checkout reads as interactive before the pointer commits to it. */
+.payment-add-row:hover { color: var(--deg-ink-deep); }
+.payment-add-row:hover .payment-add-icon { border-color: var(--deg-border-primary); color: var(--deg-ink-deep); }
+.tip-group .chip:not(.active):hover { background: var(--deg-border-chip); }
+.pill-btn.dark:hover:not(:disabled) { background: var(--deg-ink-deep-hover); }
+
+/* The right column is two separate cards (Order summary, Order total)
+   rather than one long card — same grouping principle as the left
+   column's Pickup details / Contact info / Payment method: the gap
+   between them is the only thing that has to say "these are distinct." */
+.summary-col { width: 380px; flex: none; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 24px; }
+.summary-panel { background: var(--deg-white); border-radius: 20px; box-shadow: var(--deg-shadow-ambient); padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.summary-panel h2 { font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+.summary-lines { display: flex; flex-direction: column; gap: 10px; }
+.tip-group { margin-top: 4px; }
+/* Four equal segments (15 / 18 / 20 / Custom) instead of content-width chips,
+   so the row never wraps in the 287px-wide mobile panel and the buttons read
+   as one set. */
+/* Five choices: the three percentages share the first row and No tip and Custom the second, wider. Only when the picker's own
+   box is wide enough (a single-column checkout on a tablet) do all five sit in one row; the desktop summary column is too narrow. */
+.tip-group { container-type: inline-size; }
+.tip-group .chip-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.tip-group .tip-chip { grid-column: span 2; }
+.tip-group .tip-chip-none, .tip-group .tip-chip[data-value="custom"] { grid-column: span 3; }
+@container (min-width: 440px) {
+  .tip-group .chip-row { grid-template-columns: repeat(5, 1fr); }
+  .tip-group .tip-chip, .tip-group .tip-chip-none, .tip-group .tip-chip[data-value="custom"] { grid-column: auto; }
+}
+.tip-group .chip { padding-inline: 8px; text-align: center; }
+/* Chipotle's layout in our chips: four equal choices in one row, each a percentage over the dollars it comes to. */
+.tip-group .tip-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 8px 4px; border-radius: var(--deg-radius-compact); white-space: nowrap; }
+.tip-chip-pct { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--deg-ink-muted); }
+.tip-chip-amt { font-size: 14px; line-height: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tip-group .tip-chip.active .tip-chip-pct { color: var(--deg-ink-on-gold); }
+/* Appears directly under the chips when Custom is chosen. The $ sits inside
+   the shared pill input; left padding clears it. */
+.tip-custom { position: relative; }
+.tip-custom-prefix { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-size: 16px; font-weight: 600; color: var(--deg-ink-muted); pointer-events: none; }
+.tip-custom input { width: 100%; padding-left: 38px; }
+
+.order-summary-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; padding: 0; text-align: left; }
+.order-summary-toggle-title { font-family: var(--deg-font-display); font-weight: 700; font-size: 24px; line-height: 32px; color: var(--deg-ink-deep); }
+/* The item count sits on its own line under the heading, so the heading stays the size of every other card header. */
+.order-summary-count { display: block; font-family: var(--deg-font-body); font-weight: 400; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+/* The cart drawer's "(17 items)" reuses the class but stays inline beside "Your order", as it always was. */
+.drawer-header .order-summary-count { display: inline; font-size: 15px; line-height: inherit; }
+.order-summary-chevron { flex: none; color: var(--deg-ink-deep); transition: transform .2s ease; }
+.order-summary-toggle[aria-expanded="false"] .order-summary-chevron { transform: rotate(180deg); }
+.order-summary-collapse { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s cubic-bezier(.4,0,.2,1); }
+.order-summary-collapse.collapsed { grid-template-rows: 0fr; }
+.order-summary-collapse > .drawer-items { overflow: hidden; min-height: 0; }
+
+.drawer-item-price { font-weight: 600; font-size: 14px; color: var(--deg-ink-heading); }
+
+/* ---------- Pickup settings modal (date + time picker) ----------
+   Shares its chrome with the item-customization modals — cream surface,
+   32px corners, the same .close-btn — so every popup in the product reads
+   as one family. Structured after the Uber Eats "Schedule delivery"
+   picker for content: a scrollable row of two-line date tiles, then a
+   plain radio list of time slots, no copy beyond the title and controls. */
+.pickup-settings-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.pickup-settings-inner {
+  position: relative; width: min(560px, 100%); max-height: 90vh;
+  background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal);
+  padding: 28px 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;
+}
+.pickup-settings-inner > .close-btn { align-self: flex-start; }
+.pickup-settings-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+
+/* The row scroll-snaps so a tile always rests fully in view or intentionally
+   peeks at an edge — never resting half-cut, which read as broken clipping
+   rather than a "there's more" affordance. The wrap's own fade overlays
+   (below) only show on the edge that still has content to reveal. */
+.pickup-date-row-wrap { position: relative; display: flex; align-items: center; gap: 10px; }
+.pickup-date-row-wrap::before, .pickup-date-row-wrap::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 1;
+  opacity: 0; transition: opacity .2s ease; pointer-events: none;
+}
+.pickup-date-row-wrap::before { left: 0; background: linear-gradient(to right, var(--deg-cream), transparent); }
+.pickup-date-row-wrap::after { right: 46px; background: linear-gradient(to left, var(--deg-cream), transparent); }
+.pickup-date-row-wrap.can-scroll-left::before { opacity: 1; }
+.pickup-date-row-wrap.can-scroll-right::after { opacity: 1; }
+.pickup-date-row {
+  display: flex; gap: 10px; overflow-x: auto; flex: 1 1 auto; scroll-behavior: smooth; scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.pickup-date-row::-webkit-scrollbar { display: none; }
+.pickup-date-tile {
+  flex: none; width: 92px; padding: 10px 8px; border-radius: 12px; border: 1.5px solid var(--deg-border-chip);
+  background: var(--deg-white); display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-weight: 700; font-size: 15px; color: var(--deg-ink-body); scroll-snap-align: start;
+}
+.pickup-date-tile.active { border-color: var(--deg-gold); background: var(--deg-gold-tint); }
+.pickup-date-sub { font-weight: 400; font-size: 13px; color: var(--deg-ink-muted); }
+.pickup-date-nav { flex: none; width: 36px; height: 36px; border: 1.5px solid var(--deg-ink-deep); background: var(--deg-white); }
+
+.pickup-time-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* The same raised white footer bar as .item-modal-footer, bled to the
+   dialog's own edges — every popup's primary action sits on this bar. */
+.pickup-settings-actions {
+  display: flex; flex-direction: column; gap: 10px; flex: none;
+  margin: 0 -28px -24px; padding: 20px 28px; background: var(--deg-white);
+  box-shadow: 0 -4px 8px rgba(0,0,0,.12); border-radius: 0 0 32px 32px;
+}
+
+/* ---------- Store locator modal (store list + map) ---------- */
+.store-locator-btn { align-items: center; }
+.store-locator-btn-text { display: flex; flex-direction: column; gap: 2px; }
+.store-locator-btn-sub { font-weight: 400; font-size: 13px; color: var(--deg-ink-muted); }
+
+/* ---------- Add payment method modal ---------- */
+/* A plain, unbordered row (vs. the filled .radio-choice selectable options
+   above it) — the dashed-circle "+" reads as an action, not a choice. */
+.payment-add-row { display: flex; align-items: center; gap: 14px; padding: 15px 18px; background: transparent; border: none; width: 100%; text-align: left; font-size: 15px; font-weight: 600; color: var(--deg-ink-heading); }
+.payment-add-icon { width: 18px; height: 18px; border-radius: 50%; border: 1.5px dashed var(--deg-border-input); color: var(--deg-ink-muted); display: flex; align-items: center; justify-content: center; flex: none; }
+
+.add-payment-inner {
+  position: relative; width: min(440px, 100%); max-height: 90vh;
+  background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal);
+  padding: 28px 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0;
+}
+.add-payment-inner > .close-btn { align-self: flex-start; }
+.add-payment-inner h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+/* "Add payment method" chooser: one tappable row per payment type (icon, name,
+   chevron), hairline-separated, no footer. Padding + equal negative margin gives
+   the focus halo room inside the scroll box, as on .add-payment-form. */
+.payment-option-list { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 6px; margin: -6px; }
+.payment-option { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 12px; background: none; border: none; border-radius: var(--deg-radius-card); text-align: left; font-size: 16px; font-weight: 600; color: var(--deg-ink-body); transition: background-color .15s ease; }
+.payment-option:hover { background: var(--deg-cream-cool); }
+.payment-option-icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.payment-option:hover .payment-option-icon { background: var(--deg-white); }
+.payment-option-label { flex: 1 1 auto; min-width: 0; }
+.payment-option-chevron { flex: none; color: var(--deg-ink-muted); }
+/* Card-number field carries a generic card glyph at its right edge, and the
+   Security code label carries a "?" that reveals where to find it. */
+.field-with-icon { position: relative; display: block; }
+.field-with-icon input { width: 100%; padding-right: 64px; }
+.field-icon { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); color: var(--deg-ink-placeholder); pointer-events: none; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; min-height: 16px; }
+.field-help { position: relative; display: flex; flex: none; width: 18px; height: 18px; margin: -2px 0; padding: 0; border: none; background: none; color: var(--deg-ink-deep); }
+/* 18px glyph, 44x44 hit area. It extends left (over empty label space), not
+   right: the button sits at the field's right edge, and anything past the
+   form's padding would make the scroll container overflow sideways. */
+.field-help::after { content: ''; position: absolute; inset: -13px -6px -13px -20px; }
+.field-hint { margin: -4px 0 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+/* overflow-y:auto makes overflow-x clip as well, and the fields fill the form's
+   full width — so the 4px focus halo got sliced off on every side. Padding gives
+   the ring room inside the clip box; the equal negative margin keeps the fields
+   exactly where they were. */
+.add-payment-form { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 6px; margin: -6px; scroll-padding: 8px; }
+/* The country dropdown sits among text fields here, so it takes their corners. */
+
+/* ---------- Confirmation ---------- */
+.confirmation-wrap { max-width: 1360px; margin: 0 auto; display: flex; justify-content: center; padding: 20px 40px 60px; }
+.confirmation-card { width: min(620px, 100%); display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.success-badge { width: 92px; height: 92px; border-radius: 50%; background: var(--deg-gold); display: flex; align-items: center; justify-content: center; box-shadow: var(--deg-shadow-ambient); }
+.confirmation-card h1 { font-size: 40px; line-height: 52px; font-weight: 700; color: var(--deg-ink-deep); }
+.confirmation-sub { margin: 0; color: var(--deg-ink-muted); font-size: 15px; }
+.confirmation-sub strong { color: var(--deg-ink-body); }
+
+.progress-track { width: 100%; display: flex; align-items: flex-start; margin: 8px 0; }
+.progress-step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+.progress-step span:last-child { font-size: 12px; font-weight: 700; color: var(--deg-ink-heading); }
+.progress-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--deg-gold); color: var(--deg-ink-on-gold); display: flex; align-items: center; justify-content: center; }
+.progress-dot.pending { background: var(--deg-cream-cool); border: 1.5px solid var(--deg-border-chip); }
+.progress-step:not(.done) span:last-child { color: var(--deg-ink-muted); }
+.progress-line { flex: 1; height: 2px; background: var(--deg-border-chip); margin: 15px -4px 0; }
+.progress-line.done { background: var(--deg-gold); }
+
+.checkout-card.recap { width: 100%; text-align: left; }
+.address-card { width: 100%; display: flex; align-items: center; gap: 14px; background: var(--deg-white); border-radius: 16px; padding: 16px 22px; box-shadow: var(--deg-shadow-card); }
+.address-card span:nth-child(2) { flex-grow: 1; text-align: left; font-size: 14px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .menu-layout { flex-direction: column; }
+  .store-sidebar { width: 100%; position: static; }
+  /* Here the category nav itself (not just the header) is sticky and
+     overlays the top of the content column, so a scrolled-to section
+     needs to clear both: header (69px) + pill bar (56px) + the same
+     24px breathing room used elsewhere = 149px. */
+  #menu-top, .menu-section { scroll-margin-top: 149px; }
+  .shop-grid { grid-template-columns: minmax(0, 1fr); }
+  .featured-track { grid-auto-columns: calc((100% - 2.5 * var(--featured-gap)) / 3.25); }
+  /* One rhythm once the columns stack: 20px between every card, and the same 20px under the page title. */
+  .checkout-layout { flex-direction: column; gap: 20px; padding-top: 0; }
+  /* .checkout-layout's own align-items:flex-start is correct on desktop's
+     row layout (so the shorter column isn't stretched to match the
+     taller one) but once stacked to a column here, the SAME property
+     means "shrink each card to its own content width" instead of "fill
+     the row" — .summary-col already patches this with its own explicit
+     100%; .checkout-main needs the identical patch, or its three cards
+     (Pickup details, Contact info, Payment method) render narrower than
+     the summary cards below them instead of matching edge-to-edge. */
+  .checkout-main { width: 100%; }
+  .summary-col { width: 100%; position: static; }
+  .item-modal-row { flex-direction: column; }
+  .item-modal-media { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; position: static; }
+
+  /* The category nav has exactly two forms — this one, and the desktop
+     sidebar's vertical list above 900px — never a third in-between
+     shape. The moment the sidebar stacks (above), the nav switches
+     straight to a single-row horizontally-scrolling bar that bleeds
+     edge to edge and stays pinned to the top once scrolled past,
+     matching the category-tab pattern of most mobile ordering apps,
+     rather than the desktop list simply wrapping onto multiple rows in
+     place. Same behavior from here down to the smallest phone width —
+     only .view's own side padding (--deg-view-pad-x) changes further in,
+     which this bar's bleed math reads from rather than a hardcoded
+     value, so it stays exactly edge-to-edge at every width in between. */
+  .drawer-nav { display: none; }
+  .drawer-nav-mobile {
+    display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center;
+    gap: 8px;
+    /* Cancels .view's own side padding, then re-adds it as inset scroll
+       padding — the row bleeds to the true screen edges, but the
+       first/last pill still isn't flush against them, and native scroll-
+       snap-adjacent browsers won't clip a focus ring at the edges either.
+       width:calc(100% + 2*pad) is the other half of that trick, and it's
+       load-bearing here specifically: .menu-layout's align-items:flex-start
+       (needed for the desktop columns) doesn't stretch a flex child to
+       the container's width the way the default 'stretch' would, so
+       without it this row simply grows to fit all 8 pills (measured:
+       1092px) instead of being clipped/scrolled at the viewport edge. */
+    width: calc(100% + var(--deg-view-pad-x) * 2); margin: 0 calc(var(--deg-view-pad-x) * -1); padding: 0 var(--deg-view-pad-x);
+    /* Now nested at the top of .menu-content (not a bare .menu-layout
+       sibling), so its own top spacing needs an explicit margin instead
+       of relying on .menu-layout's inter-sibling gap. */
+    margin-top: 16px;
+    overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; touch-action: pan-x;
+    /* 69px matches .site-header's own stable height (steady across
+       every width and nav-compact state) — stacks directly below the
+       now-sticky header instead of both competing for top:0. */
+    position: sticky; top: 69px; z-index: 30;
+    background: var(--deg-cream);
+    cursor: grab;
+    /* Separates the sticky bar from the content scrolling beneath it —
+       a plain background-match otherwise reads as one continuous surface
+       once it's pinned to the top. */
+    border-bottom: 1px solid var(--deg-border-chip);
+    box-shadow: var(--deg-shadow-card);
+  }
+  .drawer-nav-mobile::-webkit-scrollbar { display: none; }
+  .drawer-nav-mobile.dragging { cursor: grabbing; scroll-snap-type: none; }
+  /* Horizontal pill row reads better with the active indicator as an
+     underline than as the vertical sidebar's left accent bar, which has
+     no "bottom" to sit flush against in a row of same-height items. */
+  .drawer-nav-mobile .category-item {
+    flex: none; white-space: nowrap; margin-left: 0;
+    border-left: none; border-bottom: 3px solid transparent;
+  }
+  .drawer-nav-mobile .category-item.active { border-left-color: transparent; border-bottom-color: var(--deg-border-primary); }
+}
+
+@media (max-width: 640px) {
+  .nav-inner { padding: 0 16px; }
+  /* Phones swap the wordmark for the egg submark. The checkout bar has no links, indicator or cart, so it keeps the wordmark. */
+  .logo { height: 40px; margin-right: 4px; }
+  .logo-wordmark { display: none; }
+  .logo-mark { display: block; }
+  body.is-checkout .logo-wordmark { display: block; height: 34px; }
+  body.is-checkout .logo-mark { display: none; }
+
+  .view { --deg-view-pad-x: 16px; }
+  .view, .confirmation-wrap { padding-left: 16px; padding-right: 16px; }
+
+  /* Store info, the divider, and the "Menu / hours" head are desktop-
+     sidebar furniture — on a phone they just push the category tabs
+     (which do the actual navigating) further from the top of the page. */
+  .sidebar-divider, .sidebar-menu-head { display: none; }
+
+  /* Figma annotation (node 231:6791): "in mobile the shop title and the
+     badge is centered." */
+  .store-card { align-items: center; text-align: center; }
+  /* Address hidden under the shop title on mobile — the title alone carries this card now. The base 24px bottom padding was sized
+     to balance that hidden copy; left alone, it now stacks with
+     .menu-layout's own 24px gap below and reads as ~48px of dead air between
+     the title and the Pickup/Delivery toggle. */
+  .store-address { display: none; }
+  .store-card { padding-bottom: 8px; }
+
+  /* 40px is the desktop sidebar-to-content gutter; stacked, with the
+     sidebar down to just the store card (the rest hidden above), that
+     same value reads as too loose between it and the Pickup/Delivery
+     card now directly below it. */
+  .menu-layout { gap: 24px; }
+
+  /* Smaller text (matching the established 14px/20px "Body Small" step,
+     not an arbitrary size) shrinks the bar's own height along with it —
+     line-height is what the row's height is actually built from, not
+     the padding, which stays put so the tap target doesn't shrink too.
+     Both states also move to noticeably darker, higher-contrast text:
+     inactive was already AA-passing muted taupe (6:1 on cream) but reads
+     lighter than every other label on this page; active was already
+     10:1 but a punchier deep tone reads more clearly "selected" against
+     the gold fill, and matches the deep tone every other emphasized
+     label (headings, prices) already uses. */
+  .drawer-nav-mobile .category-item { font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+  .drawer-nav-mobile .category-item.active { color: var(--deg-ink-deep); }
+
+  /* Hidden until the user has scrolled about halfway down the featured
+     item card (app.js toggles .is-revealed off that midpoint, using the
+     same 69px header height as the reference line), then fades in as a
+     floating bar instead of a space-reserving sticky one — before the
+     reveal there's nothing to leave a gap for. left/right:0 replace the
+     bleed width/margin calc above: a fixed element already spans the
+     full viewport on its own, so that math (built for an in-flow
+     element cancelling an ancestor's padding) no longer applies. */
+  .drawer-nav-mobile {
+    position: fixed; top: 69px; left: 0; right: 0;
+    width: auto; margin: 0;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .drawer-nav-mobile.is-revealed { opacity: 1; pointer-events: auto; }
+
+  /* Full-bleed edge-to-edge on mobile: cancel .view's own top padding
+     (24px) and this breakpoint's 16px side padding above with a negative
+     margin, rather than touching .view itself, which .view-checkout also
+     shares and has no hero to bleed. Height becomes a deliberate fraction
+     of the viewport instead of the desktop aspect-ratio, and the gap
+     before the store name tightens now that the banner reads as a
+     full-width edge-to-edge band rather than an inset card. */
+  /* Figma annotation (node 231:6789, "Video"): "banner hero is only 18%
+     the viewport height." */
+  .view { --hero-gap: 12px; }
+  .store-hero {
+    margin: -24px -16px var(--hero-gap); border-radius: 0;
+    aspect-ratio: auto; height: 18vh;
+  }
+
+  .order-summary-toggle { padding: 10px 0; margin: -10px 0; }
+  .tip-group .chip { min-height: 44px; }
+  .featured { margin-top: 24px; }
+  /* Phones swipe the row instead of using arrows; ~2.3 cards hint at more. */
+  .featured-nav { display: none; }
+  .featured-track { --featured-gap: 12px; grid-auto-columns: calc((100% - 1.5 * var(--featured-gap)) / 2.3); }
+  /* Edge-to-edge like Uber Eats' carousel: the scroller spans the full
+     viewport so cards slide off the screen edge instead of being clipped
+     at the content gutter, while padding + scroll-padding keep the first
+     card (and the last, at the end of the scroll) on the 16px gutter.
+     Same bleed pattern as the category tabs above; card width is
+     unchanged because grid percentages resolve against the content box. */
+  .featured-track {
+    width: calc(100% + var(--deg-view-pad-x) * 2);
+    margin: 0 calc(var(--deg-view-pad-x) * -1);
+    padding: 4px var(--deg-view-pad-x) 8px;
+    scroll-padding-inline: var(--deg-view-pad-x);
+  }
+  .menu-section { margin-top: 40px; }
+
+  .address-card { flex-wrap: wrap; }
+  .address-card span:nth-child(2) { flex-basis: 100%; }
+
+  /* ---------- Product modals, matched to Uber Eats' own mobile item
+     page (measured directly off their live site: 16px content gutter,
+     an edge-to-edge hero photo, a tight name/price/description cluster,
+     then generous room before the next section). Desktop keeps its own
+     24px gutter and inset rounded photo — this is a true-mobile-only
+     rework, not a ≤900px one. */
+  /* Uber's mobile item page is a full-screen takeover, not a floating
+     card with a page peeking out around it — .item-modal's own 20px
+     outer padding and .item-modal-inner's rounded corners/shadow are
+     what make it read as a dialog, not a screen. Width is already 100%
+     here (min(1000px,100%) already resolves to the viewport below
+     1000px) — the padding and the card chrome were the only things
+     actually holding it back from filling the screen. */
+  .item-modal { padding: 0; }
+  .item-modal-inner { border-radius: 0; box-shadow: none; }
+  /* Uber's mobile item page has no top bar and no title-on-scroll: the photo
+     runs to the very top of the screen and a 48px white circle (8px in from
+     the corner) floats over it, pinned while the content scrolls beneath.
+     The header row is kept in the DOM (desktop still uses it) but collapsed
+     to zero height and taken out of flow, so the scroll area starts at the
+     top; only the close button remains. The scrolled-title text is hidden. */
+  .item-modal-inner { position: relative; }
+  .item-modal-header { position: absolute; top: 0; left: 0; right: 0; height: 0; padding: 0; display: block; z-index: 2; }
+  .item-modal-header-title, .item-modal-header-spacer { display: none; }
+  .item-modal-header .close-btn {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--deg-white); box-shadow: var(--deg-shadow-float);
+  }
+  .item-modal-header .close-btn:hover { background: var(--deg-cream-cool); }
+  .item-modal-row { padding: 0 16px 24px; }
+  /* Cancels .item-modal-row's own 16px side padding (bleeding the photo
+     to the true screen edges, same trick .store-hero above uses) and
+     drops the desktop inset card's rounded corners — flush edges are
+     what makes it read as a hero photo instead of a framed thumbnail. */
+  .item-modal-media {
+    width: calc(100% + 32px); margin: 0 -16px; border-radius: 0;
+  }
+  .item-modal-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+
+  /* ---------- Every other dialog, same full-screen takeover ----------
+     The cart drawer and the three centered dialogs (schedule pickup, choose
+     a store, add card) were floating cards with the page peeking out around
+     them. On a phone they follow the product modals above: edge to edge,
+     no rounded card or drop shadow, a 16px content gutter, and the raised
+     white action bar pinned to the bottom edge. */
+  .cart-drawer { width: 100%; max-width: none; }
+  .drawer-band { padding: 16px; }
+  .drawer-scroll { padding: 16px; }
+  .drawer-footer { padding: 16px; box-shadow: 0 -4px 16px rgba(0,0,0,.12); }
+
+  .pickup-settings-modal { padding: 0; align-items: stretch; }
+  .pickup-settings-inner, .add-payment-inner {
+    width: 100%; height: 100%; max-height: none; border-radius: 0; box-shadow: none;
+    padding: 8px 16px 0; gap: 16px;
+  }
+  .pickup-settings-actions {
+    margin: 0 -16px; padding: 16px; border-radius: 0; box-shadow: 0 -4px 16px rgba(0,0,0,.12);
+  }
+  /* The form is the scroll region; it takes whatever height the title and
+     action bar leave, so the bar sits on the bottom edge even on a short form. */
+  .add-payment-form { flex: 1 1 auto; min-height: 0; }
+  /* The shared stylesheet stacks every .input-row on phones; Exp. date and
+     Security code are short, so they share one row like the reference. */
+  .add-payment-form .input-row { flex-direction: row; gap: 12px; }
+
+  /* ---------- Navigation menu: Uber Eats-style side drawer ----------
+     The compact menu is a small dropdown at tablet width. On a phone it is a
+     side drawer like Uber Eats': a white panel about 80% of the screen wide
+     sliding in from the left over a dimmed page, 24px of padding, no
+     title bar. Tapping the dimmed page dismisses it. The close
+     button stays in the DOM for keyboard and screen-reader users but is
+     visually hidden until it takes keyboard focus. The slide uses the cart's
+     easing: in on the long decelerating curve, out on the short accelerating
+     one. The closed drawer is visibility:hidden (after the slide-out
+     finishes) so its links can't be tabbed to while it's off-screen. */
+  .nav-compact .nav-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 39; background: rgba(19,13,0,.5);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s;
+  }
+  .nav-compact .nav-backdrop.is-open { opacity: 1; visibility: visible; transition: opacity .28s cubic-bezier(.16,1,.3,1), visibility 0s; }
+  .nav-compact .nav-links {
+    position: fixed; top: 0; bottom: 0; left: 0; right: auto; width: 80%; max-width: 320px; max-height: none;
+    display: flex; flex-direction: column; justify-content: normal; align-items: stretch;
+    background: var(--deg-white); border-bottom: none; box-shadow: none;
+    overflow: hidden; opacity: 1;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .2s cubic-bezier(.4,0,1,1), visibility 0s linear .2s;
+  }
+  .nav-compact .nav-links.open {
+    transform: translateX(0); visibility: visible; box-shadow: var(--deg-shadow-modal);
+    transition: transform .32s cubic-bezier(.16,1,.3,1), visibility 0s;
+  }
+  .nav-compact .nav-panel-head { display: block; }
+  .nav-panel-title { display: none; }
+  .nav-compact .nav-panel-head .close-btn { position: absolute; top: 8px; right: 8px; width: 48px; height: 48px; clip-path: inset(50%); }
+  .nav-compact .nav-panel-head .close-btn:focus-visible { clip-path: none; }
+  .nav-compact .nav-links-inner { flex: 1 1 auto; overflow-y: auto; padding: 24px; }
+  /* Link type and row size are the compact menu's own (20px/28px Nunito 800,
+     14px row padding, defined with .nav-compact .nav-link above); only the
+     divider rules are dropped inside the drawer. */
+  .nav-compact .nav-link { border-bottom: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-compact .nav-links { transform: none; opacity: 0; transition: opacity .15s ease, visibility 0s linear .15s; }
+    .nav-compact .nav-links.open { opacity: 1; transition: opacity .15s ease, visibility 0s; }
+  }
+}
+
+/* =========================================================================
+   Nationwide Shipping page (#view-shipping)
+   Built from the existing primitives: gold is the one saturated surface
+   (the hero panel), everything else is cream/white cards, .pill-btn
+   actions, .field-group fields and the .shop-card used for the holiday
+   lineup. Section rhythm matches the menu: 56px between sections.
+   ========================================================================= */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* ---------- Grouped links: Order, Gifting, About ----------
+   Three of the bar's four items are disclosure buttons that open a small panel (a section, inline, in the compact
+   menu). They look like the plain links beside them; only the small chevron says there is more. */
+.nav-group { position: relative; display: flex; align-items: center; }
+.nav-group-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; cursor: pointer; font-family: inherit; }
+.nav-group-btn:hover, .nav-link:hover { color: var(--deg-ink-deep); }
+.nav-chevron { flex: none; width: 16px; height: 16px; transition: transform .15s ease; }
+.nav-compact .nav-chevron { width: 20px; height: 20px; }
+.nav-group-btn[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+.nav-menu { position: absolute; z-index: 45; top: 100%; left: 0; margin-top: 20px; min-width: 240px; padding: 8px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-float); }
+.nav-menu[hidden] { display: none; }
+.nav-group:last-child .nav-menu { left: auto; right: 0; }
+.nav-menu-link { display: block; padding: 11px 14px; border-radius: 10px; font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-body); text-decoration: none; white-space: nowrap; }
+.nav-menu-link:hover { background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.nav-menu-link[aria-current="page"] { color: var(--deg-ink-deep); background: var(--deg-cream-cool); }
+/* In the compact menu a group is a row that opens inline: the row is the same Nunito row as the others, the items sit under it. */
+.nav-compact .nav-group { display: block; width: 100%; }
+.nav-compact .nav-group-btn { display: flex; width: 100%; justify-content: space-between; }
+.nav-compact .nav-menu { position: static; min-width: 0; margin: 0 0 8px; padding: 0 0 0 12px; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.nav-compact .nav-menu-link { padding: 10px 0; border-radius: 0; font-size: 17px; line-height: 24px; }
+.nav-compact .nav-menu-link:hover, .nav-compact .nav-menu-link[aria-current="page"] { background: transparent; }
+.nav-link[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--deg-gold); text-decoration-thickness: 3px; text-underline-offset: 6px; }
+
+.page-view { --page-gap: 56px; }
+:where(.page-view) :where(ul, ol) { list-style: none; margin: 0; padding: 0; }
+:where(.page-view) p { margin: 0; }
+
+/* Signup */
+.page-signup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; margin-top: var(--page-gap); padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-deep); }
+.page-signup-copy h2 { font-size: 32px; line-height: 40px; font-weight: 700; color: var(--deg-ink-deep); text-wrap: balance; }
+.page-signup-copy p { margin-top: 8px; max-width: 40ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+.page-form { display: flex; flex-direction: column; gap: 16px; }
+.page-form .field-error { margin: -8px 0 0; }
+.page-form input[aria-invalid="true"] { border-color: var(--deg-error); }
+.page-consent { position: relative; display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer; }
+.page-consent input { position: absolute; width: 24px; height: 24px; margin: 0; padding: 0; opacity: 0; cursor: pointer; }
+.page-consent-box { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--deg-border-primary); border-radius: 4px; background: var(--deg-white); transition: background-color .15s ease, border-color .15s ease; }
+.page-consent-box svg { opacity: 0; }
+.page-consent input:checked + .page-consent-box { background: var(--deg-ink-deep); border-color: var(--deg-ink-deep); }
+.page-consent input:checked + .page-consent-box svg { opacity: 1; }
+.page-consent:has(input:focus-visible) .page-consent-box { box-shadow: 0 0 0 2px var(--deg-cream-deep), 0 0 0 4px var(--deg-ink-deep); }
+.page-consent span:last-child { padding-top: 2px; }
+.page-legal { font-size: 12px; line-height: 18px; color: var(--deg-ink-heading); }
+.page-legal a { color: inherit; text-underline-offset: 2px; }
+.page-success { padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-white); font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
+.page-form input:disabled { opacity: 1; }
+
+@media (max-width: 900px) {
+  .page-signup { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 32px; }
+}
+
+@media (max-width: 640px) {
+  .page-view { --page-gap: 40px; padding-bottom: 0; }
+  /* 16px keeps iOS Safari from zooming in when a field takes focus. */
+  .page-form input[type="email"], .page-form input[type="tel"] { font-size: 16px; }
+  .page-signup-copy h2 { font-size: 26px; line-height: 34px; }
+  .page-signup { margin-left: -16px; margin-right: -16px; border-radius: 0; padding: 32px 16px; }
+}
+
+/* =========================================================================
+   Catering page (#view-catering)
+   Follows the location pages (.store-hero, .menu-layout, .store-sidebar, .menu-section) and draws the same
+   .shop-card as the menu. Only what is its own is here: the banner's photo panels, the section sub-lines and
+   the add-ons list.
+   ========================================================================= */
+.catering-hero { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.catering-hero img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.menu-section-sub { margin: -8px 0 16px; max-width: 62ch; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+#catering-top > .menu-section:first-of-type { margin-top: 32px; }
+/* Catering notes are longer than the menu's ("per box · 10-box minimum"): they take their own line under the price. */
+.shop-card-cater .shop-card-meta { flex-wrap: wrap; row-gap: 0; }
+.shop-card-cater .shop-card-meta > [aria-hidden="true"] { display: none; }
+.shop-card-cater .shop-card-note { flex-basis: 100%; white-space: normal; overflow: visible; }
+#catering-top, #cater-section-boxes, #cater-section-mornings, #cater-section-brunch, #cater-section-coffee, #cater-section-addons { scroll-margin-top: 93px; }
+.cater-addons-list { padding: 20px 24px; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-card); box-shadow: var(--deg-shadow-card); }
+:where(.page-view) .cater-addons-list ul { list-style: none; margin: 0; padding: 0; }
+.cater-addons-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deg-border-chip); font-size: 15px; line-height: 22px; }
+.cater-addons-list li strong { flex: none; font-family: var(--deg-font-body); font-size: 17px; font-weight: 700; color: var(--deg-ink-deep); }
+.cater-note { margin-top: 16px; font-size: 13px; line-height: 20px; color: var(--deg-ink-muted); }
+.cater-note strong { color: var(--deg-ink-heading); }
+@media (max-width: 900px) {
+  #catering-top, #cater-section-boxes, #cater-section-mornings, #cater-section-brunch, #cater-section-coffee, #cater-section-addons { scroll-margin-top: 149px; }
+}
+@media (max-width: 640px) {
+  .catering-hero { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catering-hero img:nth-child(n+4) { display: none; }
+  #catering-top > .menu-section:first-of-type { margin-top: 24px; }
+  .cater-addons-list { padding: 16px 20px; }
+}
+
+/* Kit modal extras (the dozen-style modal also serves the shipping kits):
+   what's in the box, the fixed flavor lineup, and the shipping/storage note. */
+.modal-info { display: flex; flex-direction: column; gap: 8px; }
+.modal-info-label { margin: 0; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--deg-ink-heading); }
+.modal-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+.modal-list li { position: relative; padding-left: 16px; }
+.modal-list li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--deg-gold); }
+.modal-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.modal-tags li { padding: 7px 14px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-body); }
+.modal-notice { margin: 0; padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); font-size: 13px; line-height: 20px; color: var(--deg-ink-heading); }
+
+/* =========================================================================
+   Multi-cart drawer, the shipping and catering checkouts, catering modals
+   ========================================================================= */
+
+/* Cart tabs: the existing segmented track, full width, one chip per cart. */
+.cart-tabs { display: flex; margin-top: 12px; }
+.cart-tabs .chip { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 8px; font-size: 14px; white-space: nowrap; }
+.cart-tab-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--deg-radius-pill); background: var(--deg-white); font-size: 12px; line-height: 1; font-weight: 700; color: var(--deg-ink-deep); }
+.cart-tabs:not([hidden]) + .pickup-chip { margin-top: 12px; }
+.drawer-totals-note { margin: 0; font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+
+/* Form notes under a field (distinct from the "?" .field-help button above). */
+.field-note { margin: 0; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--deg-ink-muted); }
+.checkout-lead { margin: 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.summary-note { margin: 0; font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+.field-group select { width: 100%; }
+.checkout-card input[type="date"], .checkout-card input[type="time"] { width: 100%; }
+
+.ship-when { padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); color: var(--deg-ink-body); }
+.ship-when strong { font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+.ship-when p { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-heading); }
+
+
+/* Catering modals */
+.flavor-row-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.flavor-row-desc { font-size: 12px; line-height: 16px; font-weight: 400; color: var(--deg-ink-muted); }
+.side-option { display: flex; flex-direction: column; gap: 8px; }
+.side-flavor { display: flex; flex-direction: column; gap: 6px; padding: 0 4px; font-size: 13px; font-weight: 600; }
+/* A side with its own flavor choice is one continuous card: the chosen row and its select share the gold, as a pack flavor and its Customize link share one card. */
+.side-option.has-flavor { gap: 0; border-radius: var(--deg-radius-card); background: var(--deg-gold); }
+.side-option.has-flavor .addon-row.selected { background: transparent; }
+.side-option.has-flavor .side-flavor { padding: 0 16px 16px; }
+.side-flavor-label { color: var(--deg-ink-heading); }
+
+@media (max-width: 640px) {
+  .cart-tabs .chip { padding: 9px 6px; font-size: 13px; }
+}
+
+input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--deg-error); }
+
+/* =========================================================================
+   Catering order fixes: minimum on the card, compact modal media, quiet
+   selection, line editing in the drawer
+   ========================================================================= */
+
+/* The box modal's photo fills the top of a compact panel, and the room under it holds a live summary. */
+@media (min-width: 901px) {
+  .item-modal-media-box { width: 300px; aspect-ratio: auto; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 20px; padding: 0 0 20px; background: var(--deg-cream-cool); }
+  .item-modal-media-box .shop-card-photo { height: auto; aspect-ratio: 1; flex: none; }
+  .item-modal-media-box .box-summary { padding: 0 20px; }
+}
+.box-summary-title { margin: 0 0 8px; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--deg-ink-heading); }
+.box-summary-list { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.box-summary-list dt { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--deg-ink-muted); }
+.box-summary-list dd { margin: 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-body); }
+.box-summary-total { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--deg-border-secondary); font-size: 13px; color: var(--deg-ink-heading); }
+.box-summary-total strong { font-size: 18px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); }
+.box-summary { display: block; }
+@media (max-width: 900px) { .box-summary { display: none; } }
+
+.box-count-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.box-count-other { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--deg-ink-heading); }
+.box-count-other .qty-select { padding: 10px 40px 10px 16px; }
+.box-count-total { margin-left: auto; font-size: 15px; font-weight: 700; color: var(--deg-ink-deep); }
+
+.thumb-coffee { aspect-ratio: 1; }
+
+/* Cart drawer: box lines edit in the modal and remove with an undo. */
+/* A cart line: photo, then name and price on one row, the choices, and a foot with the line's own actions on the
+   left (plain words, no icons) and the quantity on the right. */
+.drawer-line-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.drawer-line-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.drawer-line-top .drawer-item-name { min-width: 0; }
+.drawer-line-top .item-price { flex: none; font-weight: 600; font-size: 14px; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
+.drawer-line-qty { margin-top: 6px; }
+.drawer-qty { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--deg-ink-muted); }
+/* The shared select is a tall pill sized for forms; in a cart line it is a compact one. */
+.drawer-qty-select { width: auto; min-height: 36px; padding: 6px 34px 6px 14px; font-size: 14px; font-weight: 600; line-height: 20px; color: var(--deg-ink-deep); background-position: right 12px center; background-size: 14px 14px; font-variant-numeric: tabular-nums; }
+.drawer-line-foot { display: flex; align-items: center; margin-top: 4px; }
+.drawer-line-links { display: flex; align-items: center; flex-wrap: wrap; margin-left: -8px; }
+.drawer-link { min-height: 44px; padding: 0 8px; border: 0; background: none; font-size: 13px; font-weight: 600; color: var(--deg-ink-body); text-underline-offset: 3px; }
+.drawer-link:hover { text-decoration: underline; }
+.drawer-line.is-fresh { animation: line-fresh 1.6s ease-out; }
+@keyframes line-fresh { from { background: var(--deg-cream-deep); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .drawer-line.is-fresh { animation: none; } }
+.drawer-item-qty { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.drawer-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 10px 14px; border-radius: var(--deg-radius-card); background: var(--deg-ink-deep); color: #FBF3E3; font-size: 14px; line-height: 20px; }
+.drawer-undo .text-btn { color: var(--deg-gold-on-dark); font-weight: 700; padding: 6px 4px; }
+
+
+/* =========================================================================
+   Homepage hero (#view-home), mobile first
+   Layout after Chick-fil-A's phone hero: the visual owns the middle of the
+   screen, a large display headline sits above it, and a row of three equal
+   order tiles sits where the thumb is. The visual here is the live homepage's
+   own hero video, full bleed, under a scrim that keeps the cream type legible.
+   ========================================================================= */
+.home-view { padding-top: 0; padding-bottom: 0; }
+.home-hero { position: relative; isolation: isolate; display: flex; min-height: calc(100svh - 69px); margin: 0 calc(-1 * var(--deg-view-pad-x)); background: var(--deg-dark); color: var(--deg-cream); overflow: hidden; }
+.home-hero-video { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.home-hero-scrim { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(19,13,0,.76) 0%, rgba(19,13,0,.64) 42%, rgba(19,13,0,.28) 56%, rgba(19,13,0,.34) 70%, rgba(19,13,0,.8) 86%, rgba(19,13,0,.88) 100%); } /* dark where there is type (cream on the video's brightest frames measured under 4.5:1 with a lighter scrim), open in the middle where the video is the picture */
+.home-hero-inner { width: 100%; max-width: 560px; margin: 0 auto; padding: 40px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: space-between; gap: 32px; }
+.home-hero-copy { text-align: center; }
+.home-hero h1 { font-size: 44px; line-height: 46px; letter-spacing: -.01em; text-wrap: balance; color: var(--deg-cream); }
+.home-hero h1 span { display: block; margin-top: 4px; color: var(--deg-gold-on-dark); }
+.home-hero-lead { margin: 16px auto 0; max-width: 34ch; font-size: 16px; line-height: 24px; font-weight: 500; color: rgba(255,247,234,.9); }
+
+.home-hero-actions { display: flex; flex-direction: column; gap: 16px; }
+:where(.home-view) ul, :where(.home-view) p { margin: 0; padding: 0; list-style: none; }
+.home-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.home-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 96px; padding: 14px 6px; border: none; border-radius: var(--deg-radius-card); background: var(--deg-white); color: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); font-size: 14px; line-height: 18px; font-weight: 700; text-align: center; transition: background-color .15s ease, transform .15s ease; }
+.home-tile:hover { background: var(--deg-cream-cool); }
+.home-tile:active { transform: translateY(1px); }
+.home-tile.is-primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+.home-tile.is-primary:hover { background: var(--deg-gold-on-dark); }
+.home-tile svg { flex: none; }
+.home-hero-ship { text-align: center; font-size: 14px; line-height: 20px; color: rgba(255,247,234,.9); }
+.home-hero-ship a { display: inline-flex; align-items: center; gap: 4px; padding: 10px 2px; font-weight: 700; color: var(--deg-cream); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--deg-gold-on-dark); }
+.home-hero-proof { text-align: center; font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,247,234,.72); }
+.home-hero a:focus-visible, .home-hero button:focus-visible { box-shadow: 0 0 0 2px var(--deg-dark), 0 0 0 4px var(--deg-cream); }
+
+@media (min-width: 641px) {
+  .home-view { padding-top: 24px; }
+  .home-hero { min-height: 640px; margin: 0; border-radius: var(--deg-radius-panel); }
+  .home-hero-inner { max-width: 640px; padding: 56px 32px 40px; }
+  .home-hero h1 { font-size: 56px; line-height: 58px; }
+}
+
+/* Two short lines per tile ("Order / catering"), as the reference does, so the label never crowds the tile edge. */
+.home-tile span { max-width: 8ch; text-wrap: balance; }
+
+/* =========================================================================
+   Location details modal (#ld-modal): the store, then a day and a time.
+   Built on the pickup scheduler's own rows; "Start my order" stays disabled
+   until both are chosen.
+   ========================================================================= */
+.ld-store h1 { font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+.ld-address { margin: 4px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-heading); }
+.ld-hours { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ld-change { margin-top: 6px; padding: 10px 0; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.ld-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; padding: 6px; margin: -6px; }
+.ld-section { display: flex; flex-direction: column; gap: 12px; }
+.ld-section h2 { font-size: 20px; line-height: 28px; font-weight: 700; color: var(--deg-ink-deep); }
+.ld-empty { margin: 0; padding: 14px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ld-hint { margin: 0; font-size: 14px; line-height: 20px; text-align: center; color: var(--deg-ink-muted); }
+.ld-hint:empty { display: none; }
+.pickup-date-tile.is-closed { opacity: .5; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .ld-store h1 { font-size: 24px; line-height: 30px; }
+}
+
+
+
+/* ---------- Delivery funnel ----------
+   The address step, the address details modal and the delivery checkout. They reuse the checkout cards, the order
+   page's title and the Pickup modal; only what is new to delivery is styled here. */
+/* The "where" modal: Pickup and Delivery in one place, with a map. Two panes on desktop (choices left, map right); on
+   phones a full-screen sheet with the map above and the choices on a rounded panel over its lower edge. At most one
+   dark button is ever on screen. */
+.wm-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.wm-inner {
+  position: relative; display: grid; grid-template-columns: minmax(380px, 460px) 1fr; width: min(1120px, 100%); height: min(720px, calc(100vh - 40px));
+  background: var(--deg-cream); border-radius: 32px; box-shadow: var(--deg-shadow-modal); overflow: hidden;
+}
+.wm-panel { grid-column: 1; grid-row: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 28px 28px 24px; }
+.wm-map-pane { grid-column: 2; grid-row: 1; position: relative; min-height: 0; background: var(--deg-cream-cool); }
+.wm-map { position: absolute; inset: 0; z-index: 0; background: var(--deg-cream-cool); font-family: var(--deg-font-body); }
+.wm-map.is-unavailable::after { content: "The map isn't available right now."; position: absolute; inset: 0; display: grid; place-items: center; color: var(--deg-ink-muted); font-size: 14px; }
+/* Warm the street tiles toward the cream and gold palette; the controls and pins stay crisp. */
+.wm-map .leaflet-tile-pane { filter: sepia(.22) saturate(.85) brightness(1.03); }
+.wm-map .leaflet-control-attribution { font-size: 11px; background: rgba(255,247,234,.85); color: var(--deg-ink-muted); }
+.wm-map .leaflet-control-attribution a { color: var(--deg-ink-body); }
+.wm-map .leaflet-marker-icon:focus-visible { outline: none; }
+.wm-map .leaflet-marker-icon:focus-visible .wm-pin svg { filter: drop-shadow(0 0 0 2px var(--deg-cream)) drop-shadow(0 0 3px var(--deg-ink-deep)); }
+.wm-pin-wrap { background: none; border: 0; }
+.wm-pin { position: relative; display: block; line-height: 0; transition: transform .15s ease; transform-origin: 50% 100%; }
+.wm-pin svg { display: block; filter: drop-shadow(0 2px 3px rgba(19,13,0,.3)); }
+.wm-pin svg path { fill: var(--deg-ink-deep); }
+.wm-pin-egg { fill: var(--deg-cream); }
+.wm-pin-yolk { fill: var(--deg-gold); }
+.wm-pin.is-selected { transform: scale(1.18); } /* the chosen store only grows; its colour and icon stay the same as every other store pin */
+.wm-pin.is-delivery svg path { fill: var(--deg-gold); }
+.wm-pin-truck { stroke: var(--deg-ink-deep); }
+.wm-pin-tag { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, -2px); padding: 2px 8px; border-radius: 999px; background: var(--deg-white); box-shadow: var(--deg-shadow-float); font-size: 11px; line-height: 16px; font-weight: 700; color: var(--deg-ink-body); white-space: nowrap; }
+.wm-here { fill: #2B6CF0; fill-opacity: 1; stroke: #fff; stroke-width: 3; }
+.wm-pill { position: absolute; z-index: 5; top: 16px; left: 16px; right: 76px; max-width: 380px; display: flex; align-items: center; gap: 12px; padding: 8px 20px 8px 16px; min-height: 52px; background: var(--deg-white); border-radius: 999px; box-shadow: var(--deg-shadow-float); color: var(--deg-ink-deep); }
+.wm-pill[data-mode="pickup"] .wm-pill-ico-delivery, .wm-pill:not([data-mode="pickup"]) .wm-pill-ico-pickup { display: none; }
+.wm-pill-text { display: flex; flex-direction: column; min-width: 0; font-size: 12px; line-height: 16px; color: var(--deg-ink-muted); }
+.wm-pill-text strong { font-size: 16px; line-height: 20px; font-weight: 700; color: var(--deg-ink-deep); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wm-round { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 14px; background: var(--deg-white); color: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); }
+.wm-round:hover { background: var(--deg-cream-cool); }
+.wm-close { position: absolute; z-index: 5; top: 16px; right: 16px; border-radius: 50%; }
+.wm-controls { position: absolute; z-index: 5; right: 16px; bottom: 36px; display: flex; flex-direction: column; gap: 8px; }
+.da-toggle { align-self: center; }
+.da-toggle .chip { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 24px; }
+.wm-tab { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+.wm-tab[hidden] { display: none; }
+.wm-form { display: flex; flex-direction: column; gap: 16px; }
+.wm-field { display: flex; flex-direction: column; gap: 8px; position: relative; }
+.wm-field .field-group { gap: 0; }
+.wm-input-wrap { position: relative; }
+.wm-input-wrap input { width: 100%; padding-right: 52px; }
+.wm-clear { position: absolute; right: 4px; top: 0; width: 44px; height: 100%; display: grid; place-items: center; border: 0; background: transparent; color: var(--deg-ink-muted); border-radius: var(--deg-radius-compact); }
+.wm-clear:hover { color: var(--deg-ink-deep); }
+.wm-suggest { position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: 6px; list-style: none; background: var(--deg-white); border-radius: var(--deg-radius-compact); box-shadow: var(--deg-shadow-float); max-height: 280px; overflow-y: auto; }
+.wm-option { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; cursor: pointer; }
+.wm-option[aria-selected="true"], .wm-option:hover { background: var(--deg-cream-cool); }
+.wm-option-pin { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.wm-option-text { display: flex; flex-direction: column; min-width: 0; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); }
+.wm-option-text strong { font-size: 15px; line-height: 20px; font-weight: 700; color: var(--deg-ink-deep); }
+.wm-note { margin: -8px 0 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); min-height: 0; }
+.wm-note:empty { display: none; }
+.wm-switch-note { margin: -8px 0 0; text-align: center; }
+.wm-pill-store-only { display: none; }
+.wm-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 8px 8px; text-align: center; }
+.wm-empty[hidden] { display: none; }
+.wm-empty-title { margin: 0; max-width: 16ch; font-size: 24px; line-height: 30px; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.wm-empty-rule { width: 64px; height: 2px; background: var(--deg-ink-deep); }
+.wm-empty-copy { margin: 0; max-width: 30ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-muted); }
+.wm-empty .pill-btn { margin-top: 8px; }
+.wm-list-title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 700; color: var(--deg-ink-deep); }
+.wm-stores[hidden], .wm-list-title[hidden] { display: none; }
+.wm-stores { list-style: none; margin: -8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wm-store .wm-store-meta { color: var(--deg-ink-body); font-weight: 600; font-variant-numeric: tabular-nums; }
+.wm-actions { position: sticky; bottom: -24px; margin: 0 -28px -24px; padding: 16px 28px 24px; background: linear-gradient(to bottom, rgba(255,247,234,0), var(--deg-cream) 28%); }
+/* The saved order sits flat on the panel (a hairline under it, no card), so the panel never holds a card inside a card. */
+.delivery-saved { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 0 0 20px; border-bottom: 1px solid var(--deg-border-secondary); }
+.delivery-saved h2 { margin: 0 0 4px; font-size: 18px; line-height: 26px; font-weight: 700; color: var(--deg-ink-deep); }
+.delivery-saved p { margin: 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-body); }
+.delivery-saved .delivery-saved-when { color: var(--deg-ink-muted); }
+.delivery-saved .pill-btn { margin-top: 12px; }
+.delivery-result { display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 236px; padding: 8px 0 4px; text-align: center; }
+.delivery-result .da-icon { color: var(--deg-gold); margin-bottom: 8px; }
+.delivery-result.is-idle .da-icon, .delivery-result.is-no .da-icon { color: var(--deg-ink-muted); }
+.delivery-result h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 800; color: var(--deg-ink-deep); }
+.delivery-result-address { margin: 0; font-size: 17px; line-height: 24px; font-weight: 600; color: var(--deg-ink-heading); }
+.delivery-result-note { margin: 0; max-width: 34ch; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.delivery-result .pill-btn { margin-top: 12px; }
+.delivery-result .text-btn { min-height: 44px; padding: 0 16px; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 760px) {
+  .wm-modal { padding: 0; align-items: stretch; }
+  .wm-inner { width: 100%; height: 100dvh; max-height: none; border-radius: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(200px, 34%) minmax(0, 1fr); box-shadow: none; }
+  .wm-map-pane { grid-column: 1; grid-row: 1; }
+  .wm-panel { grid-column: 1; grid-row: 2; position: relative; z-index: 6; margin-top: -20px; padding: 20px 20px 20px; border-radius: 24px 24px 0 0; background: var(--deg-cream); box-shadow: 0 -6px 18px rgba(19,13,0,.08); }
+  .wm-pill { right: 72px; }
+  .wm-controls { bottom: 36px; }
+  .wm-actions { bottom: -20px; margin: 0 -20px -20px; padding: 16px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
+}
+
+.dd-form { gap: 16px; }
+.dd-form .field-group { gap: 8px; }
+.dd-nick .chip { min-height: 44px; padding: 0 20px; }
+.dd-count { align-self: flex-end; margin-top: -4px; font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.dc-min-note { margin: 12px 0 0; }
+
+
+/* ---------- The checkout's "where" card ----------
+   Pickup and delivery checkouts open on a map with the Pickup / Delivery toggle over it, then the place and the time
+   (Chipotle's checkout, in our colours). The map is a picture: it does not pan or zoom. */
+.where-card { padding: 0; gap: 0; overflow: hidden; }
+.where-map { position: relative; height: 240px; isolation: isolate; }
+.where-map-canvas { cursor: default; }
+.where-map-canvas.is-unavailable::after { content: "The map isn't available right now."; }
+.where-toggle { position: absolute; z-index: 500; top: 16px; left: 50%; transform: translateX(-50%); background: var(--deg-white); border: 1px solid var(--deg-border-control); }
+.where-toggle .chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; }
+.where-body { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+.where-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.where-head h2 { margin: 0; }
+.where-change { min-height: 44px; padding: 0 4px; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; font-size: 15px; }
+.where-address { margin: -8px 0 0; display: flex; flex-direction: column; gap: 2px; font-size: 16px; line-height: 24px; color: var(--deg-ink-body); }
+.where-address strong { font-weight: 700; color: var(--deg-ink-deep); }
+.where-address span { color: var(--deg-ink-muted); }
+.where-eta { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 16px; border-top: 1px solid var(--deg-border-secondary); text-align: center; }
+.where-eta[hidden] { display: none; }
+.where-eta p { margin: 0; }
+.where-eta-label { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-muted); }
+.where-eta-value { font-family: var(--deg-font-display); font-weight: 800; font-size: 56px; line-height: 64px; color: var(--deg-ink-deep); font-variant-numeric: tabular-nums; }
+.where-eta-sub { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+@media (min-width: 641px) { .where-map { height: 280px; } }
+
+
+/* ---------- A store's own page and its info card ----------
+   The menu page is each store's page. "All locations" sits above the store name; "Store info" opens a card with the store
+   on a map, its address (copyable), hours, delivery terms and directions, in the same quiet rows as an app's place card. */
+.store-back { align-self: inherit; margin-bottom: 4px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); text-decoration: underline; text-underline-offset: 3px; }
+.store-back[hidden] { display: none; }
+.si-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.si-inner { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; background: var(--deg-white); border-radius: var(--deg-radius-panel); box-shadow: var(--deg-shadow-modal); }
+.si-map-wrap { position: relative; height: 220px; }
+.si-map { position: absolute; inset: 0; }
+.si-close { position: absolute; z-index: 5; top: 16px; left: 16px; border-radius: 50%; }
+.si-body { padding: 24px 24px 12px; }
+.si-body h1 { margin: 0; font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); }
+.si-sub { margin: 4px 0 20px; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.si-rows { list-style: none; margin: 0 -24px; padding: 0; border-top: 1px solid var(--deg-border-card); }
+.si-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--deg-border-card); }
+.si-row:last-child { border-bottom: 0; }
+.si-icon { flex: none; display: grid; place-items: center; width: 28px; color: var(--deg-ink-deep); }
+.si-text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); }
+.si-text strong { font-weight: 700; }
+.si-text span { color: var(--deg-ink-muted); font-size: 14px; line-height: 20px; }
+.si-action { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -6px -10px -6px 0; border: 0; border-radius: 50%; background: transparent; color: var(--deg-ink-body); }
+.si-action:hover { background: var(--deg-cream-cool); }
+.si-detail { flex-basis: 100%; margin: -4px 0 0 44px; font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.si-detail[hidden] { display: none; }
+.si-plus { transition: transform .15s ease; }
+.si-action[aria-expanded="true"] .si-plus { transform: rotate(45deg); }
+.si-link { font-weight: 600; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; padding: 10px 0; }
+@media (max-width: 640px) {
+  .si-modal { align-items: flex-end; padding: 0; }
+  .si-inner { width: 100%; max-height: 92vh; border-radius: 24px 24px 0 0; }
+}
+
+/* The saved order's "Change time" in the "where" modal, opened from the nav indicator. */
+.saved-change-time { min-height: 44px; margin-top: 4px; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.saved-change-time[hidden] { display: none; }
+
+
+
+/* TEMP: large-video flavor layouts, picked with the switcher above the list ([data-variant] on #flavor-grid). */
+.flavor-variant-switch { display: flex; gap: 4px; margin: 0 0 12px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; border-radius: 999px; background: var(--deg-cream-cool); }
+.flavor-variant-switch[hidden] { display: none; }
+.flavor-variant-switch button { flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-muted); cursor: pointer; }
+.flavor-variant-switch button[aria-pressed="true"] { background: var(--deg-ink-deep); color: #fff; }
+.flavor-grid[data-variant] { display: grid; gap: 12px; }
+.flavor-grid[data-variant="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+
+.fv-tile, .fv-stage-card { position: relative; overflow: hidden; background: var(--deg-white); border: 1px solid var(--deg-border-card); border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-card); transition: border-color .15s ease, opacity .15s ease; }
+.fv-tile.selected, .fv-stage-card.selected { border-color: var(--deg-ink-deep); box-shadow: 0 0 0 1px var(--deg-ink-deep); }
+.fv-media { position: relative; overflow: hidden; background: var(--deg-cream-cool); }
+.fv-media video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.fv-play { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+.fv-play-icon { display: grid; place-items: center; width: 48px; height: 48px; padding-left: 2px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; opacity: 0; transition: opacity .15s ease; }
+.fv-play-icon svg { width: 20px; height: 20px; }
+.fv-media.is-paused .fv-play-icon { opacity: 1; }
+.fv-play:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--deg-ink-deep); }
+.fv-body { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 14px; }
+.fv-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 16px; line-height: 22px; color: var(--deg-ink-heading); }
+.fv-stat { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.fv-excl { margin: 0 14px 14px; }
+.fv-stepper { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.fv-step { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1.5px solid var(--deg-ink-deep); border-radius: 50%; background: var(--deg-white); color: var(--deg-ink-deep); touch-action: manipulation; cursor: pointer; }
+.fv-step:disabled { opacity: .35; border-color: var(--deg-border-chip); color: var(--deg-ink-muted); cursor: not-allowed; }
+.fv-qty { min-width: 28px; text-align: center; font-size: 16px; line-height: 24px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--deg-ink-deep); }
+
+/* 2 · Pair: two square clips across, as on the live product page; the stepper under the name. */
+[data-variant="2"] .fv-tile { display: flex; flex-direction: column; }
+[data-variant="2"] .fv-media { aspect-ratio: 1; flex: none; }
+[data-variant="2"] .fv-body { flex: 1 1 auto; padding: 10px 12px 12px; gap: 0; }
+/* The name keeps two lines whether it uses them or not; the line under it keeps one; the stepper is three fixed columns, so the − and + sit
+   at the tile's left and right edges, in the same place on every tile. */
+[data-variant="2"] .fv-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; height: 44px; overflow: hidden; }
+[data-variant="2"] .fv-stat { height: 18px; margin-top: 2px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-variant="2"] .fv-stat.is-changed { font-weight: 600; color: var(--deg-ink-deep); }
+[data-variant="2"] .fv-stepper { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; height: 44px; margin-top: 10px; }
+[data-variant="2"] .fv-qty { min-width: 0; }
+/* "Customize" / "Customized": a chip on the clip, over the picture, so it adds no height to the tile. */
+.fv-chip { position: absolute; left: 10px; bottom: 10px; z-index: 2; min-height: 28px; padding: 5px 12px; border: 0; border-radius: var(--deg-radius-pill); background: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); font-size: 12px; line-height: 18px; font-weight: 600; color: #fff; cursor: pointer; }
+.fv-chip[hidden] { display: none; }
+.fv-chip::after { content: ''; position: absolute; inset: -8px -4px; }
+.fv-chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+/* The sheet's Customize section for a Pair flavor. */
+.flavor-info-custom { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-info-custom-note { margin: 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.flavor-info-custom .flavor-exclusions { margin: 0; padding-top: 0; border-top: 0; }
+.flavor-info-done { margin-top: 4px; }
+
+@media (prefers-reduced-motion: reduce) { .fv-tile, .fv-thumb-img, .fv-play-icon { transition: none; } }
+
+
+/* Big thumb rows (Grow): the flavor list, each thumbnail 140px (2.5× the usual 56px), playing, with no icon on it. */
+.flavor-grid[data-big] { gap: 12px; }
+.flavor-row-big { position: relative; overflow: hidden; }
+.fb-head { display: grid; grid-template-columns: 140px minmax(0, 1fr); column-gap: 12px; align-items: start; }
+/* The thumbnail's corners are the card's own radius (12px): the card is inset by its stroke and padding (13.5px), more than its radius, so a
+   strictly concentric corner would be square; the same radius reads as one family. */
+.flavor-thumb-big { position: relative; width: 140px; height: 140px; border-radius: var(--deg-radius-card); }
+.flavor-thumb-big video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.fb-main { display: flex; flex-direction: column; justify-content: space-between; gap: 8px; align-self: stretch; min-width: 0; }
+.fb-open { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; padding: 0; border: 0; background: none; font: inherit; text-align: left; color: inherit; cursor: pointer; touch-action: manipulation; }
+.fb-open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); border-radius: 6px; }
+.fb-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 16px; line-height: 22px; color: var(--deg-ink-heading); }
+.fb-stat { font-size: 13px; line-height: 18px; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
+.fb-link { margin-top: 4px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; }
+.fb-main .fv-stepper { justify-content: flex-start; gap: 4px; }
+.fb-details { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+.fb-desc { margin: 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+.flavor-row-big .fv-excl { margin: 12px 0 0; }
+.flavor-row-big .fv-excl[hidden] { display: none; }
+
+/* Grow: the open row's thumbnail becomes a full-width square above the name, stepper and description. */
+[data-big="a"] .is-open .fb-head { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
+[data-big="a"] .is-open .flavor-thumb-big { width: 100%; height: auto; aspect-ratio: 1; }
+[data-big="a"] .is-open .fb-main { flex-direction: row; align-items: center; justify-content: space-between; align-self: auto; }
+
+
+/* The flavor rows (Distilled and Grow alike): a Cool Linen row that steps to Border Chip on hover. A flavor in the mix becomes a white card with a 2px Deep Ink
+   stroke and a drop shadow. The full-pack state no longer dims the row: only its − and + are disabled. The stroke is always 2px
+   (transparent until selected) and the padding gives back the difference, so a row is the size it always was. */
+.dozen-flavor-row { position: relative; overflow: hidden; border: 2px solid transparent; border-radius: var(--deg-radius-card); padding: 11.5px 15.5px 11.5px 11.5px; background: var(--deg-cream-cool); transition: background-color .15s ease; }
+.dozen-flavor-row:not(.selected):hover { background: var(--deg-border-chip); }
+.dozen-flavor-row.selected, .dozen-flavor-row.selected:hover { background: var(--deg-white); border-color: var(--deg-ink-deep); box-shadow: 0 6px 16px rgba(19, 13, 0, .18); }
+.dozen-flavor-row.at-limit { opacity: 1; }
+.dozen-flavor-row.selected .flavor-exclusions, .dozen-flavor-row.selected .flavor-watch { border-top-color: var(--deg-border-chip); }
+/* The − and + buttons: 36px circles with a 44px tap area, the same outline and fill. */
+.dozen-flavor-row .mini-step-btn { position: relative; width: 36px; height: 36px; touch-action: manipulation; }
+.dozen-flavor-row .mini-step-btn::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+.dozen-flavor-row .mini-step-btn svg { width: 16px; height: 16px; }
+.dozen-flavor-row .mini-stepper { gap: 8px; }
+.dozen-flavor-row .mini-stepper span { min-width: 20px; }
+
+/* The temporary layout switcher scrolls sideways; its width must not widen the modal's content column on a phone. */
+.item-modal-content { min-width: 0; }
+.flavor-variant-switch { width: 100%; max-width: 100%; contain: inline-size; }
+
+/* ===== Distilled flavor picker (a layout in the switcher) =====
+   Adding and reviewing are the whole job: a compact header (the photo is untouched), a two-segment 3-or-6 control, shorter rows,
+   ingredient chips behind "Customize", the picks listed in the footer, Qty beside the action and the note behind a link. */
+#item-modal[data-distilled="1"] #dozen-modal-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+/* The one-line calorie text must not set the column's width: on a phone the content column is as wide as its widest unbroken line, so it is held to the screen. */
+#item-modal[data-distilled="1"] .item-modal-content { max-width: 100%; }
+#item-modal[data-distilled="1"] .flavor-row-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-custom { display: flex; align-items: center; flex-wrap: wrap; gap: 0 12px; padding-left: 6px; }
+.fd-custom-btn { min-height: 44px; margin: -6px 0; padding: 6px 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* The summary of what was left out ("No bacon, tomato") wraps onto as many lines as it needs: the section grows in height, never in width, so a long list can't widen the card. */
+.fd-custom-sum { flex: 1 1 160px; min-width: 0; padding-bottom: 6px; font-size: 13px; line-height: 18px; color: var(--deg-ink-body); overflow-wrap: anywhere; }
+.fd-custom-sum:empty { display: none; }
+.fd-custom:has(.fd-custom-sum:not(:empty)) .fd-custom-btn { margin-bottom: -6px; }
+
+/* Eggceptional Wraps flavor rows: the deviled egg picker's row (Cool Linen, white + 2px ink when chosen), with a pick-one radio
+   in place of the stepper. The whole head is the radio's label; the Customize link and chips sit below it, outside the label. */
+.wrap-flavor-label { position: relative; cursor: pointer; justify-content: flex-start; }
+.wrap-flavor-label .flavor-row-name { flex: 1 1 0; }
+.wrap-flavor-label .flavor-thumb { cursor: pointer; }
+.wrap-flavor-row .flavor-row-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.wrap-flavor-row.selected .radio-choice-ind, .box-flavor-row.selected .addon-row-box { background: var(--deg-ink-deep); }
+.wrap-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.wrap-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.wrap-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+.wrap-flavor-extra:empty { display: none; }
+.box-flavor-row .addon-row-box { transition: background-color .15s ease; }
+.box-flavor-row .addon-row-box svg { opacity: 0; }
+.box-flavor-row.selected .addon-row-box svg { opacity: 1; }
+.wrap-flavor-extra { display: flex; flex-direction: column; gap: 12px; }
+/* The ingredient line is what a customer is choosing by: the chosen row shows all of it. */
+.wrap-flavor-row.selected .flavor-row-desc { display: block; -webkit-line-clamp: unset; overflow: visible; }
+/* The "No bacon, tomato, …" summary wraps instead of running on one line: a long list used to set the width of the whole column
+   and push the card past the screen. The column is held to the modal's width. */
+#wrap-modal .item-modal-content, .wrap-flavor-row, .wrap-flavor-extra { min-width: 0; max-width: 100%; }
+
+/* Remove ingredients, as a list: one full-width row per ingredient (its glyph, its name, and a circle-slash at the right that
+   is grey until the ingredient is left out, then red). The whole row is the button, 48px tall. */
+.excl-list { margin: 0; padding: 0; list-style: none; }
+.excl-list li + li { border-top: 1px solid var(--deg-border-chip); }
+.excl { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 4px; border: 0; background: none; font: inherit; text-align: left; color: var(--deg-ink-body); cursor: pointer; touch-action: manipulation; }
+.excl:focus-visible { outline: none; border-radius: 8px; box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+.excl-icon { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-heading); }
+.excl-name { flex: 1 1 0; min-width: 0; font-size: 15px; line-height: 20px; font-weight: 500; }
+.excl-no { flex: none; display: grid; place-items: center; width: 24px; height: 24px; color: var(--deg-ink-muted); transition: color .15s ease; }
+.excl:hover .excl-no { color: var(--deg-ink-deep); }
+.excl.active .excl-no { color: var(--deg-error); }
+.excl.active .excl-no circle { fill: rgba(220, 38, 38, .12); }
+.excl.active .excl-name { text-decoration: line-through; text-decoration-color: var(--deg-error); text-decoration-thickness: 1.5px; }
+
+/* On a gold (chosen) single-choice row the red needs to be darker to stay readable, and the dividers need to show. */
+.radio-choice .excl-list li + li { border-top-color: rgba(38, 26, 0, .18); }
+.radio-choice .excl:hover .excl-no { color: var(--deg-ink-deep); }
+.radio-choice .excl.active .excl-no { color: #B91C1C; }
+
+/* Pair: the Customize link sits under the stepper, inside the tile; a tile is half the screen wide, so its ingredient rows are compact
+   and the summary wraps instead of widening the tile. */
+.fv-custom { margin: -4px 12px 8px; padding-left: 0; flex-wrap: wrap; gap: 0 8px; }
+.fv-custom[hidden] { display: none; }
+.fv-custom .fd-custom-sum { flex: 1 1 100%; overflow: visible; text-overflow: clip; white-space: normal; padding-bottom: 8px; }
+[data-variant="2"] .fv-excl .excl { gap: 8px; padding: 6px 0; }
+[data-variant="2"] .fv-excl .excl-icon, [data-variant="2"] .fv-excl .excl-no { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-icon svg, [data-variant="2"] .fv-excl .excl-no svg { width: 20px; height: 20px; }
+[data-variant="2"] .fv-excl .excl-name { font-size: 14px; line-height: 18px; }
+
+/* A product with options (the 6 Pack) opens with none chosen: its flavors wait, dimmed, until the customer picks 3 or 6. */
+#flavor-block { scroll-margin-top: 72px; }
+#flavor-block.is-pending { opacity: .45; pointer-events: none; }
+#flavor-block.is-pending .flavor-variant-switch { display: none; }
+
+/* Pair: the "i" on a tile's clip, a black circle with a white glyph in the top-left corner where the number badge used to sit; it opens the sheet below. */
+.fv-info { position: absolute; top: 10px; left: 10px; z-index: 2; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; cursor: pointer; touch-action: manipulation; }
+.fv-info::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+.fv-info:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+/* The sheet is laid over the open modal the way a second card is stacked on a phone: it rises from the bottom with rounded top corners and
+   the clip runs edge to edge from its top, while the modal beneath is pushed back a little (scaled, still showing above the sheet's top edge). */
+.flavor-info { --sheet-top: 20px; position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; }
+@media (min-width: 641px) { .flavor-info { --sheet-top: 40px; } }
+.flavor-info-backdrop { position: absolute; inset: 0; background: rgba(19, 13, 0, .6); animation: flavor-info-fade .25s ease both; }
+.flavor-info-sheet { position: relative; display: flex; flex-direction: column; width: min(100%, 440px); height: calc(100% - var(--sheet-top)); max-height: calc(100% - var(--sheet-top)); overflow-y: auto; overscroll-behavior: contain; border-radius: 16px 16px 0 0; background: var(--deg-cream); box-shadow: var(--deg-shadow-modal); animation: flavor-info-rise .3s cubic-bezier(.2, .8, .2, 1) both; }
+.flavor-info-close { position: absolute; top: 12px; left: 12px; z-index: 3; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-white); box-shadow: 0 2px 8px rgba(19, 13, 0, .18); cursor: pointer; }
+.flavor-info-close:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-info-media.flavor-watch-media { flex: none; width: 100%; height: auto; max-height: 62vh; aspect-ratio: 2 / 3; border-radius: 0; }
+.flavor-info-media video { object-position: 50% 40%; }
+.flavor-info-copy { display: flex; flex-direction: column; gap: 6px; padding: 20px 20px 28px; }
+.flavor-info-copy h2 { margin: 0; font-family: var(--deg-font-body); font-size: 20px; line-height: 26px; font-weight: 700; color: var(--deg-ink-deep); }
+.flavor-info-stat { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-muted); }
+.flavor-info-copy p { margin: 4px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-body); }
+.flavor-info.is-closing .flavor-info-sheet { animation: flavor-info-drop .22s ease-in both; }
+.flavor-info.is-closing .flavor-info-backdrop { animation: flavor-info-fade .22s ease-in reverse both; }
+#item-modal { transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+#item-modal.is-under { transform: translateY(8px) scale(.94); transform-origin: 50% 0; }
+/* The modal underneath takes the sheet's 16px corners (a touch more, to read as 16 once it is scaled down) and gives up its close button. */
+.item-modal-inner { transition: border-radius .3s cubic-bezier(.2, .8, .2, 1); }
+#item-modal.is-under .item-modal-inner { border-radius: 17px; }
+#item-modal.is-under .item-modal-header .close-btn { visibility: hidden; }
+@keyframes flavor-info-rise { from { transform: translateY(100%); } }
+@keyframes flavor-info-drop { to { transform: translateY(100%); } }
+@keyframes flavor-info-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .flavor-info-sheet, .flavor-info-backdrop, .flavor-info.is-closing .flavor-info-sheet, .flavor-info.is-closing .flavor-info-backdrop { animation: none; }
+  #item-modal, .item-modal-inner { transition: none; }
+}
+
+/* Full Size Bagel: the yolk spread rows are the pack picker's (Cool Linen; white + 2px ink when chosen), the thumbnail still opens the clip, and a
+   pick-one radio sits where the stepper is. The label holds the name and the radio; the thumbnail and the Customize link sit outside it. */
+.bagel-pick { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 56px; cursor: pointer; }
+.bagel-flavor-row .flavor-row-head { justify-content: flex-start; }
+.bagel-flavor-row .flavor-row-name { flex: 1 1 0; }
+.bagel-flavor-row .flavor-row-desc { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bagel-flavor-row.selected .radio-choice-ind { background: var(--deg-ink-deep); }
+.bagel-flavor-row.selected .radio-choice-ind::after { background: #fff; }
+.bagel-flavor-row:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.bagel-flavor-row.selected:has(.radio-choice-input:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep), 0 6px 16px rgba(19, 13, 0, .18); }
+#bagel-modal .item-modal-content { min-width: 0; max-width: 100%; }
+
+/* The order confirmation's lines: the name, and under it what was chosen (what was left out, toast, add-ons), muted, as in the bag and at checkout. */
+.summary-line { gap: 16px; }
+.summary-line-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.summary-line-sub { font-size: 12.5px; line-height: 18px; color: var(--deg-ink-muted); }
+
+
+/* Shipping checkout: the "Ship to someone else" switch, and a holiday window that has closed. */
+/* The "Ship to someone else" switch is the site's checkbox (.page-consent: a 24px box that fills Deep Ink with a white check), centered on its label and 44px tall. */
+.sc-gift { align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; }
+.radio-choice.is-closed { opacity: .5; }
+.radio-choice.is-closed .radio-choice-row, .radio-choice.is-closed .radio-choice-input { cursor: not-allowed; }
+
+/* Nationwide Shipping: it follows the Catering page (banner, sidebar, sections, menu cards). Only what is its own is here: the banner's
+   panels, the "How it ships" list and the holiday windows list, both drawn like the Catering add-ons card. */
+.ship-banner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.ship-banner img { display: block; width: 100%; height: 100%; object-fit: cover; }
+#shipping-top > .menu-section:first-of-type { margin-top: 32px; }
+#shipping-top, #ship-section-kits, #ship-section-how, #ship-section-holiday { scroll-margin-top: 93px; }
+.ship-how ol { list-style: none; margin: 0; padding: 0; }
+.ship-how li { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ship-how-num { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--deg-cream-cool); font-size: 14px; font-weight: 700; color: var(--deg-ink-deep); }
+.ship-how li strong { display: block; font-size: 15px; line-height: 22px; color: var(--deg-ink-deep); }
+.ship-how li p { margin: 2px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-policy-link { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
+.ship-windows ul { list-style: none; margin: 0; padding: 0; }
+.ship-windows li { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ship-windows li:last-child, .ship-how li:last-of-type { border-bottom: 0; }
+.ship-window-art { flex: none; width: 56px; height: 56px; border-radius: 12px; object-fit: cover; background: var(--deg-cream-cool); }
+.ship-window-text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ship-windows .ship-window-text strong { font-size: 16px; line-height: 22px; color: var(--deg-ink-deep); }
+.ship-window-text span { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ship-window-when { flex: none; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); text-align: right; }
+@media (max-width: 900px) {
+  #shipping-top, #ship-section-kits, #ship-section-how, #ship-section-holiday { scroll-margin-top: 149px; }
+}
+@media (max-width: 640px) {
+  #shipping-top > .menu-section:first-of-type { margin-top: 24px; }
+}
+/* Modal lists (what a kit includes): a plain dot in the body ink, not gold; gold is kept for the chosen state and the one primary action. */
+.modal-list li::before { background: var(--deg-ink-heading); }
+
+/* A flavor with no photo or clip yet: its expanded panel keeps the clip's 2:3 slot with a quiet label, not a play button. */
+.flavor-watch-photo { aspect-ratio: 1 / 1; cursor: default; }
+.flavor-watch-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.flavor-watch-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: default; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--deg-ink-muted); text-align: center; }
+.flavor-watch-placeholder img { width: 56px; height: 56px; border-radius: 12px; }
+
+/* Catering: the time chosen is too soon or has passed while an item is open. A line above the Add button, and a way to fix it. */
+.catering-time-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 12px 16px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); font-size: 14px; line-height: 20px; color: var(--deg-ink-body); }
+.catering-time-note[hidden] { display: none; }
+.catering-time-note .text-btn { flex: none; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* The Sampler's flavors: a grid of clip stills with the name under each; a tap opens the flavor info sheet. */
+.sampler-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; margin: 0; padding: 0; list-style: none; }
+.sampler-tile { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.sampler-tile-media { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--deg-radius-card); overflow: hidden; background: var(--deg-cream-cool); }
+.sampler-tile-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; transition: transform .4s cubic-bezier(.22, 1, .36, 1); }
+.sampler-tile:hover .sampler-tile-media img { transform: scale(1.04); }
+.sampler-tile-play { position: absolute; right: 8px; bottom: 8px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; box-shadow: var(--deg-shadow-float); }
+.sampler-tile-play svg { width: 16px; height: 16px; }
+.sampler-tile.is-empty .sampler-tile-media { display: grid; place-items: center; }
+.sampler-tile.is-empty .sampler-tile-media img { position: static; width: 56px; height: 56px; transform: none; }
+.sampler-tile-name { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); }
+.sampler-tile:focus-visible { outline: none; }
+.sampler-tile:focus-visible .sampler-tile-media { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+/* The sheet's Previous / Next, so every flavor can be watched without closing it. */
+.flavor-info-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-info-step { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); cursor: pointer; }
+.flavor-info-step:disabled { color: var(--deg-ink-muted); opacity: .45; cursor: default; }
+.flavor-info-step:focus-visible { outline: none; border-radius: var(--deg-radius-tight); box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-info-count { font-size: 13px; font-weight: 600; color: var(--deg-ink-muted); }
+@media (prefers-reduced-motion: reduce) { .sampler-tile-media img { transition: none; } .sampler-tile:hover .sampler-tile-media img { transform: none; } }
+
+/* The bagel modal: the clip plays where the photo was, over its still. A portrait clip is cropped to the square (phone) and tall box
+   (desktop) the modal gives it, kept on the bagel. */
+.bagel-modal-video { object-position: 50% 62%; cursor: pointer; background: var(--deg-cream-cool); }
+#bagel-modal-image { display: none; }
+@media (max-width: 900px) { #bagel-modal .item-modal-media { aspect-ratio: 1; } }
+
+/* "View full calendar" in the day and time step: a month at a time, up to 60 days ahead. */
+.ld-calendar-link { align-self: flex-start; padding: 10px 0; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.ld-calendar { padding: 16px; border: 1px solid var(--deg-border-chip); border-radius: var(--deg-radius-card); background: var(--deg-white); }
+.ld-calendar[hidden] { display: none; }
+.ld-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.ld-cal-head h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); }
+.ld-cal-nav { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); cursor: pointer; }
+.ld-cal-nav:disabled { opacity: .35; cursor: default; }
+.ld-cal-week, .ld-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.ld-cal-week { margin-bottom: 4px; text-align: center; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--deg-ink-muted); }
+.ld-cal-day { min-height: 44px; border: 0; border-radius: var(--deg-radius-tight); background: transparent; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); cursor: pointer; }
+.ld-cal-day:not(:disabled):hover { background: var(--deg-cream-cool); }
+.ld-cal-day:disabled { color: var(--deg-ink-muted); opacity: .4; cursor: default; }
+.ld-cal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--deg-border-primary); }
+.ld-cal-day.is-on, .ld-cal-day.is-on:hover { background: var(--deg-ink-deep); color: #fff; }
+.ld-cal-day:focus-visible, .ld-cal-nav:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-white), 0 0 0 4px var(--deg-ink-deep); }
+
+/* Home: the featured sections below the hero. */
+.home-featured { max-width: 1180px; margin: 0 auto; padding: 64px 0 48px; display: grid; gap: 64px; }
+.home-feat-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.home-feat-head h2 { margin: 0; font-family: var(--deg-font-display); font-weight: 800; font-size: 28px; line-height: 32px; color: var(--deg-ink-deep); }
+.home-feat-head p { margin: 4px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.home-feat-see { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; background: none; font-size: 14px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--deg-border-secondary); cursor: pointer; }
+.home-feat-see:hover { text-decoration-color: var(--deg-ink-deep); }
+.home-feat-see:focus-visible { outline: none; border-radius: var(--deg-radius-tight); box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.home-feat-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 0; padding: 0; list-style: none; }
+.home-spot { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: stretch; overflow: hidden; border-radius: var(--deg-radius-media); background: var(--deg-cream-cool); }
+.home-spot-media { position: relative; min-height: 320px; }
+.home-spot-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.home-spot-copy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 40px; }
+.home-spot-copy h3 { margin: 0; font-family: var(--deg-font-display); font-weight: 800; font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); text-wrap: balance; }
+.home-spot-copy p { margin: 0; max-width: 46ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+@media (max-width: 900px) { .home-feat-track { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 12px) / 2.3); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; } .home-feat-track::-webkit-scrollbar { display: none; } }
+@media (max-width: 640px) {
+  .home-featured { padding: 40px 0 32px; gap: 48px; }
+  .home-feat-head h2 { font-size: 24px; line-height: 32px; }
+  .home-spot { grid-template-columns: minmax(0, 1fr); }
+  .home-spot-media { min-height: 0; aspect-ratio: 4 / 3; }
+  .home-spot-copy { padding: 24px; }
+  .home-spot-copy h3 { font-size: 28px; line-height: 32px; }
+}

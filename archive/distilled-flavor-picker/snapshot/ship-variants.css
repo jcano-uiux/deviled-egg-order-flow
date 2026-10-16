@@ -1,0 +1,186 @@
+/* TEMPORARY COMPARISON: four versions of the Nationwide Shipping page (Current, Distilled, Polished, Optimized), switched by the floating pill bar on
+   #view-shipping. Delete this file, the bar and the data-ship-variant blocks in index.html, and setShipVersion / renderShipKits in app.js once the owner
+   has chosen; the winner's rules then move into styles.css. Everything is scoped to .ship-d, .ship-p or .ship-o, so Current is untouched. */
+
+/* ---------- The comparison bar ---------- */
+#view-shipping { padding-bottom: 72px; }
+.ship-versions { position: fixed; left: 50%; bottom: 20px; z-index: 40; display: flex; gap: 2px; padding: 4px; transform: translateX(-50%); border-radius: var(--deg-radius-pill); background: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); }
+.ship-versions button { min-height: 36px; padding: 0 16px; border: 0; border-radius: var(--deg-radius-pill); background: transparent; font-size: 13px; line-height: 20px; font-weight: 600; color: #FBF3E3; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.ship-versions button:hover { background: rgba(251, 243, 227, .14); }
+.ship-versions button[aria-checked="true"] { background: var(--deg-gold); color: var(--deg-ink-on-gold); font-weight: 700; }
+.ship-versions button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-ink-deep), 0 0 0 4px var(--deg-gold-on-dark); }
+.ship-v[hidden] { display: none; }
+@media (max-width: 640px) { .ship-versions { bottom: 12px; max-width: calc(100% - 24px); } .ship-versions button { padding: 0 11px; font-size: 12px; } }
+
+/* ---------- The kit card, shared by the three new versions ---------- */
+.ship-kit { background: var(--deg-white); border: 1px solid var(--deg-border-chip); border-radius: var(--deg-radius-card); overflow: hidden; cursor: pointer; }
+.ship-kit-media { position: relative; flex: none; background: var(--deg-cream-cool); }
+.ship-kit-media img, .ship-kit-media .thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0; }
+.ship-kit-body { display: flex; flex-direction: column; min-width: 0; }
+.ship-kit-name { margin: 0; color: var(--deg-ink-deep); }
+.ship-kit-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 0; }
+.ship-kit-price { font-weight: 700; color: var(--deg-ink-deep); }
+.ship-kit-chip { padding: 3px 10px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-size: 12px; line-height: 16px; font-weight: 600; color: var(--deg-ink-heading); }
+.ship-kit-desc { margin: 12px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-kit-cta { margin-top: auto; cursor: pointer; }
+.ship-kit-cta svg { flex: none; transition: transform .18s cubic-bezier(.22, 1, .36, 1); }
+.ship-kit:hover .ship-kit-cta svg { transform: translateX(3px); }
+.ship-kit:has(.ship-kit-cta:focus-visible) { box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.ship-kit-cta:focus-visible { outline: none; }
+
+/* ---------- 1. Distilled: the kits lead, the deadlines sit in one row, the rest is folded away ---------- */
+.ship-d-wrap { max-width: 1080px; margin: 0 auto; padding: 40px 0 16px; }
+.ship-d-head { max-width: 640px; margin: 0 auto 40px; text-align: center; }
+.ship-d-head h1 { margin: 0; font-family: var(--deg-font-display); font-weight: 800; font-size: 32px; line-height: 40px; color: var(--deg-ink-deep); text-wrap: balance; }
+.ship-d-head p { max-width: 42ch; margin: 12px auto 0; font-size: 16px; line-height: 24px; color: var(--deg-ink-muted); text-wrap: balance; }
+.ship-d .ship-kits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.ship-d .ship-kit { display: flex; flex-direction: column; box-shadow: var(--deg-shadow-card); transition: box-shadow .2s ease, transform .2s cubic-bezier(.22, 1, .36, 1); }
+.ship-d .ship-kit:hover { box-shadow: var(--deg-shadow-ambient); transform: translateY(-2px); }
+.ship-d .ship-kit-media { aspect-ratio: 4 / 3; }
+.ship-d .ship-kit-body { flex: 1 1 auto; padding: 20px 20px 24px; }
+.ship-d .ship-kit-name { font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; }
+.ship-d .ship-kit-price { font-size: 16px; line-height: 24px; }
+.ship-d .ship-kit-desc { margin-bottom: 20px; }
+.ship-d .ship-kit-cta { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 0; border-radius: var(--deg-radius-pill); background: var(--deg-ink-deep); font-size: 15px; font-weight: 600; color: #FBF3E3; transition: background-color .15s ease; }
+.ship-d .ship-kit:hover .ship-kit-cta { background: var(--deg-ink-deep-hover); }
+.ship-d-when { max-width: 880px; margin: 56px auto 0; text-align: center; }
+.ship-d-when h2 { margin: 0 0 16px; font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--deg-ink-deep); }
+.ship-d-windows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ship-d-windows li { display: flex; flex-direction: column; gap: 2px; padding: 16px 20px; border-radius: var(--deg-radius-card); background: var(--deg-cream-cool); }
+.ship-d-windows strong { font-size: 16px; line-height: 22px; color: var(--deg-ink-deep); }
+.ship-d-windows span { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ship-d-windows b { margin-top: 8px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-body); }
+.ship-d-windows li.is-closed { opacity: .6; }
+.ship-d-more { margin: 24px auto 0; max-width: 560px; text-align: left; }
+.ship-d-more summary { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); cursor: pointer; list-style: none; }
+.ship-d-more summary::-webkit-details-marker { display: none; }
+.ship-d-more summary::after { content: ''; width: 8px; height: 8px; margin-top: -3px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .18s ease; }
+.ship-d-more[open] summary::after { margin-top: 3px; transform: rotate(-135deg); }
+.ship-d-more summary:focus-visible { outline: none; border-radius: var(--deg-radius-tight); box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.ship-d-more ul { margin: 8px 0 12px; padding: 16px 20px; list-style: none; border-radius: var(--deg-radius-card); background: var(--deg-white); border: 1px solid var(--deg-border-chip); }
+.ship-d-more li { padding: 8px 0 8px 18px; position: relative; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-d-more li::before { content: ''; position: absolute; left: 0; top: 16px; width: 6px; height: 6px; border-radius: 50%; background: var(--deg-border-primary); }
+.ship-d-more .text-btn { display: block; text-align: center; font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
+@media (max-width: 900px) {
+  .ship-d-wrap { padding-top: 24px; }
+  .ship-d .ship-kits { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .ship-d .ship-kit-media { aspect-ratio: 16 / 9; }
+  .ship-d-windows { grid-template-columns: minmax(0, 1fr); }
+  .ship-d-windows li { display: grid; grid-template-columns: minmax(0, 1fr) auto; text-align: left; column-gap: 16px; align-items: center; }
+  .ship-d-windows strong, .ship-d-windows span { grid-column: 1; }
+  .ship-d-windows b { grid-column: 2; grid-row: 1 / span 2; margin: 0; text-align: right; }
+}
+@media (max-width: 640px) {
+  .ship-d-wrap { padding-top: 8px; }
+  .ship-d-head { margin-bottom: 28px; text-align: left; }
+  .ship-d-head h1 { font-size: 28px; line-height: 32px; }
+  .ship-d-head p { margin-left: 0; }
+  .ship-d-when { margin-top: 40px; text-align: left; }
+}
+
+/* ---------- 2 and 3. Polished and Optimized: the same finished page ---------- */
+:is(.ship-p, .ship-o) .menu-layout { gap: 48px; }
+:is(.ship-p, .ship-o) .menu-section { margin-top: 56px; scroll-margin-top: 100px; }
+:is(.ship-p, .ship-o) .menu-section:first-of-type { margin-top: 24px; }
+:is(.ship-p, .ship-o) .menu-section h2 { margin-bottom: 8px; }
+:is(.ship-p, .ship-o) .menu-section-sub { margin: 0 0 24px; }
+:is(.ship-p, .ship-o) .ship-kits { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+:is(.ship-p, .ship-o) .ship-kit { display: flex; flex-direction: row-reverse; min-height: 184px; }
+:is(.ship-p, .ship-o) .ship-kit-media { width: 200px; }
+:is(.ship-p, .ship-o) .ship-kit-body { flex: 1 1 0; padding: 20px 24px; }
+:is(.ship-p, .ship-o) .ship-kit-name { font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; }
+:is(.ship-p, .ship-o) .ship-kit-price { font-size: 16px; line-height: 24px; }
+:is(.ship-p, .ship-o) .ship-kit-desc { margin: 8px 0 16px; }
+:is(.ship-p, .ship-o) .ship-kit-cta { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 6px 0; border: 0; background: none; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--deg-border-secondary); transition: text-decoration-color .15s ease; }
+:is(.ship-p, .ship-o) .ship-kit:hover .ship-kit-cta { text-decoration-color: var(--deg-ink-deep); }
+/* How It Ships: three steps across in one white card, a round mark over each. */
+:is(.ship-p, .ship-o) .ship-how { padding: 28px 24px 20px; }
+:is(.ship-p, .ship-o) .ship-how ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+:is(.ship-p, .ship-o) .ship-how li { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 16px; padding: 0 24px; border: 0; border-left: 1px solid var(--deg-border-chip); }
+:is(.ship-p, .ship-o) .ship-how li:first-child { padding-left: 0; border-left: 0; }
+:is(.ship-p, .ship-o) .ship-how li:last-child { padding-right: 0; }
+:is(.ship-p, .ship-o) .ship-how li strong { display: block; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); }
+:is(.ship-p, .ship-o) .ship-how li p { margin: 4px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-how-icon, .ship-o .ship-how-flat li::before { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+:is(.ship-p, .ship-o) .ship-policy-link { display: block; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--deg-border-chip); font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
+/* The windows: one row each, the art, the name over when it arrives, and on the right the last day to order and the days left. */
+.ship-windows-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ship-window { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; column-gap: 20px; padding: 16px 20px; border-radius: var(--deg-radius-card); background: var(--deg-white); border: 1px solid var(--deg-border-chip); }
+.ship-window-art { width: 64px; height: 64px; border-radius: var(--deg-radius-card); object-fit: cover; background: var(--deg-cream-cool); }
+.ship-window strong { font-size: 17px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); }
+.ship-window span, .ship-window small { font-size: 14px; line-height: 20px; color: var(--deg-ink-muted); }
+.ship-window em { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: var(--deg-radius-pill); background: var(--deg-cream-cool); font-style: normal; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--deg-ink-heading); }
+.ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep); border-color: transparent; }
+.ship-window.is-closed .ship-window-art { opacity: .5; }
+.ship-window.is-closed strong, .ship-window.is-closed .ship-window-when strong, .ship-window.is-closed .ship-window-cut { color: var(--deg-ink-muted); }
+.ship-p .ship-window-text { display: flex; flex-direction: column; align-items: flex-start; }
+.ship-p .ship-window-when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.ship-p .ship-window-when strong { font-size: 15px; line-height: 22px; }
+
+/* Polished only: what answers the hand and the keyboard. */
+.ship-p .ship-kit { box-shadow: var(--deg-shadow-card); transition: box-shadow .2s ease, border-color .2s ease; }
+.ship-p .ship-kit:hover { box-shadow: var(--deg-shadow-ambient); }
+.ship-p .ship-kit-media img { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+.ship-p .ship-kit:hover .ship-kit-media img { transform: scale(1.04); }
+.ship-p .ship-banner { gap: 3px; background: var(--deg-cream); }
+.ship-p .ship-window { box-shadow: var(--deg-shadow-card); }
+.ship-p .ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep), var(--deg-shadow-card); }
+
+/* Optimized only: built to load fast and hold still. */
+.ship-o .ship-banner-one { aspect-ratio: 1200 / 250; background: linear-gradient(90deg, #B27442 0 33.4%, #F4E6CB 33.4% 66.6%, #A6885B 66.6%); }
+.ship-o .ship-banner-one img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Photos are visible by default. One still loading is held clear over its average color and fades in when it arrives, so nothing pops or moves. */
+.ship-o img[data-fade], .ship-o .ship-kit-media img, .ship-o .ship-window-art { transition: opacity .3s ease; }
+.ship-o img.is-loading { opacity: 0; }
+/* Below the fold the browser skips layout and paint until a section nears the screen; the placeholder height keeps the scrollbar steady. */
+.ship-o .ship-skip { content-visibility: auto; contain-intrinsic-size: auto 520px; }
+/* Each card and row is its own layout island, drawn with a border and no shadow. */
+.ship-o .ship-kit, .ship-o .ship-window { contain: layout style; box-shadow: none; }
+.ship-o .ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep); }
+/* The step numbers are drawn by a counter, so a step is a plain <li> with no helper element. */
+.ship-o .ship-how-flat ol { counter-reset: ship-step; }
+.ship-o .ship-how-flat li { counter-increment: ship-step; display: grid; justify-items: start; align-content: start; gap: 0; }
+.ship-o .ship-how-flat li::before { margin-bottom: 16px; }
+.ship-o .ship-how-flat li::before { content: counter(ship-step); font-size: 16px; font-weight: 700; }
+/* A window is one grid of plain children: the art over three lines, the cutoff and the days left at the right. */
+.ship-o .ship-window { grid-template-rows: auto auto; row-gap: 2px; }
+.ship-o .ship-window.is-next { grid-template-rows: auto auto auto; }
+.ship-o .ship-window .ship-window-art { grid-column: 1; grid-row: 1 / span 2; }
+.ship-o .ship-window.is-next .ship-window-art { grid-row: 1 / span 3; }
+.ship-o .ship-window > strong { grid-column: 2; grid-row: 1; align-self: end; }
+.ship-o .ship-window > span { grid-column: 2; grid-row: 2; align-self: start; }
+.ship-o .ship-window > em { grid-column: 2; grid-row: 3; justify-self: start; }
+.ship-o .ship-window-cut { grid-column: 3; grid-row: 1; justify-self: end; align-self: end; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--deg-ink-deep); }
+.ship-o .ship-window > small { grid-column: 3; grid-row: 2; justify-self: end; align-self: start; text-align: right; }
+.ship-o .ship-window.is-next .ship-window-cut { grid-row: 2; }
+.ship-o .ship-window.is-next > small { grid-row: 3; }
+
+@media (max-width: 900px) {
+  :is(.ship-p, .ship-o) .ship-how ol { grid-template-columns: minmax(0, 1fr); }
+  :is(.ship-p, .ship-o) .ship-how li, :is(.ship-p, .ship-o) .ship-how li:first-child, :is(.ship-p, .ship-o) .ship-how li:last-child { flex-direction: row; gap: 16px; padding: 16px 0; border-left: 0; border-bottom: 1px solid var(--deg-border-chip); }
+  :is(.ship-p, .ship-o) .ship-how li:last-child { border-bottom: 0; }
+  :is(.ship-p, .ship-o) .ship-how { padding: 8px 20px 20px; }
+  .ship-o .ship-how-flat li { grid-template-columns: 48px minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .ship-o .ship-how-flat li::before { grid-row: 1 / span 2; margin: 0; }
+  .ship-o .ship-how-flat li > strong, .ship-o .ship-how-flat li > p { grid-column: 2; }
+}
+@media (max-width: 640px) {
+  /* The page's phone banner is a fixed-height edge-to-edge band; a ratio on top of that would size its width from its height. */
+  .ship-o .ship-banner-one { aspect-ratio: auto; }
+  :is(.ship-p, .ship-o) .menu-layout { gap: 0; }
+  :is(.ship-p, .ship-o) .menu-section { scroll-margin-top: 140px; }
+  :is(.ship-p, .ship-o) .menu-section:first-of-type { margin-top: 0; }
+  :is(.ship-p, .ship-o) .ship-kit { min-height: 168px; }
+  :is(.ship-p, .ship-o) .ship-kit-media { width: 128px; }
+  :is(.ship-p, .ship-o) .ship-kit-body { padding: 16px; }
+  :is(.ship-p, .ship-o) .ship-kit-desc { margin-bottom: 12px; }
+  .ship-window { grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; padding: 16px; }
+  .ship-window-art { width: 56px; height: 56px; }
+  .ship-p .ship-window-when { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); text-align: left; }
+  .ship-o .ship-window .ship-window-cut, .ship-o .ship-window.is-next .ship-window-cut { grid-column: 1 / -1; grid-row: auto; justify-self: stretch; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
+  .ship-o .ship-window > small, .ship-o .ship-window.is-next > small { grid-column: 1 / -1; grid-row: auto; justify-self: start; text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ship-p .ship-kit-media img, .ship-d .ship-kit, .ship-kit-cta svg, .ship-o img[data-fade], .ship-o .ship-kit-media img, .ship-o .ship-window-art { transition: none; }
+  .ship-d .ship-kit:hover { transform: none; }
+}

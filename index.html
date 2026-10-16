@@ -110,6 +110,9 @@
       </div>
     </div>
   </section>
+
+  <!-- Featured sections below the hero: chosen in HOME_FEATURED in app.js. Every card goes into Pickup, Delivery, Catering or Nationwide Shipping. -->
+  <div class="home-featured" id="home-featured"></div>
 </main>
 
 <main id="view-location-picker" class="location-picker-view" hidden>
@@ -587,7 +590,7 @@
        the same product cards the menu uses. The cards are drawn from the catering items in app.js and each opens the
        catering modal, adding to the pickup or delivery bag. -->
   <div class="store-hero catering-hero" aria-hidden="true">
-    <img src="assets/catering/classic.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/allin.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/power-pair.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/bagel-brew.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/light-lunch.jpg" alt="" loading="lazy" decoding="async">
+    <img src="assets/catering/light-lunch.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/allin.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/power-pair.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/bagel-brew.jpg" alt="" loading="lazy" decoding="async"><img src="assets/catering/light-lunch.jpg" alt="" loading="lazy" decoding="async">
   </div>
 
   <div class="menu-layout">
@@ -662,33 +665,6 @@
 
     </div>
   </div>
-
-  <section class="page-signup" aria-labelledby="cater-signup-title">
-    <div class="page-signup-copy">
-      <h2 id="cater-signup-title">Save 10% on your first catering order.</h2>
-      <p>New drops, limited flavors, and an occasional egg pun, delivered to your inbox.</p>
-    </div>
-    <form class="page-form" novalidate>
-      <label class="field-group" for="cater-email">
-        <span>Email <span class="muted">(Required)</span></span>
-        <input type="email" id="cater-email" name="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
-      </label>
-      <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send your 10% off.</p>
-      <label class="field-group" for="cater-phone">
-        <span>Phone <span class="muted">(optional)</span></span>
-        <input type="tel" id="cater-phone" name="phone" autocomplete="tel" inputmode="tel">
-      </label>
-      <label class="page-consent">
-        <input type="checkbox" name="sms">
-        <span class="page-consent-box" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span>Yes, text me specials, new flavor drops &amp; ordering deadlines (about 4–6 msgs/month)</span>
-      </label>
-      <p class="page-legal">By checking the box you agree to receive recurring automated marketing texts from Deviled Egg Co. at the number provided. Consent is not a condition of purchase. Msg &amp; data rates may apply. Msg frequency varies. Reply STOP to cancel, HELP for help. View our <a href="https://deviledeggco.com/privacy-policy/" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://deviledeggco.com/terms-and-conditions/" target="_blank" rel="noopener">Mobile Messaging Terms</a>.</p>
-      <button class="pill-btn primary full" type="submit">Subscribe</button>
-      <p class="page-success" role="status" hidden>You're on the list. Look for your 10% off in your inbox.</p>
-    </form>
-  </section>
-
 </main>
 
 <main id="view-checkout" class="view" hidden>
@@ -1044,9 +1020,11 @@
   <div class="confirmation-wrap">
     <div class="confirmation-card">
       <div class="success-badge">
-        <svg width="42" height="42" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="success-ring" aria-hidden="true"></span>
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path class="success-check" pathLength="1" d="M5 13l4 4L19 7" stroke="#261A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <h1>Order confirmed!</h1>
+      <h1 id="confirm-title">Order confirmed!</h1>
+      <p class="confirmation-cheer" id="confirm-cheer" hidden></p>
       <p class="confirmation-sub" id="confirm-sub"></p>
 
       <div class="progress-track">
@@ -1078,6 +1056,79 @@
     </div>
   </div>
 </main>
+
+<footer class="site-footer" id="site-footer" data-mode="full">
+  <div class="sf-inner sf-top">
+    <section class="sf-signup" aria-labelledby="sf-signup-title">
+      <div class="sf-signup-copy">
+        <h2 id="sf-signup-title">Save 10% on your first catering order.</h2>
+        <p>New drops, limited flavors, and an occasional egg pun, delivered to your inbox.</p>
+      </div>
+      <form class="page-form sf-form" novalidate>
+        <div class="sf-form-row">
+          <label class="visually-hidden" for="sf-email">Email</label>
+          <input type="email" id="sf-email" name="email" autocomplete="email" inputmode="email" required placeholder="name@example.com">
+          <button class="pill-btn primary" type="submit">Subscribe</button>
+        </div>
+        <p class="field-error" role="alert" hidden>Enter a valid email so we know where to send your 10% off.</p>
+        <p class="page-success" role="status" hidden>You're on the list. Look for your 10% off in your inbox.</p>
+      </form>
+    </section>
+
+    <nav class="sf-cols" aria-label="Footer">
+      <div class="sf-col">
+        <h2 class="sf-head">Order</h2>
+        <ul>
+          <li><a class="sf-link" href="#" data-open-where>Pickup &amp; Delivery</a></li>
+          <li><a class="sf-link" href="#catering" data-view="catering">Catering</a></li>
+          <li><a class="sf-link" href="#shipping" data-view="shipping">Nationwide Shipping</a></li>
+          <li><span class="sf-link is-soon">Gift Cards<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><span class="sf-link is-soon">Corporate Gifting<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+        </ul>
+      </div>
+      <div class="sf-col">
+        <h2 class="sf-head">Visit</h2>
+        <ul class="sf-stores">
+          <li class="sf-store"><a class="sf-link" href="#store/mckinney" data-store="mckinney">McKinney, TX</a><a class="sf-tel" href="tel:+12145485451">(214) 548-5451</a></li><li class="sf-store"><a class="sf-link" href="#store/rockwall" data-store="rockwall">Rockwall, TX</a><a class="sf-tel" href="tel:+14693141002">(469) 314-1002</a></li><li class="sf-store"><a class="sf-link" href="#store/coppell" data-store="coppell">Coppell, TX</a><a class="sf-tel" href="tel:+19728033981">(972) 803-3981</a></li><li class="sf-store"><a class="sf-link" href="#store/denison" data-store="denison">Denison, TX</a><a class="sf-tel" href="tel:+19033371198">(903) 337-1198</a></li>
+          <li><a class="sf-link" href="#location-picker" data-view="location-picker">Find a location</a></li>
+          <li><span class="sf-link is-soon">Egg Bar Booking<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+        </ul>
+      </div>
+      <div class="sf-col">
+        <h2 class="sf-head">Company</h2>
+        <ul>
+          <li><span class="sf-link is-soon">Our Story<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><span class="sf-link is-soon">20 Flavors<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><span class="sf-link is-soon">Franchise<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><a class="sf-link" href="mailto:info@deviledeggco.com">Contact us</a></li>
+        </ul>
+      </div>
+      <div class="sf-col">
+        <h2 class="sf-head">Help</h2>
+        <ul>
+          <li><span class="sf-link is-soon">Shipping &amp; Returns<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><span class="sf-link is-soon">Privacy<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+          <li><span class="sf-link is-soon">Terms<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></li>
+        </ul>
+        <ul class="sf-social" aria-label="Follow us">
+          <li><a class="sf-icon" href="https://www.instagram.com/deviledeggco/" target="_blank" rel="noopener" aria-label="Deviled Egg Co. on Instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a></li>
+          <li><a class="sf-icon" href="https://www.facebook.com/deviledeggco/" target="_blank" rel="noopener" aria-label="Deviled Egg Co. on Facebook"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.5 21v-7.6h2.6l.4-3h-3V8.5c0-.9.3-1.5 1.6-1.5h1.6V4.3c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8v3h2.5V21h3Z" fill="currentColor"/></svg></a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <a class="sf-wordmark" href="#" data-view="home">
+      <img src="assets/logo-full-on-dark.svg" alt="Deviled Egg Co. home" width="398" height="78" decoding="async">
+    </a>
+
+  <div class="sf-inner sf-base">
+    <div class="sf-legal">
+      <p>© 2026 Deviled Egg Co. All rights reserved. Made with love in Texas.</p>
+      <p class="sf-legal-links"><span class="sf-link is-soon">Privacy<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span><span class="sf-link is-soon">Terms<span class="visually-hidden">, coming soon</span><span class="sf-soon" aria-hidden="true">Soon</span></span></p>
+    </div>
+  </div>
+</footer>
 </div>
 
 <div class="overlay" id="modal-backdrop" hidden></div>
@@ -1163,20 +1214,22 @@
       <button class="close-btn" id="close-bagel-modal" type="button" aria-label="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#130D00" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
-      <span class="item-modal-header-title">Full Size Bagel</span>
+      <span class="item-modal-header-title" id="bagel-modal-header-title"></span>
       <span class="item-modal-header-spacer" aria-hidden="true"></span>
     </div>
     <div class="item-modal-scroll">
       <div class="item-modal-row">
         <div class="item-modal-media">
           <img class="shop-card-photo" id="bagel-modal-image" src="assets/products/full-size-bagel.jpg" alt="" decoding="async">
+          <video class="shop-card-photo bagel-modal-video" id="bagel-modal-video" muted loop playsinline preload="metadata" aria-label="Play or pause the video"></video>
         </div>
         <div class="item-modal-content">
           <div class="item-modal-title-block">
-            <h1 id="bagel-modal-title">Full Size Bagel</h1>
-            <span class="modal-price" id="bagel-modal-price">$7.49</span>
+            <h1 id="bagel-modal-title"></h1>
+            <span class="modal-price" id="bagel-modal-price"></span>
           </div>
-          <p class="modal-desc" id="bagel-modal-desc">Hand-sliced and griddled fresh, topped with our signature yolk spread. Choose your bagel, toast, and spread flavors.</p>
+          <p class="modal-desc" id="bagel-modal-desc"></p>
+          <div id="bagel-customize"></div>
           <div class="divider thick"></div>
 
           <div>
@@ -1192,15 +1245,6 @@
               <span class="modal-section-title">Bagel Type</span>
             </div>
             <div class="addon-list" id="bagel-type-picker" role="radiogroup" aria-label="Bagel type"></div>
-          </div>
-
-          <div class="divider"></div>
-          <div>
-            <div class="modal-section-head">
-              <span class="modal-section-title">Yolk Spread Flavor</span>
-              <span class="modal-section-sub">Pick 1 flavor.</span>
-            </div>
-            <div class="flavor-grid" id="bagel-flavor-grid" role="radiogroup" aria-label="Yolk spread flavor"></div>
           </div>
 
           <div class="divider"></div>
@@ -1309,6 +1353,7 @@
             <span class="modal-price" id="wrap-modal-price"></span>
           </div>
           <p class="modal-desc" id="wrap-modal-desc"></p>
+          <div id="wrap-customize"></div>
           <div class="divider thick"></div>
 
           <div>
@@ -1317,15 +1362,6 @@
               <span class="modal-section-sub">A meal adds chips and a bottled drink.</span>
             </div>
             <div class="addon-list" id="wrap-meal-picker" role="radiogroup" aria-label="Wrap or meal"></div>
-          </div>
-
-          <div class="divider"></div>
-          <div>
-            <div class="modal-section-head">
-              <span class="modal-section-title">Sandwich Flavor</span>
-              <span class="modal-section-sub">Pick 1 flavor.</span>
-            </div>
-            <div class="addon-list" id="wrap-flavor-grid" role="radiogroup" aria-label="Sandwich flavor"></div>
           </div>
 
           <div class="divider"></div>
@@ -1538,6 +1574,16 @@
           <button class="pickup-date-nav" id="ld-date-next" type="button" aria-label="Show more days">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
+        </div>
+        <button class="text-btn ld-calendar-link" id="ld-calendar-open" type="button" aria-expanded="false" aria-controls="ld-calendar">View full calendar</button>
+        <div class="ld-calendar" id="ld-calendar" hidden>
+          <div class="ld-cal-head">
+            <button class="ld-cal-nav" id="ld-cal-prev" type="button" aria-label="Previous month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <h3 id="ld-cal-title" aria-live="polite"></h3>
+            <button class="ld-cal-nav" id="ld-cal-next" type="button" aria-label="Next month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <div class="ld-cal-week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+          <div class="ld-cal-grid" id="ld-cal-grid" role="group" aria-labelledby="ld-cal-title"></div>
         </div>
       </section>
       <section class="ld-section" aria-labelledby="ld-time-title">
