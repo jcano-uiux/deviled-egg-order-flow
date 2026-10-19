@@ -87,6 +87,10 @@ button { font-family: var(--deg-font-body); cursor: pointer; }
 
 .muted { color: var(--deg-ink-muted); }
 
+/* Selected text is Golden Yolk with Espresso-on-Gold text everywhere (the Locations page and the footer already did this; now it is the base). */
+::selection { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+::-moz-selection { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
+
 /* Every focusable control gets this halo: a cream ring separates it from
    its own fill, then a dark ring provides contrast against any background —
    including gold primary buttons and active chips, where a flat outline in
@@ -153,20 +157,23 @@ select {
 .input-row > * { flex-grow: 1; min-width: 0; }
 
 /* ---------- Buttons ----------
-   One base class, `.pill-btn`, with fill/weight modifiers. Never introduce
-   a new one-off button class for another filled or outlined pill — add a
-   modifier here instead. */
+   One base class, `.pill-btn`. A button has a FILL (default Cool Linen, `.primary` Golden Yolk, `.dark` Deep Ink, `.outline` a Deep Ink
+   outline) and a SIZE (`.sm` 40px, the default 48px, `.full` 54px and the whole row), and the two never depend on each other: an
+   outline button is exactly as tall as a primary one unless it asks for `.sm`. Never introduce a new one-off button class for another
+   filled or outlined pill, and never set a pill's padding or font size in a page stylesheet: pick a fill and a size here. */
 .pill-btn {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 26px;
   border: none; border-radius: var(--deg-radius-pill);
-  font-weight: 700; font-size: 15px; padding: 14px 26px;
+  font-weight: 700; font-size: 15px; line-height: 20px;
   background: var(--deg-cream-cool); color: var(--deg-ink-body);
   text-decoration: none;
 }
 .pill-btn.primary { background: var(--deg-gold); color: var(--deg-ink-on-gold); box-shadow: var(--deg-shadow-brand); }
 .pill-btn.dark { background: var(--deg-ink-deep); color: #FBF3E3; font-weight: 500; }
-.pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); padding: 10px 20px; font-size: 13px; box-shadow: none; }
-.pill-btn.full { width: 100%; justify-content: center; padding: 17px; font-size: 16px; }
+.pill-btn.outline { background: transparent; border: 1.5px solid var(--deg-ink-deep); color: var(--deg-ink-deep); box-shadow: none; }
+.pill-btn.sm { min-height: 40px; padding: 0 20px; font-size: 13px; line-height: 18px; }
+.pill-btn.full { width: 100%; min-height: 54px; padding: 0 20px; font-size: 16px; }
 .pill-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
 
 /* Plain text action — tertiary, no fill (Sign in, Back to cart, Back to menu). */

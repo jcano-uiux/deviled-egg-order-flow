@@ -44,6 +44,16 @@
         ],
         "createdAt": "2026-10-07T08:59:49.110Z",
         "reason": "The locator hero (.finder) deliberately clips the zoomed US map so it never draws over the search column; the map's only positioned child, its tooltip, is clamped inside the map stage, so nothing is cut off."
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "index.html",
+          "styles.css"
+        ],
+        "createdAt": "2026-10-19T09:54:40.234Z",
+        "reason": "User confirmed: the owner asked for an automatic, edge-to-edge flavor strip with no arrows, modeled on musso.ph's scrolling images; it pauses on hover, focus and a button, and stops with reduced motion"
       }
     ]
   }

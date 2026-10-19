@@ -580,7 +580,7 @@
 
   function addToCart(entry) {
     // The pickup price travels with the line, so moving the bag between pickup and delivery reprices it exactly.
-    if (!entry.catering) entry.basePrice = (entry.cart || orderKind()) === 'delivery' ? round2(entry.price / DELIVERY_MARKUP) : entry.price;
+    if (!entry.catering && !entry.giftCard) entry.basePrice = (entry.cart || orderKind()) === 'delivery' ? round2(entry.price / DELIVERY_MARKUP) : entry.price;
     const cart = state.carts[entry.cart || orderKind()];
     const before = cartCount();
     const existing = cart.find((c) => c.key === entry.key);
@@ -3278,9 +3278,12 @@
   document.getElementById('close-cart').addEventListener('click', closeCart);
   cartBackdrop.addEventListener('click', closeCart);
 
+  // A gift card is not taxed when it is bought.
+  const taxableSubtotal = (kind) => state.carts[kind].reduce((sum, item) => sum + (item.giftCard ? 0 : lineTotal(item)), 0);
+
   function computeTotals() {
     const subtotal = cartSubtotal('pickup');
-    const tax = subtotal * TAX_RATE;
+    const tax = taxableSubtotal('pickup') * TAX_RATE;
     const total = subtotal + tax;
     return { subtotal, tax, total };
   }
@@ -3293,7 +3296,6 @@
   const DRAWER_NOTE = {
     shipping: 'Shipping and handling are worked out from your address at checkout.',
     delivery: 'Delivery fee, tip and tax are added at checkout.',
-    pickup: 'Tax and tip are added at checkout.',
   };
 
   function drawerContextHTML(kind) {
@@ -3470,6 +3472,11 @@
     confirmation: document.getElementById('view-confirmation'),
     shipping: document.getElementById('view-shipping'),
     catering: document.getElementById('view-catering'),
+    contact: document.getElementById('view-contact'),
+    flavors: document.getElementById('view-flavors'),
+    'gift-cards': document.getElementById('view-gift-cards'),
+    about: document.getElementById('view-about'),
+    franchise: document.getElementById('view-franchise'),
     'ship-checkout': document.getElementById('view-ship-checkout'),
     'delivery-checkout': document.getElementById('view-delivery-checkout'),
   };
@@ -3487,6 +3494,11 @@
     order: `Order pickup — ${SITE_NAME}`,
     shipping: `Nationwide Shipping — ${SITE_NAME}`,
     catering: `Catering — ${SITE_NAME}`,
+    contact: `Contact us — ${SITE_NAME}`,
+    flavors: `Flavors — ${SITE_NAME}`,
+    'gift-cards': `Gift cards — ${SITE_NAME}`,
+    about: `About us — ${SITE_NAME}`,
+    franchise: `Franchise — ${SITE_NAME}`,
     'delivery-checkout': `Secure Checkout, Delivery — ${SITE_NAME}`,
     checkout: `Secure Checkout — ${SITE_NAME}`,
     'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
@@ -3519,6 +3531,10 @@
     }
     if (name === 'order') { renderNavWhere(); showOrderTiles(); }
     if (name === 'shipping') setShipVersion(shipVersion);
+    if (name === 'flavors') renderFlavorsPage();
+    if (name === 'about') renderAboutFlavors();
+    if (name === 'about') { initAboutHero(); initAboutValues(); }
+    if (name === 'gift-cards') syncGiftCard();
     if (name === 'delivery-checkout') setSummaryOpen(document.getElementById('dc-toggle-summary'), true);
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
@@ -3551,7 +3567,7 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'contact', 'flavors', 'gift-cards', 'about', 'franchise', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
   const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
@@ -3895,7 +3911,7 @@
   // #catering) makes each page deep-linkable and keeps the browser's back
   // button honest.
   // The page a bare URL opens is Home; the menu has its own address now.
-  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#checkout': 'checkout', '#confirmation': 'order' };
+  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#contact': 'contact', '#flavors': 'flavors', '#gift-cards': 'gift-cards', '#about': 'about', '#franchise': 'franchise', '#checkout': 'checkout', '#confirmation': 'order' };
   navLinksEl.addEventListener('click', (e) => {
     // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
     // "Pickup & Delivery" opens the "where" modal, like the Home tiles, on the tab it was last on.
@@ -3989,6 +4005,421 @@
     pushPage(name === 'home' ? '' : '#' + name);
     showView(name);
   });
+
+  // ---------- Information pages: Contact, Flavors, Gift Cards, About, Franchise ----------
+  // The buttons and links on these pages do what the header's and the footer's do.
+  Object.keys(views).filter((name) => views[name].classList.contains('ip-view')).forEach((name) => {
+    views[name].addEventListener('click', (e) => {
+      if (e.target.closest('[data-open-where]')) { e.preventDefault(); intentBeforeFunnel = cateringIntent; setCateringIntent(false); openWhere(wm.tab); return; }
+      const store = e.target.closest('[data-store]');
+      if (store) { e.preventDefault(); pushPage('#store/' + store.dataset.store); showStorePage(store.dataset.store); return; }
+      const link = e.target.closest('a[data-view]');
+      if (!link) return;
+      e.preventDefault();
+      pushPage('#' + link.dataset.view);
+      showView(link.dataset.view);
+    });
+  });
+
+  // Flavors: every flavor's clip as a tile, and a tap opens the same sheet the Sampler uses (the clip, its description and what is in it,
+  // with Previous and Next through the whole list). Drawn the first time the page is shown.
+  let flavorsDrawn = false;
+  function renderFlavorsPage() {
+    if (flavorsDrawn) return;
+    flavorsDrawn = true;
+    const flavors = FLAVORS.map((f) => ({ id: f.id, label: f.label }));
+    const grid = document.getElementById('flavors-grid');
+    grid.innerHTML = flavors.map((f, i) => {
+      const media = FLAVOR_MEDIA[f.id];
+      return `<li><button class="sampler-tile${media ? '' : ' is-empty'}" type="button" data-i="${i}" aria-haspopup="dialog" aria-label="${media ? 'Watch the ' : 'Details for '}${escapeHTML(f.label)}${media ? ' video' : ''}">
+        <span class="sampler-tile-media"><img src="${media ? `assets/flavors/${media.file}.jpg` : 'assets/flavors/placeholder.svg'}" alt="" width="${media ? 360 : 56}" height="${media ? 540 : 56}" loading="lazy" decoding="async">${media ? `<span class="sampler-tile-play" aria-hidden="true">${PLAY_ICON}</span>` : ''}</span>
+        <span class="sampler-tile-name">${escapeHTML(f.label)}</span>
+      </button></li>`;
+    }).join('');
+    const tiles = [...grid.querySelectorAll('.sampler-tile')];
+    tiles.forEach((tile, i) => tile.addEventListener('click', () => openFlavorInfo(flavors[i], tile, { list: flavors, index: i, openerFor: (j) => tiles[j] })));
+  }
+
+  // About: every flavor (the owner's favorite, Chicken Caesar, first) in a strip that scrolls by itself, edge to edge (see "About, the flavors" in
+  // styles.css). The tiles are drawn twice so the loop has no seam; the second set is hidden from screen readers and from the Tab key. A tap on a tile
+  // opens the same video sheet, which steps through all 19; the pause button is for anyone who wants it still.
+  let aboutFlavorsDrawn = false;
+  function renderAboutFlavors() {
+    if (aboutFlavorsDrawn) return;
+    aboutFlavorsDrawn = true;
+    const flavors = [...FLAVORS].sort((x, y) => (y.id === 'chicken-caesar') - (x.id === 'chicken-caesar')).map((f) => ({ id: f.id, label: f.label }));
+    const group = (copy) => `<ul class="ab-marquee-group"${copy ? ' aria-hidden="true"' : ''}>${flavors.map((f, i) => {
+      const media = FLAVOR_MEDIA[f.id];
+      return `<li><button class="sampler-tile" type="button" data-i="${i}"${copy ? ' tabindex="-1"' : ''} aria-haspopup="dialog" aria-label="Watch the ${escapeHTML(f.label)} video${i === 0 ? ", Raechel's favorite" : ''}">
+        <span class="sampler-tile-media"><img src="assets/flavors/${media.file}.jpg" alt="" width="360" height="540" loading="lazy" decoding="async" draggable="false"><span class="sampler-tile-play" aria-hidden="true">${PLAY_ICON}</span></span>
+        <span class="sampler-tile-name">${escapeHTML(f.label)}</span>${i === 0 ? '<span class="ab-fav">Raechel’s favorite</span>' : ''}
+      </button></li>`;
+    }).join('')}</ul>`;
+    const track = document.getElementById('about-flavors');
+    track.innerHTML = group(false) + group(true);
+    const tiles = [...track.querySelectorAll('.sampler-tile')];
+    tiles.forEach((tile) => {
+      const i = Number(tile.dataset.i);
+      tile.addEventListener('click', () => openFlavorInfo(flavors[i], tile, { list: flavors, index: i, openerFor: (j) => tiles.filter((t) => Number(t.dataset.i) === j && !t.closest('[aria-hidden]'))[0] || tile }));
+    });
+    const pause = document.getElementById('ab-pause');
+    const strip = document.getElementById('about-marquee');
+    pause.addEventListener('click', () => {
+      const on = strip.classList.toggle('is-paused');
+      pause.setAttribute('aria-pressed', String(on));
+      pause.setAttribute('aria-label', on ? 'Play the flavor strip' : 'Pause the flavor strip');
+    });
+  }
+
+  // About, hero badge: the sticker unrolls like a sheet of rolled tissue paper, from its top edge down, in 3D. The badge is cut into thin horizontal strips
+  // in a perspective scene. Strips the roll has passed lie flat; the rest are wound on a coil that curls up toward the viewer. The coil is a spiral (each turn
+  // a paper's thickness smaller than the last), so its size follows the paper left on it and it shrinks to nothing at the bottom edge. Each strip is shaded by
+  // its angle to a light from the upper left (the back of the paper, plain cream, shows on the outside of the coil), and the coil throws a soft shadow on the
+  // egg. When it is flat the strips give way to the plain image, the sticker swings a little as it settles, and its shadow arrives last. Nothing shows before
+  // it starts, and a replay (or leaving the page) cancels the run in progress.
+  let heroBadgeRun = 0;
+  function startHeroBadge() {
+    const badge = document.getElementById('ab-hero-badge');
+    if (!badge) return;
+    const stage = badge.querySelector('.ip-badge-stage');
+    const cast = badge.querySelector('.ip-badge-cast');
+    const run = ++heroBadgeRun;
+    const N = 56;
+    if (!stage.children.length) {
+      for (let j = 0; j < N; j++) {
+        const strip = document.createElement('span');
+        strip.className = 'ip-badge-strip';
+        strip.style.top = `${(j / N) * 100}%`;
+        strip.style.height = `calc(${100 / N}% + .5px)`;
+        const pos = `0 ${(j / (N - 1)) * 100}%`;
+        const size = `100% ${N * 100}%`;
+        const front = document.createElement('span');
+        front.className = 'f';
+        front.style.backgroundPosition = pos;
+        front.style.backgroundSize = size;
+        const back = document.createElement('span');
+        back.className = 'b';
+        back.style.webkitMaskPosition = pos; back.style.maskPosition = pos;
+        back.style.webkitMaskSize = size; back.style.maskSize = size;
+        strip.append(front, back);
+        stage.append(strip);
+      }
+    }
+    const strips = [...stage.children];
+    badge.getAnimations().forEach((an) => an.cancel());
+    if (motionReduced()) { badge.dataset.state = 'done'; return; }
+    badge.dataset.state = 'wait';
+    const DELAY = 1050;  // the egg's fade (0.9s) and a beat
+    const UNROLL = 2800;
+    const SWING = 950;
+    const ease = (v) => (v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2);
+    const LIGHT = [-0.4, 0.92];            // light direction in (down the badge, toward the viewer)
+    const HALF = [-0.204, 0.979];          // halfway between the light and the viewer, for the highlight
+    const shade = (ny, nz) => 0.7 + 0.42 * Math.max(0, ny * LIGHT[0] + nz * LIGHT[1]) + 0.45 * Math.pow(Math.max(0, ny * HALF[0] + nz * HALF[1]), 24);
+    const FLAT = shade(0, 1);
+    function frame(p) {
+      const H = badge.offsetHeight;
+      const t = H * 0.075;                  // the paper's thickness, exaggerated so the coil reads
+      const front = H * p;                  // how far down the sheet the roll has come
+      const left = Math.max(H - front, 0.0001);
+      const rOut = Math.sqrt((left * t) / Math.PI);
+      stage.style.perspective = `${H * 2.6}px`;
+      strips.forEach((strip, j) => {
+        const s = ((j + 0.5) * H) / N;
+        if (s <= front) {
+          if (strip._flat) return;
+          strip._flat = true;
+          strip.style.transform = 'scaleY(1.04)';
+          strip.style.setProperty('--b', '1');
+          return;
+        }
+        strip._flat = false;
+        const q = Math.max(rOut * rOut - (t * (s - front)) / Math.PI, 0);
+        const r = Math.sqrt(q);
+        const th = ((rOut - r) * 2 * Math.PI) / t;       // how far round the coil this strip is
+        const y = front + r * Math.sin(th);
+        const z = rOut - r * Math.cos(th);
+        const facing = Math.cos(th) >= 0 ? 1 : -1;       // whether the printed face or the back faces us
+        const b = (shade(-Math.sin(th) * facing, Math.cos(th) * facing) / FLAT) * (0.86 + 0.14 * (rOut ? r / rOut : 1));
+        strip.style.transform = `translate3d(0, ${(y - s).toFixed(2)}px, ${z.toFixed(2)}px) rotateX(${th.toFixed(4)}rad) scaleY(1.05)`;
+        strip.style.setProperty('--b', b.toFixed(3));
+      });
+      // The coil's shadow on the egg, just under and ahead of it.
+      const cy = front + rOut * 1.15;
+      const ch = rOut * 2.8;
+      cast.style.top = `${(cy - ch / 2).toFixed(1)}px`;
+      cast.style.height = `${ch.toFixed(1)}px`;
+      cast.style.opacity = String(Math.min(1, rOut / (H * 0.07)) * 0.9);
+    }
+    const startAt = performance.now() + DELAY;
+    const tick = (now) => {
+      if (run !== heroBadgeRun) return;
+      const e = now - startAt;
+      if (e < 0) { requestAnimationFrame(tick); return; }
+      if (badge.dataset.state !== 'play') { stage.style.display = ''; strips.forEach((st) => { st._flat = undefined; }); badge.dataset.state = 'play'; }
+      const p = Math.min(1, e / UNROLL);
+      frame(ease(p) * 0.995);
+      if (p < 1) { requestAnimationFrame(tick); return; }
+      // flat: swap in the plain image, then the paper settles in three shrinking swings and the shadow arrives
+      badge.dataset.state = 'flat';
+      const swing = badge.animate([
+        { transform: 'translateY(-4px) rotate(1deg) scale(1.03)' },
+        { transform: 'translateY(-2px) rotate(6deg) scale(1.025)', offset: 0.28 },
+        { transform: 'translateY(0) rotate(11deg) scale(1.01)', offset: 0.5 },
+        { transform: 'rotate(6.8deg) scale(1)', offset: 0.72 },
+        { transform: 'rotate(8.7deg)', offset: 0.88 },
+        { transform: 'rotate(8deg) scale(1)' },
+      ], { duration: SWING, easing: 'ease-out' });
+      swing.onfinish = () => { if (run === heroBadgeRun) badge.dataset.state = 'done'; };
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // About, hero: a clip of one flavor, picked at random each time the page is shown (never the one before), plays muted and looping inside the egg. It starts
+  // from that flavor's still, plays only while it is on screen and the tab is visible, and stays a still under reduced motion. Chicken and Waffle's clip
+  // is 31MB, so it is not in the pool; only the chosen clip is downloaded.
+  let heroLast = '';
+  let heroWatch = null;
+  function initAboutHero() {
+    const video = document.getElementById('ab-hero-video');
+    if (!video) return;
+    const pool = Object.values(FLAVOR_MEDIA).map((m) => m.file).filter((file) => file !== 'Chicken-Waffle');
+    let before = heroLast;
+    try { before = sessionStorage.getItem('deg-hero-flavor') || before; } catch (e) { /* private window: just don't repeat within this page load */ }
+    const options = pool.filter((file) => file !== before);
+    const file = options[Math.floor(Math.random() * options.length)];
+    heroLast = file;
+    try { sessionStorage.setItem('deg-hero-flavor', file); } catch (e) { /* no storage */ }
+    video.poster = `assets/flavors/${file}.jpg`;
+    if (heroWatch) { heroWatch.disconnect(); heroWatch = null; }
+    // The intro runs again each time the page is shown: the egg fades in first (a CSS class taken off and put back to restart it), then the sticker
+    // unrolls from the top down in 3D, then its shadow arrives.
+    const eggBox = video.parentElement;
+    eggBox.classList.remove('is-fading');
+    void eggBox.offsetWidth;
+    eggBox.classList.add('is-fading');
+    startHeroBadge();
+    video.pause();
+    if (motionReduced()) { video.removeAttribute('src'); video.load(); return; }
+    video.src = `assets/flavors/${file}.mp4`;
+    video.muted = true;
+    const play = () => { const p = video.play(); if (p && p.catch) p.catch(() => { /* the poster stays */ }); };
+    if ('IntersectionObserver' in window) {
+      heroWatch = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { if (en.isIntersecting && !document.hidden) play(); else video.pause(); });
+      }, { threshold: 0.2 });
+      heroWatch.observe(video);
+    } else play();
+  }
+  document.addEventListener('visibilitychange', () => {
+    const video = document.getElementById('ab-hero-video');
+    if (!video || !video.src) return;
+    if (document.hidden) video.pause();
+    else if (video.getBoundingClientRect().bottom > 0 && video.getBoundingClientRect().top < window.innerHeight) { const p = video.play(); if (p && p.catch) p.catch(() => {}); }
+  });
+
+  // About, Our mission and values: a scroll-driven stage (see "About: Our mission and values" in styles.css), after the Figma screens. The section is a tall
+  // runway with a pinned stage. How far the page has scrolled through it (0 to 1) drives everything, scrubbed rather than timed. From a desktop down to a
+  // 768px tablet the egg is a fixed 640px wide to start and shrinks to 0.64 of that, the third Figma screen's size, by the third photo, then holds it. On a
+  // phone it starts 1.6 times the width of the page's content (past both edges of the window) and shrinks only to that width, edge to edge with the
+  // other content. It drifts from the top of the stage to its middle. Each photo opens over the last as the page reaches its fifth of the runway, and each
+  // tag drops in just after. The tags follow the egg's right outline down its side, from the shoulder to the belly, so each sits on the real edge at its
+  // own height and the cascade bends with the curve. The last 8% of the runway holds the finished state. It reads scroll position directly, not animation
+  // frames, and is a still under reduced motion.
+  let aboutValuesReady = false;
+  function initAboutValues() {
+    const vs = document.getElementById('ab-values-scroll');
+    if (!vs) return;
+    if (aboutValuesReady) { vs.dispatchEvent(new Event('vs:measure')); return; }
+    aboutValuesReady = true;
+    if (motionReduced()) return;
+    const pin = vs.querySelector('.vs-pin');
+    const stage = vs.querySelector('.vs-stage');
+    const egg = document.getElementById('vs-egg');
+    const tags = document.getElementById('vs-tags');
+    const photos = [...egg.querySelectorAll('.vs-photo')];
+    const items = [...tags.children];
+    const RATIO = 1068 / 1374; // the egg's width over its height, as drawn
+    const START_W = 640;       // the egg's fixed width from a desktop down to a 768px tablet
+    const END = 683 / 1068;    // the third Figma screen's egg over the first: the smallest the desktop egg gets
+    const PHONE_START = 1.6;   // a phone's egg starts this many times the width of the content, and ends at that width
+    const SHRINK_BY = 0.6;     // the egg has reached its end size by the end of the third step, and holds it for the fourth and fifth
+    const HEADER = 69;
+    const HOLD = 0.92;         // the finished state holds for the last 8% of the runway
+    // The egg's right edge as a share of its width (0.5 is the centre line), every twentieth of its height from the top to 70% down, read from the drawn silhouette.
+    const EDGE = [0.51, 0.664, 0.732, 0.788, 0.836, 0.873, 0.906, 0.932, 0.954, 0.972, 0.987, 0.996, 0.999, 0.996, 0.986];
+    const edgeAt = (t) => {
+      const k = Math.min(EDGE.length - 1.001, Math.max(0, t * 20));
+      const i = Math.floor(k);
+      return EDGE[i] + (EDGE[i + 1] - EDGE[i]) * (k - i);
+    };
+    const TAG_FIRST = 0.05;    // the first tag's middle sits this far down the egg
+    const TAG_STEP = 0.14;     // and each next tag this much further, so the five reach the belly
+    const steps = photos.length;
+    const clamp01 = (v) => Math.min(1, Math.max(0, v));
+    const easeOut = (v) => 1 - Math.pow(1 - v, 3);
+    const easeInOut = (v) => 0.5 - Math.cos(Math.PI * v) / 2;
+    let geo = null;
+    vs.classList.add('is-live');
+    // Each reveal should never wait on a download: the five photos are fetched as soon as the section is set up.
+    photos.forEach((el) => { el.loading = 'eager'; });
+    function measure() {
+      const vw = window.innerWidth;
+      const mobile = vw <= 767;
+      const gut = vw <= 640 ? 16 : 40;
+      const area = stage.clientHeight;
+      const endW = Math.min(vw - 2 * gut, START_W);
+      const w = mobile ? endW * PHONE_START : START_W;
+      const h = w / RATIO;
+      // On a window too short for the smallest egg, it stops at the stage height instead (never on a portrait phone, which keeps its edge-to-edge width).
+      const base = mobile ? 1 / PHONE_START : END;
+      const end = mobile && window.innerHeight >= vw ? base : Math.max(0.4, Math.min(base, (area - 8) / h));
+      const tagW = items.map((el) => el.offsetWidth);
+      const tagH = Math.max(...items.map((el) => el.offsetHeight));
+      geo = { mobile, vw, gut, area, h, w, tagW, tagH, end, stageTop: stage.offsetTop, tagHs: items.map((el) => el.offsetHeight) };
+      egg.style.width = `${w}px`;
+      egg.style.height = `${h}px`;
+      egg.style.marginLeft = `${-w / 2}px`;
+    }
+    function update() {
+      if (vs.closest('[hidden]')) return;
+      if (!geo) measure();
+      const total = vs.offsetHeight - pin.offsetHeight;
+      const raw = total > 0 ? clamp01((HEADER - vs.getBoundingClientRect().top) / total) : 0;
+      const p = clamp01(raw / HOLD);
+      const shrink = easeInOut(clamp01(p / SHRINK_BY));
+      const scale = 1 + (geo.end - 1) * shrink;
+      const eggH = geo.h * scale;
+      const eggW = geo.w * scale;
+      // The egg starts at the top of the stage and settles to its middle.
+      const top = Math.max(0, ((geo.area - geo.h * geo.end) / 2) * shrink);
+      egg.style.transform = `translateY(${top}px) scale(${scale})`;
+      const at = p * steps;
+      photos.forEach((el, i) => {
+        const r = i === 0 ? 1 : easeOut(clamp01((at - i) / 0.6));
+        el.style.clipPath = `ellipse(${r * 80}% ${r * 80}% at 50% 58%)`;
+      });
+      const eggTop = geo.stageTop + top;
+      const cx = geo.vw / 2;
+      // Down the egg's side: on desktop the tags are TAG_STEP of the egg's height apart (or just clear of each other if the egg is short); on a phone they are always just clear of each other.
+      const step = geo.mobile ? geo.tagH + 6 : Math.max(eggH * TAG_STEP, geo.tagH + 8);
+      items.forEach((el, i) => {
+        const o = i === 0 ? 1 : clamp01((at - i - 0.25) / 0.3);
+        el.style.setProperty('--o', String(o));
+        el.style.setProperty('--dy', `${(1 - easeOut(o)) * -18}px`);
+        const mid = eggH * TAG_FIRST + i * step;
+        const edge = cx + eggW * (edgeAt(mid / eggH) - 0.5);
+        // Desktop: the tag's left edge a little over the outline, so it hugs the curve. Phone: the tag centred on the outline, held inside the page gutter.
+        // Neither passes the window's right edge.
+        let left = geo.mobile ? edge - geo.tagW[i] / 2 : edge - 24;
+        left = Math.min(left, geo.vw - (geo.mobile ? geo.gut : 16) - geo.tagW[i]);
+        el.style.setProperty('--x', `${left - cx}px`);
+        el.style.setProperty('--y', `${eggTop + mid - geo.tagHs[i] / 2}px`);
+      });
+    }
+    const remeasure = () => { geo = null; update(); };
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', remeasure);
+    vs.addEventListener('vs:measure', remeasure);
+    remeasure();
+    // The tags are measured by their text, so measure again once the display face has loaded.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  }
+
+  // A short message form: required fields are named in place, and a sent message swaps the button for a thank-you line. There is no
+  // server behind it in the prototype.
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    const f = (name) => contactForm.elements[name];
+    ['name', 'email', 'message'].forEach((n) => f(n).addEventListener('input', () => { f(n).removeAttribute('aria-invalid'); setFieldError(f(n), ''); }));
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateFields([
+        [f('name'), present, 'Enter your name.'],
+        [f('email'), isEmail, 'Enter a valid email so we can reply.'],
+        [f('message'), present, 'Write a message for us.'],
+      ])) return;
+      const ok = contactForm.querySelector('.page-success');
+      ok.textContent = `Thanks, ${firstNameOf(f('name').value)}. Your message is on its way. We'll reply by email.`;
+      ok.hidden = false;
+      contactForm.querySelectorAll('input, textarea, button').forEach((el) => { el.disabled = true; });
+    });
+  }
+
+  // Gift cards: an amount, how it arrives, who it is for and from whom. The card on the right is the card as it will look, and Add puts it in
+  // the bag the customer is ordering with (a gift card is not taxed and is never repriced for delivery).
+  const giftForm = document.getElementById('gift-form');
+  const gc = { amount: 50, delivery: 'email' };
+  function giftWhen() {
+    if (gc.delivery === 'print') return ['Delivery', 'Print at home'];
+    const key = giftForm.elements.date.value;
+    return ['Arrives', `${key && key !== dateKey(new Date()) ? pickupDateLabel(key) : 'Today'}, by email`];
+  }
+  function syncGiftCard() {
+    if (!giftForm) return;
+    const f = giftForm.elements;
+    if (!f.date.value) { f.date.value = dateKey(new Date()); f.date.min = f.date.value; }
+    const email = gc.delivery === 'email';
+    document.getElementById('gc-email-wrap').hidden = !email;
+    document.getElementById('gc-date-wrap').hidden = !email;
+    document.getElementById('gc-card-amount').textContent = `$${gc.amount}`;
+    document.getElementById('gc-add').textContent = `Add to bag · ${money(gc.amount)}`;
+    document.getElementById('gc-pv-to').textContent = f.to.value.trim() || 'Recipient';
+    document.getElementById('gc-pv-from').textContent = f.from.value.trim() || 'You';
+    const [label, when] = giftWhen();
+    document.getElementById('gc-pv-when-label').textContent = label;
+    document.getElementById('gc-pv-when').textContent = when;
+    const msg = document.getElementById('gc-pv-msg');
+    msg.textContent = f.message.value.trim();
+    msg.hidden = !msg.textContent;
+  }
+  if (giftForm) {
+    const f = giftForm.elements;
+    const error = giftForm.querySelector('.field-error');
+    document.getElementById('gc-amounts').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      gc.amount = Number(chip.dataset.amount);
+      document.querySelectorAll('#gc-amounts .chip').forEach((c) => { const on = c === chip; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); });
+      syncGiftCard();
+    });
+    giftForm.querySelectorAll('input[name="gc-delivery"]').forEach((input) => input.addEventListener('change', () => {
+      gc.delivery = input.value;
+      giftForm.querySelectorAll('.gc-delivery .radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('input').checked));
+      syncGiftCard();
+    }));
+    giftForm.addEventListener('input', (e) => { e.target.removeAttribute('aria-invalid'); error.hidden = true; syncGiftCard(); });
+    // The button sits beside the card, outside the form, and submits it by its form attribute.
+    giftForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = gc.delivery === 'email';
+      const checks = [[f.to, present, 'Enter who the card is for.']];
+      if (email) checks.push([f.toEmail, isEmail, 'Enter a valid email to send the card to.']);
+      checks.push([f.from, present, 'Enter your name so they know who it is from.']);
+      const bad = checks.find(([input, ok]) => !ok(input.value.trim()));
+      if (bad) {
+        bad[0].setAttribute('aria-invalid', 'true');
+        error.textContent = bad[2];
+        error.hidden = false;
+        bad[0].focus();
+        return;
+      }
+      const [, when] = giftWhen();
+      const note = f.message.value.trim();
+      addToCart({
+        cart: orderKind(), giftCard: true, key: `gift-${Date.now()}`, name: 'DECO Gift Card',
+        sub: `${money(gc.amount)} · ${email ? `Email to ${f.to.value.trim()}, ${when.toLowerCase().replace(/, by email$/, '')}` : `Print at home for ${f.to.value.trim()}`}${note ? ` · “${note}”` : ''}`,
+        price: gc.amount, qty: 1, image: 'assets/pages/gift-card.webp',
+      });
+      landCartPop(document.getElementById('open-cart'), document.getElementById('cart-badge'));
+      giftForm.querySelector('.field-error').hidden = true;
+      document.querySelector('#view-gift-cards .gc-added').hidden = false;
+      // The next card starts fresh for someone else; the sender and the amount stay.
+      f.to.value = ''; f.toEmail.value = ''; f.message.value = '';
+      syncGiftCard();
+    });
+    document.getElementById('gc-view-bag').addEventListener('click', () => openCart(orderKind()));
+  }
 
   // Which cart the open checkout belongs to — its back link returns there.
   let checkoutCart = 'pickup';
@@ -5877,7 +6308,9 @@
 
   function renderCheckoutTotals() {
     const { subtotal, tax, total: preTipTotal } = computeTotals();
-    const tipAmt = state.tipPct === 'custom' ? state.tipCustom : subtotal * (state.tipPct / 100);
+    // A tip is a percentage of the food, not of a gift card.
+    const tipBase = taxableSubtotal('pickup');
+    const tipAmt = state.tipPct === 'custom' ? state.tipCustom : tipBase * (state.tipPct / 100);
     const total = preTipTotal + tipAmt;
 
     document.getElementById('sum-subtotal').textContent = money(subtotal);
@@ -5886,7 +6319,7 @@
     // Each tip choice shows what it comes to in dollars, so the choice is a figure, not just a percentage.
     document.querySelectorAll('#tip-picker .tip-chip').forEach((chip) => {
       const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
-      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.tipCustom : subtotal * (pct / 100));
+      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.tipCustom : tipBase * (pct / 100));
     });
     document.getElementById('sum-total').textContent = money(total);
     if (!placingOrder) document.getElementById('place-order').textContent = 'Place order';
@@ -5903,8 +6336,8 @@
 
   function deliveryTotals() {
     const subtotal = cartSubtotal('delivery');
-    const tax = subtotal * TAX_RATE;
-    const tip = state.dTipPct === 'custom' ? state.dTipCustom : subtotal * (state.dTipPct / 100);
+    const tax = taxableSubtotal('delivery') * TAX_RATE;
+    const tip = state.dTipPct === 'custom' ? state.dTipCustom : taxableSubtotal('delivery') * (state.dTipPct / 100);
     // Catering in the bag brings the catering delivery fee: a flat fee, free over the threshold.
     const fee = bagHasCatering('delivery') ? (subtotal >= CATERING_FREE_DELIVERY_AT ? 0 : CATERING_DELIVERY_FEE) : DELIVERY_FEE;
     return { subtotal, fee, tax, tip, total: subtotal + fee + tax + tip };
@@ -5918,7 +6351,7 @@
     document.getElementById('dc-tip').textContent = money(t.tip);
     document.querySelectorAll('#dc-tip-picker .tip-chip').forEach((chip) => {
       const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
-      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.dTipCustom : t.subtotal * (pct / 100));
+      chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.dTipCustom : taxableSubtotal('delivery') * (pct / 100));
     });
     document.getElementById('dc-total').textContent = money(t.total);
     // Below the minimum the order cannot be placed; the note says by how much, and the cart is where to fix it.
@@ -6225,7 +6658,7 @@
     if (!lines.length) return 0;
     lines.forEach((line) => {
       if (line.cart) line.cart = to;
-      if (!line.catering && typeof line.basePrice === 'number') line.price = to === 'delivery' ? forDelivery(line.basePrice) : line.basePrice;
+      if (!line.catering && !line.giftCard && typeof line.basePrice === 'number') line.price = to === 'delivery' ? forDelivery(line.basePrice) : line.basePrice;
     });
     state.carts[to].push(...lines);
     state.carts[from] = [];
@@ -6301,7 +6734,7 @@
         name: document.getElementById('co-name').value,
         cheer: state.pickupTimeId === ASAP_ID ? 'We’re already deviling your order.' : 'We’ll have it deviled and waiting.',
         items, total,
-        cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
+        cardHTML: `${PIN_ICON}<span>${address}</span><a class="pill-btn outline sm" id="get-directions" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" rel="noopener">Get directions</a>`,
         backLabel: '← Back to home', backView: 'home',
       });
     }, 900);

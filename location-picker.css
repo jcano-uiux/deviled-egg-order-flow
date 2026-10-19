@@ -22,7 +22,6 @@
   border-radius: var(--deg-radius-pill); border: 1px solid var(--deg-border-input); background: var(--deg-white); color: var(--deg-ink-body);
 }
 #view-location-picker .deg-input::placeholder { color: var(--deg-ink-muted); }
-#view-location-picker ::selection { background: var(--deg-gold); color: var(--deg-ink-on-gold); }
 #view-location-picker svg { display: block; }
 #view-location-picker button { font: inherit; }
 #view-location-picker a { text-underline-offset: 3px; }

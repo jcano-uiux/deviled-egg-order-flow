@@ -189,7 +189,7 @@ body.no-nav-where .nav-compact .cart-btn { margin-left: auto; }
    this narrow a column read unfinished left-aligned on their own. */
 .store-name { font-size: 32px; line-height: 40px; font-weight: 700; }
 .store-address { margin: 8px 0 0; font-size: 14px; color: var(--deg-ink-muted); }
-.store-info-btn { margin-top: 16px; padding: 8px 16px; font-size: 14px; }
+.store-info-btn { margin-top: 16px; }
 
 .sidebar-divider { height: 1px; background: var(--deg-border-primary); }
 
@@ -1868,7 +1868,6 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
   background: var(--deg-cream-cool); color: var(--deg-ink-body); border-radius: 0; border-top: 1px solid var(--deg-border-chip);
 }
 .site-footer ::selection { background: var(--sf-accent); color: var(--deg-ink-deep); }
-.site-footer[data-mode="slim"] ::selection { background: var(--deg-gold-tint); }
 .site-footer a:focus-visible, .site-footer button:focus-visible, .site-footer input:focus-visible { box-shadow: 0 0 0 2px var(--sf-ring), 0 0 0 4px var(--sf-focus); }
 .sf-inner { max-width: 1280px; margin: 0 auto; padding: 56px 40px 0; }
 .sf-base { padding-top: 0; }
@@ -1884,7 +1883,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .sf-form { gap: 10px; }
 .sf-form-row { display: flex; gap: 10px; }
 .sf-form-row input { flex: 1 1 auto; height: 56px; padding-top: 0; padding-bottom: 0; }
-.sf-form-row .pill-btn { flex: none; min-width: 148px; height: 56px; padding: 0 32px; box-shadow: none; } /* the gold CTA glow is for light grounds; on Deep Ink it would be a halo */
+.sf-form-row .pill-btn { flex: none; min-width: 148px; min-height: 56px; padding: 0 32px; box-shadow: none; } /* the gold CTA glow is for light grounds; on Deep Ink it would be a halo */
 .sf-form .field-error { margin: 0; color: #FF9B93; }
 .site-footer[data-mode="slim"] .sf-form .field-error { color: var(--deg-error); }
 .sf-form .page-success { margin: 0; padding: 0; background: transparent; font-size: 14px; line-height: 20px; font-weight: 600; color: #FBF3E3; }
@@ -1896,7 +1895,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .sf-link { display: inline-flex; align-items: center; min-height: 36px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--sf-fg); text-decoration: none; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
 a.sf-link:hover { text-decoration: underline; color: var(--sf-accent); }
 .sf-link.is-soon { flex-wrap: wrap; color: var(--sf-muted); cursor: default; }
-.sf-soon { margin-left: 8px; padding: 1px 8px; border: 1px solid currentColor; border-radius: var(--deg-radius-pill); font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: .02em; }
+.sf-soon { margin-left: 8px; padding: 1px 8px; border: 1px solid currentColor; border-radius: var(--deg-radius-pill); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .02em; }
 .sf-store { display: flex; flex-direction: column; justify-content: center; padding: 2px 0; }
 .sf-store .sf-link { min-height: 28px; }
 .sf-tel { align-self: flex-start; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--sf-muted); text-decoration: none; font-variant-numeric: tabular-nums; }
@@ -1976,3 +1975,316 @@ body:has(#cart-bar:not([hidden])) .site-footer { padding-bottom: 88px; }
 @media (max-width: 640px) {
   .confirmation-cheer { font-size: 19px; line-height: 24px; }
 }
+
+/* ---------- Information pages: Contact, Flavors, Gift Cards, About, Franchise ----------
+   One layout language: a header (a heading, one sentence of lede, an action or two and, where the page has one, an egg-shaped
+   photo), then sections divided by a hairline. Content stays in the page's 1280px column; text stays at a readable measure. */
+.ip-view { --page-gap: 64px; padding-bottom: 24px; }
+.ip-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 56px; align-items: center; padding: 24px 0 64px; }
+.ip-head.is-plain { grid-template-columns: minmax(0, 1fr); padding-bottom: 48px; }
+.ip-head.is-plain .ip-head-copy { max-width: 760px; }
+.ip-head h1 { font-size: 56px; line-height: 60px; letter-spacing: -.01em; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+/* Phrases that should not split across lines: the name (except on the narrowest phones) and the closing words, so the heading never ends on one stranded word. */
+@media (min-width: 360px) { .ip-nowrap { white-space: nowrap; } }
+.ip-keep { white-space: nowrap; }
+/* Between 901px and about 1250px the heading column is narrow, so the About heading scales down with the window (the unbreakable name must fit it); 56px from there up. */
+@media (min-width: 901px) { #view-about .ip-head h1 { font-size: clamp(42px, 4.5vw, 56px); line-height: 1.07; } }
+.ip-lede { margin-top: 16px; max-width: 52ch; font-size: 18px; line-height: 28px; color: var(--deg-ink-heading); text-wrap: pretty; }
+.ip-lede-tight { margin-top: 8px; }
+.ip-lede-sub { margin-top: 12px; font-size: 16px; line-height: 24px; color: var(--deg-ink-heading); }
+.ip-lede-sub a, .ip-store-links a, .ip-tel { color: var(--deg-link); font-weight: 600; text-underline-offset: 3px; }
+.ip-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.ip-media { display: flex; justify-content: center; }
+.ip-media img { display: block; width: 100%; max-width: 440px; max-height: 560px; height: auto; object-fit: contain; }
+/* The About hero's egg: a flavor clip cut to the egg's silhouette (the alpha of the photo the egg used to be), cropped to fill it, with a sticker badge laid
+   on its top-right shoulder, over the cut, not inside it. The sticker unfurls (peels flat from its lower-left corner and settles) and only then gets its shadow. */
+.ip-egg { position: relative; width: 100%; max-width: 440px; aspect-ratio: 458 / 589; max-height: 560px; }
+.ip-egg-video { width: 100%; height: 100%; -webkit-mask: url(assets/pages/franchise-2.webp) center / 100% 100% no-repeat; mask: url(assets/pages/franchise-2.webp) center / 100% 100% no-repeat; background: var(--deg-cream-deep); }
+.ip-egg-video video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ip-media .ip-badge { --badge-shadow: 0 8px 14px rgba(0, 0, 0, .25); position: absolute; left: 66%; top: 1%; width: 28%; aspect-ratio: 1; border-radius: 50%; transform: rotate(8deg); opacity: 0; box-shadow: 0 0 0 rgba(0, 0, 0, 0); pointer-events: none; user-select: none; }
+.ip-media .ip-badge img { display: block; width: 100%; height: 100%; max-width: none; max-height: none; border-radius: 50%; -webkit-user-drag: none; }
+/* The unroll is a real 3D scene (see initAboutHero): the artwork is cut into thin strips, the unrolled strips lie flat and the rest wrap a coil that curls up
+   toward the viewer, shaded by its angle to the light, over a soft shadow on the egg. It is hidden until it starts, and the flat image takes over at the end. */
+.ip-badge[data-state="play"], .ip-badge[data-state="flat"], .ip-badge[data-state="done"] { opacity: 1; }
+.ip-badge[data-state="play"] img { opacity: 0; }
+.ip-badge[data-state="done"] { box-shadow: var(--badge-shadow); transition: box-shadow .5s ease; }
+.ip-badge[data-state="flat"] .ip-badge-stage, .ip-badge[data-state="flat"] .ip-badge-cast, .ip-badge[data-state="done"] .ip-badge-stage, .ip-badge[data-state="done"] .ip-badge-cast, .ip-badge[data-state="wait"] .ip-badge-stage { display: none; }
+.ip-badge-stage { position: absolute; inset: 0; transform-style: preserve-3d; perspective-origin: 50% -70%; }
+.ip-badge-strip { position: absolute; left: 0; width: 100%; transform-style: preserve-3d; will-change: transform; }
+.ip-badge-strip > span { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; filter: brightness(var(--b, 1)); }
+.ip-badge-strip .f { background-image: url(assets/pages/ship-badge.webp); }
+.ip-badge-strip .b { transform: rotateY(180deg); background-color: #F7E9CC; -webkit-mask-image: url(assets/pages/ship-badge.webp); mask-image: url(assets/pages/ship-badge.webp); }
+.ip-badge-cast { position: absolute; left: 6%; width: 88%; height: 0; top: 0; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(19, 13, 0, .42), rgba(19, 13, 0, 0) 70%); filter: blur(3px); opacity: 0; }
+.ip-egg-video.is-fading { animation: egg-fade .9s ease-out both; }
+@keyframes egg-fade { from { opacity: 0; } to { opacity: 1; } }
+/* On phones the hero copy is centered, and the sticker is twice its desktop size (56% of the egg, its right edge just inside the page gutter, shadow to match). */
+@media (max-width: 640px) {
+  #view-about .ip-head-copy { text-align: center; }
+  #view-about .ip-head h1, #view-about .ip-lede { margin-left: auto; margin-right: auto; }
+  #view-about .ip-actions { justify-content: center; }
+  #view-about .ip-textlink { justify-content: center; }
+  .ip-media .ip-badge { --badge-shadow: 0 12px 20px rgba(0, 0, 0, .25); left: 52%; top: -2%; width: 50%; }
+  .ip-media .ip-egg { max-width: none; max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { .ip-egg-video.is-fading { animation: none; } .ip-badge[data-state="done"] { transition: none; } }
+
+.ip-section { margin-top: 64px; padding-top: 56px; border-top: 1px solid var(--deg-border-chip); }
+.ip-section h2, .ip-two h2, .ip-cta h2 { font-size: 32px; line-height: 42px; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.ip-prose { display: grid; gap: 16px; max-width: 64ch; margin-top: 20px; font-size: 17px; line-height: 28px; color: var(--deg-ink-body); text-wrap: pretty; }
+.ip-prose-block .ip-actions { margin-top: 24px; }
+.ip-split { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 56px; align-items: center; }
+.ip-split-media img { display: block; width: 100%; max-width: 380px; height: auto; margin: 0 auto; }
+.ip-split-copy .ip-prose { margin-top: 20px; }
+.ip-quote { margin: 20px 0 0; max-width: 28ch; font-family: var(--deg-font-display); font-weight: 800; font-size: 28px; line-height: 37px; color: var(--deg-ink-deep); text-wrap: balance; }
+.ip-table { margin: 28px 0 0; border-top: 1px solid var(--deg-border-chip); }
+.ip-table > div { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ip-table dt { font-size: 14px; line-height: 24px; font-weight: 700; color: var(--deg-ink-muted); }
+.ip-table dd { margin: 0; font-size: 18px; line-height: 28px; font-weight: 600; color: var(--deg-ink-deep); }
+.ip-rows { margin-top: 24px; border-top: 1px solid var(--deg-border-chip); }
+.ip-row { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 24px; padding: 28px 0; border-bottom: 1px solid var(--deg-border-chip); }
+.ip-row-label { font-size: 14px; line-height: 28px; font-weight: 700; color: var(--deg-ink-muted); }
+.ip-row h3 { font-size: 26px; line-height: 34px; font-weight: 800; color: var(--deg-ink-deep); }
+.ip-row p:not(.ip-row-label) { margin-top: 8px; max-width: 60ch; font-size: 17px; line-height: 28px; color: var(--deg-ink-body); }
+.ip-legal { margin-top: 56px; max-width: 90ch; font-size: 12px; line-height: 18px; color: var(--deg-ink-muted); }
+.ip-note { font-size: 13px; line-height: 19px; color: var(--deg-ink-muted); }
+.ip-cta { margin-top: 64px; padding: 48px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-deep); }
+.ip-cta p { margin-top: 8px; max-width: 52ch; font-size: 17px; line-height: 26px; color: var(--deg-ink-heading); }
+
+/* Contact */
+.ip-two { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 56px; align-items: start; }
+.ip-card { padding: 32px; border-radius: var(--deg-radius-panel); background: var(--deg-white); box-shadow: var(--deg-shadow-ambient); }
+.ip-card-sub { margin-top: 4px; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); }
+.info-form { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.info-form .field-error { margin: 0; }
+.info-form input[aria-invalid="true"], .info-form textarea[aria-invalid="true"] { border-color: var(--deg-error); }
+.info-form .page-success { background: var(--deg-cream-cool); }
+.ip-stores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 20px; }
+.ip-store { overflow: hidden; border-radius: var(--deg-radius-card); background: var(--deg-white); box-shadow: var(--deg-shadow-ambient); }
+.ip-store img { display: block; width: 100%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; background: var(--deg-cream-cool); }
+.ip-store-body { display: grid; gap: 4px; padding: 16px 18px 18px; font-size: 15px; line-height: 22px; color: var(--deg-ink-body); }
+.ip-store h3 { font-size: 20px; line-height: 27px; font-weight: 800; color: var(--deg-ink-deep); }
+.ip-store-area { color: var(--deg-ink-muted); font-weight: 600; }
+.ip-store-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 4px; }
+.ip-stores-compact { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ip-stores-compact .ip-store-body { padding: 18px; }
+
+/* Flavors */
+.fl-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px 20px; }
+.fl-grid .sampler-tile-name { font-size: 16px; line-height: 22px; }
+
+/* Gift cards */
+.gc-build { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 56px; align-items: start; }
+.gc-form { margin-top: 0; gap: 28px; }
+.gc-field { margin: 0; padding: 0; border: 0; display: grid; gap: 12px; min-width: 0; }
+.gc-field legend { padding: 0; margin-bottom: 14px; font-family: var(--deg-font-display); font-weight: 800; font-size: 22px; line-height: 29px; color: var(--deg-ink-deep); }
+.gc-amounts { display: flex; flex-wrap: wrap; gap: 10px; }
+.gc-amounts .chip { min-width: 72px; min-height: 48px; }
+.gc-delivery { display: grid; gap: 10px; }
+.gc-fields { gap: 16px; }
+.gc-fields legend { margin-bottom: 8px; }
+.gc-form textarea { resize: vertical; }
+.gc-preview { position: sticky; top: 93px; display: grid; gap: 16px; padding: 24px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-cool); }
+.gc-card { position: relative; overflow: hidden; border-radius: var(--deg-radius-media); box-shadow: var(--deg-shadow-ambient); }
+.gc-card img { display: block; width: 100%; height: auto; aspect-ratio: 600 / 347; }
+.gc-amount-line dd { font-family: var(--deg-font-display); font-weight: 800; font-size: 32px; line-height: 36px; }
+.gc-amount-line { align-items: baseline; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid var(--deg-border-secondary); }
+.gc-card-lines { display: grid; gap: 6px; margin: 0; }
+.gc-card-lines > div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; font-size: 15px; line-height: 22px; }
+.gc-card-lines dt { color: var(--deg-ink-muted); font-weight: 600; }
+.gc-card-lines dd { margin: 0; color: var(--deg-ink-deep); font-weight: 600; overflow-wrap: anywhere; }
+.gc-pv-msg { padding: 12px 14px; border-radius: var(--deg-radius-compact); background: var(--deg-white); font-size: 15px; line-height: 22px; color: var(--deg-ink-body); overflow-wrap: anywhere; }
+.gc-buy { display: grid; gap: 12px; padding-top: 4px; }
+.gc-added { margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
+
+@media (max-width: 1100px) {
+  .fl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ip-stores-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .ip-head { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-bottom: 48px; }
+  .ip-head h1 { font-size: 40px; line-height: 44px; }
+  .ip-media { order: -1; }
+  .ip-media img { max-width: 300px; max-height: 380px; }
+  .ip-egg { max-width: 300px; max-height: 386px; }
+  .ip-two, .gc-build { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .ip-split { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .ip-split-media img { max-width: 280px; }
+  .gc-preview { position: static; }
+  .fl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ip-cta { padding: 32px; }
+}
+@media (max-width: 640px) {
+  .ip-view { --page-gap: 40px; }
+  .ip-head { padding-top: 8px; }
+  .ip-head h1 { font-size: 34px; line-height: 38px; }
+  .ip-lede { font-size: 17px; line-height: 26px; }
+  .ip-section { margin-top: 48px; padding-top: 40px; }
+  .ip-section h2, .ip-two h2, .ip-cta h2 { font-size: 26px; line-height: 34px; }
+  .ip-table > div, .ip-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .ip-quote { font-size: 24px; line-height: 32px; }
+  .ip-stores, .ip-stores-compact { grid-template-columns: minmax(0, 1fr); }
+  .ip-card { padding: 24px 20px; }
+  .fl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+  .gc-amounts .chip { min-width: 64px; }
+  .ip-actions .pill-btn { flex: 1 1 100%; }
+  .info-form input, .info-form textarea { font-size: 16px; }
+}
+
+/* ---------- About ----------
+   The one information page that goes edge to edge: a calm page on Cool Linen with a single full-width Deep Ink band (the Shark Tank
+   line), the same dark the footer uses. Content sits in .ip-wrap, the page's 1280px column; the band is the only thing outside it. */
+.ip-view-wide { max-width: none; padding-left: 0; padding-right: 0; padding-bottom: 0; }
+.ip-wrap { max-width: 1280px; margin: 0 auto; padding: 0 var(--deg-view-pad-x); }
+.ip-textlink { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 16px; line-height: 24px; font-weight: 700; color: var(--deg-ink-deep); text-decoration: underline; text-decoration-color: var(--deg-gold); text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.ip-textlink:hover { text-decoration-color: var(--deg-ink-deep); }
+
+.ip-story { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px 64px; align-items: start; padding: 24px 0 112px; }
+.ip-story h2, .ip-food h2, .ip-founder h2 { font-size: 40px; line-height: 52px; font-weight: 800; letter-spacing: -.01em; color: var(--deg-ink-deep); text-wrap: balance; }
+.ip-story .ip-prose, .ip-food .ip-prose { margin-top: 0; }
+.ip-miles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; margin: 56px 0 0; padding: 0; list-style: none; }
+.ip-miles li { position: relative; display: grid; align-content: start; gap: 2px; padding: 24px 16px 0 0; border-top: 2px solid var(--deg-border-secondary); }
+.ip-miles li::before { content: ""; position: absolute; left: 0; top: -8px; width: 14px; height: 14px; border-radius: 50%; background: var(--deg-gold); border: 2px solid var(--deg-ink-deep); box-sizing: border-box; }
+.ip-miles li:last-child::before { background: var(--deg-cream); }
+.ip-miles strong { font-family: var(--deg-font-display); font-weight: 800; font-size: 20px; line-height: 27px; color: var(--deg-ink-deep); }
+.ip-miles span { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-muted); }
+
+.ip-band { padding: 112px 0; background: var(--deg-ink-deep); color: #FBF3E3; }
+.ip-band h2 { max-width: 22em; font-size: clamp(32px, 4.4vw, 60px); line-height: 1.12; letter-spacing: -.015em; font-weight: 800; color: #FBF3E3; text-wrap: balance; }
+.ip-band h2 em { font-style: normal; color: var(--deg-gold-on-dark); }
+.ip-band p { max-width: 60ch; margin-top: 36px; font-size: 18px; line-height: 28px; color: #BDB3A2; text-wrap: pretty; }
+
+.ip-founder { padding: 112px 0 0; align-items: center; }
+.ip-founder .ip-quote { max-width: 22ch; margin-top: 0; font-size: 44px; line-height: 52px; letter-spacing: -.01em; }
+.ip-sign { margin: 24px 0 0; display: grid; gap: 2px; font-size: 15px; line-height: 22px; color: var(--deg-ink-muted); font-weight: 600; }
+.ip-sign strong { font-family: var(--deg-font-display); font-weight: 800; font-size: 20px; line-height: 27px; color: var(--deg-ink-deep); }
+.ip-founder .ip-prose { margin-top: 32px; }
+
+.ip-food { padding: 0; }
+/* The flavors are a section of their own: a full-width Cream Deep band, so the strip sits on its own ground between the founder and the values. */
+.ip-flavors-band { margin-top: 112px; padding: 104px 0 80px; background: var(--deg-cream-deep); }
+.ip-food-head { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px 64px; align-items: start; }
+.ab-fav { align-self: flex-start; padding: 2px 10px; border-radius: var(--deg-radius-pill); background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 12px; line-height: 18px; font-weight: 700; }
+.ip-food-more { margin-top: 24px; }
+
+
+.ip-strip { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-top: 112px; padding: 40px 48px; border-radius: var(--deg-radius-panel); background: var(--deg-cream-cool); }
+.ip-strip h2 { font-size: 28px; line-height: 37px; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.ip-strip p { margin-top: 8px; max-width: 62ch; font-size: 16px; line-height: 26px; color: var(--deg-ink-heading); }
+.ip-strip .pill-btn { flex: none; }
+.ip-close { margin-top: 48px; margin-bottom: 0; }
+.ip-close h2 { font-size: 40px; line-height: 52px; }
+
+@media (max-width: 900px) {
+  .ip-head.is-copy-first .ip-media { order: 0; }
+  .ip-story, .ip-food-head { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .ip-story { padding-bottom: 72px; }
+  .ip-miles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; margin-top: 24px; }
+  .ip-band { padding: 72px 0; }
+  .ip-band p { margin-top: 24px; font-size: 17px; line-height: 26px; }
+  .ip-founder { margin-top: 0; padding: 72px 0 0; }
+  .ip-flavors-band { margin-top: 72px; padding: 64px 0; }
+  .ip-founder .ip-quote { font-size: 32px; line-height: 42px; }
+  .ip-story h2, .ip-food h2, .ip-close h2 { font-size: 32px; line-height: 42px; }
+  .ip-strip { flex-direction: column; align-items: flex-start; margin-top: 72px; padding: 32px 24px; }
+  .ip-close { margin-top: 40px; }
+}
+@media (max-width: 640px) {
+  .ip-story h2, .ip-food h2, .ip-close h2 { font-size: 28px; line-height: 37px; }
+  .ip-strip .pill-btn { width: 100%; }
+}
+
+/* About, last two panels: two equal-height columns, each a heading, a sentence and its actions pinned to the foot so the buttons line up. */
+.ip-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: stretch; margin-top: 112px; }
+.ip-pair > section { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 0; margin: 0; padding: 48px; border-radius: var(--deg-radius-panel); }
+.ip-pair .ip-strip > div { display: contents; }
+.ip-pair h2 { font-size: 32px; line-height: 42px; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.ip-pair p { margin-top: 12px; max-width: 46ch; font-size: 17px; line-height: 26px; color: var(--deg-ink-heading); }
+.ip-pair .ip-strip > .pill-btn { margin-top: auto; }
+.ip-pair .ip-actions { align-self: stretch; margin-top: auto; padding-top: 0; }
+.ip-pair .ip-strip p, .ip-pair .ip-close p { margin-bottom: 32px; }
+@media (max-width: 900px) {
+  .ip-pair { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 72px; }
+  .ip-pair > section { padding: 32px 24px; }
+  .ip-pair h2 { font-size: 28px; line-height: 37px; }
+}
+
+/* About, the flavors: a strip that scrolls by itself, edge to edge, after the "scrolling images" strip on musso.ph. No arrows, no dots: one slow, steady
+   leftward loop. The tiles are in the row twice and the row slides exactly one set, so the loop has no seam. It stops under the pointer or the
+   keyboard, while a flavor sheet is open, and when the pause button is pressed; with reduced motion it does not move and is an ordinary row
+   to scroll sideways. */
+.ab-marquee { --ab-gap: 20px; --ab-tile: 240px; overflow: hidden; margin-top: 56px; }
+.ab-marquee-track { display: flex; width: max-content; animation: ab-marquee 110s linear infinite; }
+.ab-marquee-group { display: flex; flex: none; gap: var(--ab-gap); margin: 0; padding: 4px var(--ab-gap) 8px 0; list-style: none; }
+.ab-marquee-group > li { flex: none; width: var(--ab-tile); }
+@keyframes ab-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ab-marquee:hover .ab-marquee-track, .ab-marquee:has(:focus-visible) .ab-marquee-track, .ab-marquee.is-paused .ab-marquee-track, body:has(.flavor-info) .ab-marquee-track { animation-play-state: paused; }
+.ab-marquee .sampler-tile-name { font-size: 16px; line-height: 22px; }
+.ip-food-more { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+.ab-pause { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); transition: background-color .15s ease; }
+.ab-pause:hover { background: var(--deg-gold); }
+.ab-pause .ab-ico-play { display: none; }
+.ab-pause[aria-pressed="true"] .ab-ico-play { display: block; }
+.ab-pause[aria-pressed="true"] .ab-ico-pause { display: none; }
+@media (max-width: 640px) { .ab-marquee { --ab-gap: 12px; --ab-tile: 168px; margin-top: 40px; } .ab-marquee-track { animation-duration: 90s; } }
+@media (prefers-reduced-motion: reduce) {
+  .ab-marquee { overflow-x: auto; scrollbar-width: thin; }
+  .ab-marquee-track { width: max-content; animation: none; }
+  .ab-marquee-group[aria-hidden="true"] { display: none; }
+  .ab-pause { display: none; }
+  .ab-pause { transition: none; }
+}
+
+/* ---------- About: Our mission and values, driven by scroll (from the Figma "Our mission and values" screens) ----------
+   The section is a tall runway with a pinned stage. As the page scrolls through it, one egg-shaped photo shrinks from filling the stage to about
+   41% of that, and at each of five steps a new photo opens over the last (a growing clip) while its value tag drops in beside the egg, the tags
+   cascading down and to the right. app.js sets the egg's scale, its position and which steps are on, from the scroll position. Without that
+   (reduced motion, no scripting) the section is the Figma's last screen as a still: the final egg and all five tags. */
+.vs { position: relative; }
+.vs-pin { position: relative; display: flex; flex-direction: column; align-items: center; padding: 112px 0 48px; }
+.vs-head { text-align: center; }
+.vs-head h2 { font-size: 40px; line-height: 52px; letter-spacing: -.01em; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.vs-head p { max-width: 512px; margin: 8px auto 0; font-size: 18px; line-height: 28px; color: var(--deg-ink-heading); text-wrap: pretty; }
+.vs-stage { position: relative; width: 100%; height: 560px; margin-top: 24px; }
+.vs-egg { position: absolute; left: 50%; top: 0; width: 410px; height: 527px; margin-left: -205px; transform-origin: 50% 50%; }
+.vs-back { position: absolute; left: 19%; top: -3.4%; width: 125%; height: 107%; max-width: none; transform: rotate(18deg); transform-origin: 50% 50%; z-index: 0; }
+.vs-photo { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: contain; clip-path: ellipse(80% 80% at 50% 58%); transition: clip-path .9s cubic-bezier(.22, 1, .36, 1); }
+.vs-tags { position: absolute; left: 50%; top: 0; z-index: 2; display: grid; gap: 12px; justify-items: start; margin: 0; padding: 0; list-style: none; }
+.vs-tag { margin-left: calc(var(--i) * 56px); padding: 22px 22px 16px; border-radius: 14px; background: var(--deg-ink-deep); color: var(--deg-cream); font-family: var(--deg-font-display); font-weight: 800; font-size: 18px; line-height: 23.4px; letter-spacing: -.02em; white-space: nowrap; box-shadow: 0 8px 12px rgba(0, 0, 0, .25); transform: rotate(-4deg); transition: opacity .5s cubic-bezier(.22, 1, .36, 1) .15s, transform .5s cubic-bezier(.22, 1, .36, 1) .15s; }
+/* The still (no scripting, or reduced motion): the Figma's last screen, the final egg at 437px and all five tags down its right. */
+.vs:not(.is-live) .vs-tags { top: 276px; transform: translateX(58px); }
+.vs:not(.is-live) .vs-tag { margin-left: calc(var(--i) * 40px); }
+.vs.is-live { height: calc((100svh - 69px) * 4.4); padding: 0; }
+.vs.is-live .vs-pin { position: sticky; top: 69px; height: calc(100svh - 69px); padding: 40px 0 24px; box-sizing: border-box; justify-content: flex-start; overflow: visible; }
+.vs.is-live .vs-stage { flex: 1 1 auto; min-height: 0; height: auto; }
+.vs.is-live .vs-egg { top: 0; transform-origin: 50% 0; will-change: transform; }
+/* Live, the photos and tags are scrubbed by scroll (JS sets each one's clip, opacity and place), so nothing is on a timer. */
+.vs.is-live .vs-photo { transition: none; }
+.vs.is-live .vs-tags { position: absolute; inset: 0; pointer-events: none; display: block; }
+.vs.is-live .vs-tag { position: absolute; left: 50%; top: 0; margin: 0; opacity: var(--o, 1); transform: translate(var(--x, 0px), calc(var(--y, 0px) + var(--dy, 0px))) rotate(-4deg); transition: none; }
+.ip-view-wide { overflow-x: clip; }
+/* Below 768px (phones and small portrait tablets): the egg ends as wide as the page's other content, set in by the page's gutter (40px, 16px on a phone),
+   after starting 1.6 times that wide and running off both edges of the window (the page's own sideways clip, not the section's, cuts it), and the tags are small and JS hangs them on the egg's
+   right outline. (JS sizes it all live; the still below is the finished width, with the tags in a short stack under the egg.) */
+@media (max-width: 767px) {
+  .vs { --vs-gut: 40px; margin-top: 40px; }
+  .vs-pin { padding: 56px 0 24px; }
+  .vs-head { padding: 0 var(--vs-gut); }
+  .vs-head h2 { font-size: 32px; line-height: 42px; }
+  .vs-head p { margin-top: 6px; padding: 0; font-size: 17px; line-height: 26px; }
+  .vs-stage { margin-top: 20px; height: calc((100vw - 2 * var(--vs-gut)) / .7773); }
+  .vs-egg { width: calc(100vw - 2 * var(--vs-gut)); height: calc((100vw - 2 * var(--vs-gut)) / .7773); margin-left: calc((100vw - 2 * var(--vs-gut)) * -.5); }
+  .vs-back { left: 14%; width: 112%; }
+  .vs:not(.is-live) .vs-tags { position: static; left: auto; width: 100%; box-sizing: border-box; padding: 0 var(--vs-gut); margin-top: 12px; gap: 5px; justify-items: end; }
+  .vs-tag { margin-left: 0; padding: 8px 11px 6px; font-size: 12px; line-height: 16px; border-radius: 10px; box-shadow: 0 5px 8px rgba(0, 0, 0, .22); }
+  .vs:not(.is-live) .vs-tag { margin-right: calc((4 - var(--i)) * 14px); }
+  .vs.is-live .vs-pin { padding: 24px 0 0; }
+  .vs.is-live .vs-stage { margin-top: 16px; }
+  .ip-pair { margin-top: 0; padding-bottom: 16px; }
+  .ip-pair p { margin-top: 16px; }
+}
+@media (max-width: 640px) {
+  .vs { --vs-gut: 16px; }
+  .vs-head h2 { font-size: 28px; line-height: 37px; }
+  .vs-head p { font-size: 16px; line-height: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .vs-photo, .vs-tag { transition: none; } }
