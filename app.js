@@ -3477,6 +3477,12 @@
     'gift-cards': document.getElementById('view-gift-cards'),
     about: document.getElementById('view-about'),
     franchise: document.getElementById('view-franchise'),
+    'egg-bar': document.getElementById('view-egg-bar'),
+    'corporate-gifting': document.getElementById('view-corporate-gifting'),
+    'corporate-gift-order': document.getElementById('view-corporate-gift-order'),
+    'shipping-returns': document.getElementById('view-shipping-returns'),
+    privacy: document.getElementById('view-privacy'),
+    terms: document.getElementById('view-terms'),
     'ship-checkout': document.getElementById('view-ship-checkout'),
     'delivery-checkout': document.getElementById('view-delivery-checkout'),
   };
@@ -3499,6 +3505,12 @@
     'gift-cards': `Gift cards — ${SITE_NAME}`,
     about: `About us — ${SITE_NAME}`,
     franchise: `Franchise — ${SITE_NAME}`,
+    'egg-bar': `Deviled egg bar request — ${SITE_NAME}`,
+    'corporate-gifting': `Corporate gifting — ${SITE_NAME}`,
+    'corporate-gift-order': `Corporate gift order — ${SITE_NAME}`,
+    'shipping-returns': `Shipping & returns — ${SITE_NAME}`,
+    privacy: `Privacy policy — ${SITE_NAME}`,
+    terms: `Terms & conditions — ${SITE_NAME}`,
     'delivery-checkout': `Secure Checkout, Delivery — ${SITE_NAME}`,
     checkout: `Secure Checkout — ${SITE_NAME}`,
     'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
@@ -3534,7 +3546,9 @@
     if (name === 'flavors') renderFlavorsPage();
     if (name === 'about') renderAboutFlavors();
     if (name === 'about') { initAboutHero(); initAboutValues(); }
+    if (name === 'gift-cards') replayGiftStrip();
     if (name === 'gift-cards') syncGiftCard();
+    if (name === 'shipping-returns' || name === 'privacy' || name === 'terms') views[name].dispatchEvent(new Event('pol:shown'));
     if (name === 'delivery-checkout') setSummaryOpen(document.getElementById('dc-toggle-summary'), true);
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
@@ -3567,7 +3581,7 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'contact', 'flavors', 'gift-cards', 'about', 'franchise', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'contact', 'flavors', 'gift-cards', 'about', 'franchise', 'egg-bar', 'corporate-gifting', 'corporate-gift-order', 'shipping-returns', 'privacy', 'terms', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
   const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
@@ -3911,7 +3925,7 @@
   // #catering) makes each page deep-linkable and keeps the browser's back
   // button honest.
   // The page a bare URL opens is Home; the menu has its own address now.
-  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#contact': 'contact', '#flavors': 'flavors', '#gift-cards': 'gift-cards', '#about': 'about', '#franchise': 'franchise', '#checkout': 'checkout', '#confirmation': 'order' };
+  const PAGE_HASHES = { '#home': 'home', '#location-picker': 'location-picker', '#menu': 'menu', '#order': 'order', '#shipping': 'shipping', '#catering': 'catering', '#contact': 'contact', '#flavors': 'flavors', '#gift-cards': 'gift-cards', '#about': 'about', '#franchise': 'franchise', '#egg-bar': 'egg-bar', '#corporate-gifting': 'corporate-gifting', '#corporate-gift-order': 'corporate-gift-order', '#shipping-returns': 'shipping-returns', '#privacy': 'privacy', '#terms': 'terms', '#checkout': 'checkout', '#confirmation': 'order' };
   navLinksEl.addEventListener('click', (e) => {
     // "Pickup & Delivery" links nowhere for now (like the Home "Order delivery" tile): the click does nothing.
     // "Pickup & Delivery" opens the "where" modal, like the Home tiles, on the tab it was last on.
@@ -4021,6 +4035,37 @@
     });
   });
 
+  // Policy pages (Shipping & returns, Privacy, Terms): the "On this page" list jumps to a section without touching the address (a hash change would read as a
+  // page), the section being read is marked as the page scrolls, and on a phone the list is one row that opens and closes. It is always open on a wide window.
+  const polPages = ['shipping-returns', 'privacy', 'terms'].map((n) => views[n]);
+  const polWide = window.matchMedia('(min-width: 901px)');
+  // On a wide window the list is always open (its label is just a label: not clickable, not a tab stop); on a phone it is a row that opens and closes.
+  function syncPolContents() { polPages.forEach((v) => { const d = v.querySelector('.pol-contents'); if (!d) return; d.open = polWide.matches; d.querySelector('summary').tabIndex = polWide.matches ? -1 : 0; }); }
+  polPages.forEach((v) => v.querySelector('.pol-contents summary').addEventListener('click', (e) => { if (polWide.matches) e.preventDefault(); }));
+  syncPolContents();
+  polWide.addEventListener('change', syncPolContents);
+  polPages.forEach((view) => {
+    const links = [...view.querySelectorAll('[data-pol-jump]')];
+    view.querySelector('.pol-toc').addEventListener('click', (e) => {
+      const link = e.target.closest('[data-pol-jump]');
+      if (!link) return;
+      e.preventDefault();
+      const target = document.getElementById(link.dataset.polJump);
+      if (!target) return;
+      target.scrollIntoView({ behavior: motionReduced() ? 'auto' : 'smooth', block: 'start' });
+      target.focus({ preventScroll: true });
+      if (!polWide.matches) view.querySelector('.pol-contents').open = false;
+    });
+    const heads = links.map((l) => document.getElementById(l.dataset.polJump));
+    const mark = () => {
+      let current = heads[0];
+      heads.forEach((h) => { if (h.getBoundingClientRect().top <= 140) current = h; });
+      links.forEach((l) => { if (document.getElementById(l.dataset.polJump) === current) l.setAttribute('aria-current', 'true'); else l.removeAttribute('aria-current'); });
+    };
+    window.addEventListener('scroll', () => { if (!view.hidden) mark(); }, { passive: true });
+    view.addEventListener('pol:shown', mark);
+  });
+
   // Flavors: every flavor's clip as a tile, and a tap opens the same sheet the Sampler uses (the clip, its description and what is in it,
   // with Previous and Next through the whole list). Drawn the first time the page is shown.
   let flavorsDrawn = false;
@@ -4084,7 +4129,9 @@
     const stage = badge.querySelector('.ip-badge-stage');
     const cast = badge.querySelector('.ip-badge-cast');
     const run = ++heroBadgeRun;
-    const N = 56;
+    // Fewer strips where the device is likely to be modest: a phone (the badge is small there anyway) or a machine reporting few cores or little memory.
+    const modest = window.innerWidth <= 767 || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
+    const N = modest ? 36 : 56;
     if (!stage.children.length) {
       for (let j = 0; j < N; j++) {
         const strip = document.createElement('span');
@@ -4173,6 +4220,191 @@
       swing.onfinish = () => { if (run === heroBadgeRun) badge.dataset.state = 'done'; };
     };
     requestAnimationFrame(tick);
+  }
+
+  // Corporate gift order: pick any mix of the three kits, give each one a recipient list (a CSV, at least 10 recipients; the count fills in from the file), choose
+  // a delivery week, and send the request. Nothing is sent from this prototype; the live site calculates shipping and emails a pay link.
+  (function initCorporateOrder() {
+    const view = views['corporate-gift-order'];
+    const form = document.getElementById('cgo-form');
+    if (!form) return;
+    const PRODUCTS = [
+      { id: 'eggsecutive', name: 'The Eggsecutive Sampler', price: 30, kits: {} },
+      { id: 'vip', name: 'The VIP Egg-sperience', price: 50, kits: { '24kit': 2 } },
+      { id: 'boardroom', name: 'The Boardroom Egg-stravaganza', price: 75, kits: { '36kit': 3 } },
+    ];
+    const MIN = 10;
+    const COLUMNS = ['First Name', 'Last Name', 'Email', 'Phone', 'Address', 'Address 2', 'City', 'State', 'Zip', 'Business (B) or Residential (R)'];
+    const SAMPLE_ROW = ['John', 'Doe', 'john.doe@example.com', '5551234567', '123 Main Street', 'Suite 100', 'Dallas', 'TX', '75001', 'B'];
+    const state = {};
+    PRODUCTS.forEach((p) => { state[p.id] = { rows: 0, file: '' }; });
+    const money = (n) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const el = (id) => document.getElementById(id);
+    const card = (id) => form.querySelector(`.cgo-card[data-product="${id}"]`);
+
+    // The flavors a kit can be filled with.
+    PRODUCTS.filter((p) => Object.keys(p.kits).length).forEach((p) => {
+      const list = el(`cgo-flavors-${p.id}`).querySelector('.cgo-flavor-list');
+      list.innerHTML = FLAVORS.map((f) => `<label class="cgo-flavor"><input type="checkbox" name="flavor-${p.id}" value="${f.id}"><span>${f.label}</span></label>`).join('');
+    });
+
+    // Delivery weeks: Monday to Sunday, starting with the first Monday that is at least five days away, twelve of them.
+    const week = el('cgo-week');
+    const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    (() => {
+      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 5);
+      d.setDate(d.getDate() + ((8 - d.getDay()) % 7));
+      for (let i = 0; i < 12; i++) {
+        const end = new Date(d); end.setDate(end.getDate() + 6);
+        const o = document.createElement('option');
+        o.value = d.toISOString().slice(0, 10);
+        o.textContent = `${fmt(d)} - ${fmt(end)}`;
+        week.append(o);
+        d.setDate(d.getDate() + 7);
+      }
+    })();
+
+    function csvRows(text) {
+      const rows = []; let row = []; let cell = ''; let q = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+        else if (c === '"') q = true;
+        else if (c === ',') { row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+        else cell += c;
+      }
+      if (cell || row.length) { row.push(cell); rows.push(row); }
+      return rows.filter((r) => r.some((x) => x.trim()));
+    }
+    const download = (name, rows) => {
+      const csv = rows.map((r) => r.map((x) => (/[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x)).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = name;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+    view.addEventListener('click', (e) => {
+      if (e.target.closest('[data-template]')) download('corporate-gifting-template.csv', [COLUMNS, SAMPLE_ROW]);
+      if (e.target.closest('[data-sample]')) download('corporate-gifting-sample.csv', [COLUMNS, SAMPLE_ROW]);
+    });
+
+    const cardError = (id, msg) => { const p = el(`cgo-error-${id}`); p.textContent = msg || ''; p.hidden = !msg; };
+    function option(id) { const r = card(id).querySelector('input[type="radio"]:checked'); return r ? r.value : ''; }
+    function need(id) { const p = PRODUCTS.find((x) => x.id === id); return p.kits[option(id)] || 0; }
+    function sync() {
+      const lines = []; let total = 0;
+      PRODUCTS.forEach((p) => {
+        const qty = Number(el(`cgo-qty-${p.id}`).value) || 0;
+        const fl = el(`cgo-flavors-${p.id}`);
+        const n = need(p.id);
+        if (fl) { fl.hidden = !n; if (n) el(`cgo-flavors-${p.id}-title`).textContent = `Choose ${n} flavors`; }
+        card(p.id).querySelectorAll('.cgo-options .radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('input').checked));
+        if (qty > 0) { lines.push({ p, qty, sum: qty * p.price }); total += qty * p.price; }
+      });
+      el('cgo-lines').innerHTML = lines.length
+        ? lines.map((l) => `<div class="cgo-line"><div><p class="cgo-line-name">Corporate Gift - ${l.p.name}</p><p class="cgo-line-sub">(${l.qty} recipients)</p></div><p class="cgo-line-sum">${money(l.sum)}</p></div>`).join('')
+        : '<p class="cgo-none">No items selected yet.</p>';
+      el('cgo-total').textContent = money(total);
+      return lines;
+    }
+
+    form.addEventListener('input', (e) => {
+      const c = e.target.closest('.cgo-card');
+      if (c) {
+        cardError(c.dataset.product, '');
+        if (e.target.matches('input[type="number"]')) setFieldError(e.target, '');
+        if (e.target.matches('input[type="checkbox"]')) {
+          const p = PRODUCTS.find((x) => x.id === c.dataset.product); const n = need(p.id);
+          const boxes = [...c.querySelectorAll('.cgo-flavor input')];
+          const picked = boxes.filter((b) => b.checked).length;
+          boxes.forEach((b) => { b.disabled = picked >= n && !b.checked; });
+        }
+      }
+      if (e.target === week) setFieldError(week, '');
+      el('cgo-form-error').hidden = true;
+      sync();
+    });
+    form.addEventListener('change', (e) => {
+      if (e.target.matches('input[type="radio"]')) {
+        const c = e.target.closest('.cgo-card');
+        c.querySelectorAll('.cgo-flavor input').forEach((b) => { b.checked = false; b.disabled = false; });
+        sync();
+      }
+      if (e.target.matches('input[type="file"]')) readFile(e.target);
+    });
+    function readFile(input) {
+      const id = input.id.replace('cgo-file-', '');
+      const file = input.files[0];
+      const stat = el(`cgo-filestat-${id}`);
+      const qty = el(`cgo-qty-${id}`);
+      state[id] = { rows: 0, file: '' };
+      stat.hidden = true; cardError(id, '');
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rows = csvRows(String(reader.result).replace(/^﻿/, ''));
+        const head = (rows[0] || []).map((x) => x.trim().toLowerCase());
+        const missing = ['first name', 'last name', 'email', 'address', 'zip'].filter((c) => !head.includes(c));
+        if (missing.length) { input.value = ''; cardError(id, `That file is missing a column: ${missing.map((m) => m.replace(/\b\w/g, (c) => c.toUpperCase())).join(', ')}. Use the template.`); sync(); return; }
+        const count = rows.length - 1;
+        if (count < MIN) { input.value = ''; cardError(id, `That file has ${count} recipient${count === 1 ? '' : 's'}. Each product needs at least ${MIN}.`); sync(); return; }
+        state[id] = { rows: count, file: file.name };
+        qty.value = String(count); setFieldError(qty, '');
+        stat.textContent = `${file.name}: ${count} recipients`; stat.hidden = false;
+        sync();
+      };
+      reader.readAsText(file);
+    }
+
+    function fail(message, target) {
+      const box = el('cgo-form-error');
+      box.textContent = message; box.hidden = false;
+      if (target) target.focus();
+    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let first = null; let any = false;
+      const flag = (node) => { if (!first) first = node; };
+      PRODUCTS.forEach((p) => {
+        cardError(p.id, '');
+        const qtyEl = el(`cgo-qty-${p.id}`);
+        const qty = Number(qtyEl.value) || 0;
+        if (!qty) return;
+        any = true;
+        if (qty < MIN) { setFieldError(qtyEl, `Minimum ${MIN} recipients per product.`); flag(qtyEl); return; }
+        if (state[p.id].rows !== qty) { cardError(p.id, 'Upload a CSV or set the number of recipients to 0.'); flag(el(`cgo-file-${p.id}`).labels[0]); return; }
+        const n = need(p.id);
+        if (n && card(p.id).querySelectorAll('.cgo-flavor input:checked').length !== n) { cardError(p.id, `Choose ${n} flavors for the kit.`); flag(card(p.id).querySelector('.cgo-flavor input')); }
+      });
+      if (!any) { fail('Pick at least one gift: set a number of recipients and upload their CSV.', el('cgo-qty-eggsecutive')); return; }
+      if (!week.value) { setFieldError(week, 'Choose a delivery week.'); flag(week); }
+      if (first) { first.focus(); return; }
+      const lines = sync();
+      el('cgo-done-lines').innerHTML = lines.map((l) => `<div class="cgo-line"><div><p class="cgo-line-name">Corporate Gift - ${l.p.name}${need(l.p.id) ? ` (${option(l.p.id) === '24kit' ? '24-count kit' : '36-count kit'}: ${[...card(l.p.id).querySelectorAll('.cgo-flavor input:checked')].map((b) => FLAVORS.find((f) => f.id === b.value).label).join(', ')})` : ''}</p><p class="cgo-line-sub">${l.qty} recipients</p></div><p class="cgo-line-sum">${money(l.sum)}</p></div>`).join('')
+        + `<div class="cgo-line"><div><p class="cgo-line-name">Delivery week</p><p class="cgo-line-sub">${week.options[week.selectedIndex].textContent}</p></div></div><div class="cgo-line"><div><p class="cgo-line-name">Estimated total</p></div><p class="cgo-line-sum">${el('cgo-total').textContent}</p></div>`;
+      form.hidden = true; view.querySelector('.cgo-how').hidden = true; el('cgo-done').hidden = false;
+      window.scrollTo(0, 0);
+      el('cgo-done').querySelector('h2').setAttribute('tabindex', '-1');
+      el('cgo-done').querySelector('h2').focus({ preventScroll: true });
+    });
+    el('cgo-again').addEventListener('click', () => {
+      form.reset();
+      PRODUCTS.forEach((p) => { state[p.id] = { rows: 0, file: '' }; el(`cgo-filestat-${p.id}`).hidden = true; cardError(p.id, ''); card(p.id).querySelectorAll('.cgo-flavor input').forEach((b) => { b.checked = false; b.disabled = false; }); });
+      form.hidden = false; view.querySelector('.cgo-how').hidden = false; el('cgo-done').hidden = true;
+      sync(); window.scrollTo(0, 0);
+    });
+    sync();
+  })();
+
+  // Gift Cards: the three header cards settle into their tilt each time the page is shown (taking the class off and putting it back restarts the animation).
+  function replayGiftStrip() {
+    const strip = document.querySelector('#view-gift-cards .gc-strip');
+    if (!strip) return;
+    strip.classList.remove('is-in');
+    void strip.offsetWidth;
+    strip.classList.add('is-in');
   }
 
   // About, hero: a clip of one flavor, picked at random each time the page is shown (never the one before), plays muted and looping inside the egg. It starts
@@ -4346,6 +4578,24 @@
     });
   }
 
+  // Egg bar request: the live site's contact form for booking a deviled egg bar. Nothing is sent from the prototype.
+  const eggBarForm = document.getElementById('egg-bar-form');
+  if (eggBarForm) {
+    const f = (name) => eggBarForm.elements[name];
+    ['name', 'email'].forEach((n) => f(n).addEventListener('input', () => { f(n).removeAttribute('aria-invalid'); setFieldError(f(n), ''); }));
+    eggBarForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateFields([
+        [f('name'), present, 'Enter your name.'],
+        [f('email'), isEmail, 'Enter a valid email so we can reply.'],
+      ])) return;
+      const ok = eggBarForm.querySelector('.page-success');
+      ok.textContent = `Thanks, ${firstNameOf(f('name').value)}. Your egg bar request is on its way. We'll reply by email.`;
+      ok.hidden = false;
+      eggBarForm.querySelectorAll('input, select, textarea, button').forEach((el) => { el.disabled = true; });
+    });
+  }
+
   // Gift cards: an amount, how it arrives, who it is for and from whom. The card on the right is the card as it will look, and Add puts it in
   // the bag the customer is ordering with (a gift card is not taxed and is never repriced for delivery).
   const giftForm = document.getElementById('gift-form');
@@ -4362,13 +4612,8 @@
     const email = gc.delivery === 'email';
     document.getElementById('gc-email-wrap').hidden = !email;
     document.getElementById('gc-date-wrap').hidden = !email;
-    document.getElementById('gc-card-amount').textContent = `$${gc.amount}`;
+    document.getElementById('gc-card-num').textContent = gc.amount;
     document.getElementById('gc-add').textContent = `Add to bag · ${money(gc.amount)}`;
-    document.getElementById('gc-pv-to').textContent = f.to.value.trim() || 'Recipient';
-    document.getElementById('gc-pv-from').textContent = f.from.value.trim() || 'You';
-    const [label, when] = giftWhen();
-    document.getElementById('gc-pv-when-label').textContent = label;
-    document.getElementById('gc-pv-when').textContent = when;
     const msg = document.getElementById('gc-pv-msg');
     msg.textContent = f.message.value.trim();
     msg.hidden = !msg.textContent;
@@ -4382,6 +4627,10 @@
       gc.amount = Number(chip.dataset.amount);
       document.querySelectorAll('#gc-amounts .chip').forEach((c) => { const on = c === chip; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); });
       syncGiftCard();
+      // The figure on the card swaps in (restarting its short animation).
+      const fig = document.getElementById('gc-card-amount');
+      fig.classList.remove('is-swap'); void fig.offsetWidth; fig.classList.add('is-swap');
+      document.getElementById('gc-stage').dispatchEvent(new Event('gc-nudge'));
     });
     giftForm.querySelectorAll('input[name="gc-delivery"]').forEach((input) => input.addEventListener('change', () => {
       gc.delivery = input.value;
@@ -4420,6 +4669,136 @@
     });
     document.getElementById('gc-view-bag').addEventListener('click', () => openCart(orderKind()));
   }
+
+  // Gift card preview, held in the hand. The card is a real 3D plane under a camera: at rest it lies flat on its shadow, and when it comes into view it lifts off the
+  // surface and floats, drifting a little. The pointer tilts it toward you with a moving highlight; pressing picks it up (it comes closer, the shadow falls away), dragging
+  // carries it with a little lag and turns it in your hand, and letting go throws it back with the speed of your hand and a springy settle. Every channel is its own
+  // damped spring, so nothing snaps. Reduced motion keeps the card flat and still.
+  (function initGiftCard3D() {
+    const stage = document.getElementById('gc-stage');
+    if (!stage || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const card = stage.querySelector('.gc-card');
+    const shadow = stage.querySelector('.gc-shadow');
+    stage.classList.add('is-3d');
+    const ch = (k, c, x = 0) => ({ x, v: 0, t: x, k, c });
+    const S = {
+      rx: ch(150, 13), ry: ch(150, 13), rz: ch(120, 12),
+      tx: ch(110, 14), ty: ch(110, 14), lift: ch(80, 11), idle: ch(40, 10),
+    };
+    let hover = false, down = false, visible = false, raf = 0, last = 0, t0 = 0;
+    let px = .5, py = .5;               // pointer inside the card, 0..1
+    let sx = 0, sy = 0, vx = 0, vy = 0, lastX = 0, lastY = 0, lastT = 0; // drag start and hand velocity
+    const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+    function aim() {
+      const idle = visible && !hover && !down;
+      S.idle.t = idle ? 1 : 0;
+      if (!visible) { S.lift.t = 0; S.rx.t = S.ry.t = S.rz.t = S.tx.t = S.ty.t = 0; return; }
+      if (down) {
+        const dx = lastX - sx, dy = lastY - sy;
+        S.lift.t = 1.25;
+        // On a narrow screen the card has only its gutters to move in: it never carries the page sideways.
+        const sr = stage.getBoundingClientRect(), grow = (1100 / (1100 - 87) - 1) * sr.width / 2 + 2;
+        S.tx.t = clamp(dx * .42, -clamp(sr.left - grow, 0, 70), clamp(window.innerWidth - sr.right - grow, 0, 70));
+        S.ty.t = clamp(dy * .42, -50, 50);
+        S.ry.t = clamp(dx * .16, -28, 28) + (px - .5) * 14;
+        S.rx.t = clamp(-dy * .16, -22, 22) - (py - .5) * 12;
+        S.rz.t = clamp(dx * .035, -7, 7);
+      } else if (hover) {
+        S.lift.t = .62;
+        S.tx.t = S.ty.t = S.rz.t = 0;
+        S.ry.t = (px - .5) * 2 * 13;
+        S.rx.t = -(py - .5) * 2 * 10;
+      } else {
+        S.lift.t = .5; // the resting float
+        S.tx.t = S.ty.t = S.rx.t = S.ry.t = S.rz.t = 0;
+      }
+    }
+
+    function frame(now) {
+      raf = 0;
+      if (!visible || document.hidden) { last = 0; return; }
+      const dt = Math.min((now - (last || now)) / 1000, 1 / 20); last = now;
+      if (!t0) t0 = now;
+      aim();
+      const steps = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / steps;
+      for (let i = 0; i < steps; i++) for (const s of Object.values(S)) {
+        s.v += ((s.t - s.x) * s.k - s.v * s.c) * h;
+        s.x += s.v * h;
+      }
+      // The float: slow, out of step on each axis so it never looks looped.
+      const sec = (now - t0) / 1000, f = S.idle.x;
+      const fx = Math.sin(sec * 1.05) * 1.7 * f, fy = Math.sin(sec * .8 + 1.3) * 2.3 * f, fz = Math.sin(sec * .65 + .4) * 1.1 * f, fl = Math.sin(sec * 1.2 + .9) * 4 * f;
+      const rx = S.rx.x + fx, ry = S.ry.x + fy, rz = S.rz.x + fz, L = Math.max(0, S.lift.x);
+      card.style.transform = `translate3d(${S.tx.x.toFixed(2)}px, ${(S.ty.x - fl).toFixed(2)}px, ${(L * 70).toFixed(2)}px) rotateX(${rx.toFixed(3)}deg) rotateY(${ry.toFixed(3)}deg) rotateZ(${rz.toFixed(3)}deg)`;
+      // The shadow is on the surface below: it slides away from the light as the card rises, softens and fades, and slides against the tilt.
+      const rise = L + fl / 30;
+      shadow.style.transform = `translate3d(${(S.tx.x * .55 - ry * 1.6).toFixed(2)}px, ${(8 + rise * 46 + S.ty.x * .3 + rx * 1.1).toFixed(2)}px, 0) scale(${(1 - rise * .06).toFixed(3)})`;
+      shadow.style.filter = `blur(${(6 + rise * 26).toFixed(1)}px)`;
+      shadow.style.opacity = Math.max(.16, .62 - rise * .26).toFixed(3);
+      // The highlight is a light fixed above and to the left: it slides across the face as the card turns, and the far edge falls into shade.
+      const tilt = clamp((Math.abs(rx) + Math.abs(ry)) / 26, 0, 1);
+      card.style.setProperty('--sx', `${(50 - ry * 3.2).toFixed(1)}%`);
+      card.style.setProperty('--sy', `${(28 + rx * 3).toFixed(1)}%`);
+      card.style.setProperty('--sa', (.1 + tilt * .38 + Math.min(L, 1.3) * .05).toFixed(3));
+      card.style.setProperty('--sd', (clamp(ry / 26, -1, 1) * .22).toFixed(3));
+      const moving = down || hover || visible; // the float keeps it live while it is in view
+      if (moving) raf = requestAnimationFrame(frame);
+    }
+    const kick = () => { if (!raf && visible && !document.hidden) { last = 0; raf = requestAnimationFrame(frame); } };
+
+    const local = (e) => {
+      const r = card.getBoundingClientRect();
+      // The card is tilted, so measure on the stage, which is not.
+      const s = stage.getBoundingClientRect();
+      px = clamp((e.clientX - s.left) / s.width, 0, 1);
+      py = clamp((e.clientY - s.top) / s.height, 0, 1);
+      return r;
+    };
+    stage.addEventListener('pointerenter', (e) => { if (e.pointerType === 'touch') return; hover = true; local(e); kick(); });
+    stage.addEventListener('pointermove', (e) => {
+      local(e);
+      if (down) {
+        const now = performance.now(), dtm = Math.max(1, now - lastT);
+        vx = vx * .6 + ((e.clientX - lastX) / dtm * 1000) * .4;
+        vy = vy * .6 + ((e.clientY - lastY) / dtm * 1000) * .4;
+        lastX = e.clientX; lastY = e.clientY; lastT = now;
+      } else if (e.pointerType !== 'touch') hover = true;
+      kick();
+    });
+    stage.addEventListener('pointerleave', (e) => { if (!down) { hover = false; kick(); } });
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      down = true; hover = true; stage.classList.add('is-held');
+      try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+      local(e); sx = lastX = e.clientX; sy = lastY = e.clientY; lastT = performance.now(); vx = vy = 0;
+      kick();
+    });
+    const release = (e) => {
+      if (!down) return;
+      down = false; stage.classList.remove('is-held');
+      try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
+      // It leaves the hand with the hand's speed, then the springs settle it back.
+      S.tx.v += clamp(vx, -900, 900) * .55; S.ty.v += clamp(vy, -900, 900) * .55;
+      S.ry.v += clamp(vx, -900, 900) * .06; S.rx.v -= clamp(vy, -900, 900) * .05;
+      if (e.type === 'pointercancel' || e.pointerType === 'touch') hover = false;
+      kick();
+    };
+    stage.addEventListener('pointerup', release);
+    stage.addEventListener('pointercancel', release);
+    stage.addEventListener('lostpointercapture', release);
+    // Picking a different amount flicks the card, as if the figure had been changed under your thumb.
+    stage.addEventListener('gc-nudge', () => { S.rx.v -= 55; S.lift.v += 2.2; kick(); });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => {
+        const was = visible; visible = entry.isIntersecting;
+        if (visible && !was) { t0 = 0; kick(); }        // it lifts off the surface when it arrives
+        if (!visible) { cancelAnimationFrame(raf); raf = 0; for (const s of Object.values(S)) { s.x = s.t = s.v = 0; } card.style.transform = ''; shadow.style.opacity = ''; }
+      }, { threshold: .55 }).observe(stage);
+    } else { visible = true; kick(); }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  })();
 
   // Which cart the open checkout belongs to — its back link returns there.
   let checkoutCart = 'pickup';
