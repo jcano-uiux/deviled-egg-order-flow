@@ -75,7 +75,7 @@
     img.className = 'shop-card-photo';
     // `loading` goes on before `src`: set after it, the browser has already started the download.
     img.loading = 'lazy';
-    // The first card photo of the Optimized Shipping page is upgraded to eager once that page is on screen (see setShipVersion).
+    // The first card photo of a Shipping page version is upgraded to eager once that page is on screen (see setShipVersion).
     if (item.thumb && item.thumb.eager) img.dataset.eager = '';
     img.decoding = 'async';
     img.alt = item.name;
@@ -493,7 +493,7 @@
     return v;
   }
   SHIPPING_KITS.forEach((k) => { PRODUCT_IMAGE_BY_NAME[k.name] = k.image; });
-  // The Optimized Shipping page's card photos: WebP cut to the 161px they show (and twice that), with the size set up front.
+  // The Distilled and Custom Shipping pages' card photos: WebP cut to the 161px they show (and twice that), with the size set up front.
   const SHIPPING_KITS_OPT = SHIPPING_KITS.map((k) => {
     const sized = { 'kit-sampler': 'kit-sampler', 'kit-24': 'kit-24' }[k.id];
     // The photo's average color, shown behind it while it loads, so the card has its color before the picture arrives.
@@ -510,7 +510,8 @@
   try {
     const saved = JSON.parse(localStorage.getItem('deg-carts') || 'null');
     if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
-      CART_KINDS.forEach((kind) => { if (Array.isArray(saved[kind])) state.carts[kind] = saved[kind].map(withImage); });
+      // (A gift card used to sit in these bags; it has its own checkout now, so any left from an earlier visit are dropped.)
+      CART_KINDS.forEach((kind) => { if (Array.isArray(saved[kind])) state.carts[kind] = saved[kind].filter((item) => !item.giftCard).map(withImage); });
       // A Catering cart saved before catering joined the Pickup and Delivery bags moves into the one in use.
       if (Array.isArray(saved.catering)) savedCatering = saved.catering.map(withImage);
     } else {
@@ -580,7 +581,7 @@
 
   function addToCart(entry) {
     // The pickup price travels with the line, so moving the bag between pickup and delivery reprices it exactly.
-    if (!entry.catering && !entry.giftCard) entry.basePrice = (entry.cart || orderKind()) === 'delivery' ? round2(entry.price / DELIVERY_MARKUP) : entry.price;
+    if (!entry.catering) entry.basePrice = (entry.cart || orderKind()) === 'delivery' ? round2(entry.price / DELIVERY_MARKUP) : entry.price;
     const cart = state.carts[entry.cart || orderKind()];
     const before = cartCount();
     const existing = cart.find((c) => c.key === entry.key);
@@ -725,8 +726,7 @@
     renderShopGrid('sandwich-wrap-grid', SANDWICH_WRAP, 'wrap', 'Sandwich/Wrap');
     renderShopGrid('ship-kits-grid', SHIPPING_KITS, 'kit', 'Shipping kit');
     renderShipKits('ship-kits-grid-d', SHIPPING_KITS_OPT);
-    renderShipKits('ship-kits-grid-p', SHIPPING_KITS);
-    renderShipKits('ship-kits-grid-o', SHIPPING_KITS_OPT);
+    renderShopGrid('ship-kits-grid-c', SHIPPING_KITS_OPT, 'kit', 'Shipping kit');
     renderShipHoliday();
     renderShopGrid('bagels-grid', BAGEL_ITEMS, 'bagel', 'Bagel');
     renderHomeFeatured();
@@ -1388,18 +1388,22 @@
     { view: document.getElementById('view-menu'), bar: document.querySelector('#view-menu .drawer-nav-mobile'), anchor: document.getElementById('featured-items') },
     { view: document.getElementById('view-catering'), bar: document.querySelector('#view-catering .drawer-nav-mobile'), anchor: document.getElementById('cater-section-boxes') },
     { view: document.getElementById('view-shipping'), bar: document.querySelector('#view-shipping .drawer-nav-mobile'), anchor: document.getElementById('ship-section-kits') },
+    // Shipping, Custom: the bar is there from the moment the Shipping Kits section reaches the header until the Holiday Windows section has gone past.
+    { view: document.getElementById('view-shipping'), bar: document.querySelector('#view-shipping .ship-c .drawer-nav-mobile'), anchor: document.getElementById('ship-section-kits-c'), from: 'top', until: document.getElementById('ship-section-holiday-c') },
   ];
   const REVEAL_LINE_PX = 69;
   let revealTicking = false;
   function updateBarReveal() {
     revealTicking = false;
-    REVEAL_BARS.forEach(({ view, bar, anchor }) => {
+    REVEAL_BARS.forEach(({ view, bar, anchor, from, until }) => {
       if (!bar || !anchor) return;
       // A hidden page has no layout (its rect is all zeros), which would read as "scrolled past the anchor".
       if (view.hidden) { bar.classList.remove('is-revealed'); return; }
       const rect = anchor.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
-      bar.classList.toggle('is-revealed', midpoint <= REVEAL_LINE_PX);
+      let on = (from === 'top' ? rect.top : midpoint) <= REVEAL_LINE_PX + (from === 'top' ? 24 : 0);
+      if (on && until) on = until.getBoundingClientRect().bottom > REVEAL_LINE_PX + 80;
+      bar.classList.toggle('is-revealed', on);
     });
   }
   function onScrollForReveal() {
@@ -1605,7 +1609,7 @@
 
   // A tile's picture: the flavor's clip (a poster until it plays), or a still when it has none: its own photo (the catering lists), or the
   // placeholder egg. The "i" in the corner opens the flavor sheet either way.
-  function fvMedia(f) {
+  function fvMedia(f, infoOpts = {}) {
     const clip = !f.photo && FLAVOR_MEDIA[f.id];
     const wrap = document.createElement('div');
     wrap.dataset.label = f.label;
@@ -1620,7 +1624,8 @@
         wrap.classList.toggle('is-paused', video.paused);
         button.setAttribute('aria-label', `${video.paused ? 'Play' : 'Pause'} the ${wrap.dataset.label} video`);
       };
-      video.addEventListener('play', paint);
+      // A clip the visitor paused stays paused: whatever starts it (the observer, a late-loading source, the sheet closing) is undone here.
+      video.addEventListener('play', () => { if (video.dataset.userPaused === '1') video.pause(); else paint(); });
       video.addEventListener('pause', paint);
       button.addEventListener('click', () => {
         if (video.paused) { video.dataset.userPaused = '0'; video.dataset.userPlayed = '1'; fvPlay(video); } else { video.dataset.userPaused = '1'; video.pause(); }
@@ -1636,7 +1641,7 @@
     info.setAttribute('aria-label', `About ${f.label}: ${clip ? 'watch the full video and ' : ''}read the description`);
     info.setAttribute('aria-haspopup', 'dialog');
     info.innerHTML = FLAVOR_INFO_ICON;
-    info.addEventListener('click', (e) => { e.stopPropagation(); openFlavorInfo(f, info); });
+    info.addEventListener('click', (e) => { e.stopPropagation(); openFlavorInfo(f, info, infoOpts); });
     wrap.appendChild(info);
     if (clip && fv.observer) fv.observer.observe(wrap);
     return wrap;
@@ -1650,23 +1655,38 @@
   const FLAVOR_INFO_PREV = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
   const FLAVOR_INFO_NEXT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
+  // On a wide screen the flavor page takes over the open modal's own panel (no second layer to stack): the clip runs the full height on the left, the
+  // words and the controls are on the right. Below this width it stays the bottom sheet.
+  const flavorDesktop = window.matchMedia('(min-width: 901px)');
+  flavorDesktop.addEventListener('change', () => closeFlavorInfo(false));
+
   function openFlavorInfo(f, opener, opts = {}) {
     closeFlavorInfo(false);
     const list = opts.list || [f];
     let index = opts.index || 0;
+    const takeover = flavorDesktop.matches;
     const root = document.createElement('div');
-    root.className = 'flavor-info';
+    root.className = takeover ? 'flavor-info is-takeover' : 'flavor-info';
     root.innerHTML = `
-      <div class="flavor-info-backdrop"></div>
+      ${takeover ? '' : '<div class="flavor-info-backdrop"></div>'}
       <div class="flavor-info-sheet" role="dialog" aria-modal="true" aria-labelledby="flavor-info-title">
-        <button class="close-btn flavor-info-close" type="button" aria-label="Close">${document.getElementById('close-modal').innerHTML}</button>
+        <button class="close-btn flavor-info-close" type="button" aria-label="${takeover ? 'Back to all flavors' : 'Close'}">${document.getElementById('close-modal').innerHTML}</button>
         <div class="flavor-info-stage"></div>
       </div>`;
-    document.body.appendChild(root);
-    itemModal.inert = true;
-    itemModal.classList.add('is-under');
+    let inertEls = [];
+    if (takeover) {
+      // It lives inside the modal's panel, which stays open (and keeps its scroll place) underneath; only what is behind it goes inert.
+      const inner = itemModal.querySelector('.item-modal-inner');
+      inner.appendChild(root);
+      inertEls = [...inner.children].filter((el) => el !== root);
+      inertEls.forEach((el) => { el.inert = true; });
+    } else {
+      document.body.appendChild(root);
+      itemModal.inert = true;
+      itemModal.classList.add('is-under');
+    }
     const stage = root.querySelector('.flavor-info-stage');
-    const info = { root, video: null, getOpener: () => (opts.openerFor ? opts.openerFor(index) : opener), step: null };
+    const info = { root, video: null, takeover, inertEls, getOpener: () => (opts.openerFor ? opts.openerFor(index) : opener), step: null };
     flavorInfo = info;
 
     // One flavor's media and copy; stepping replaces both.
@@ -1678,28 +1698,45 @@
       // A flavor that carries its own description (the catering lists) shows it once, as the text; the rest show calories above theirs.
       const stat = opts.noStat || cur.desc ? '' : flavorStat(cur);
       if (info.video) info.video.pause();
-      stage.innerHTML = `
-        ${media
-          ? `<button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>`
-          : cur.photo
-            ? `<div class="flavor-watch-media flavor-info-media flavor-watch-photo"><img src="${cur.photo}" alt="" decoding="async"></div>`
-            : '<div class="flavor-watch-media flavor-info-media flavor-watch-placeholder"><img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Video coming soon</span></div>'}
+      const mediaHTML = media
+        ? `<button class="flavor-watch-media flavor-info-media" type="button"><video muted loop playsinline preload="auto" poster="${file}.jpg"><source src="${file}.mp4" type="video/mp4"></video><span class="flavor-watch-play" aria-hidden="true">${PLAY_ICON}</span></button>`
+        : cur.photo
+          ? `<div class="flavor-watch-media flavor-info-media flavor-watch-photo"><img src="${cur.photo}" alt="" decoding="async"></div>`
+          : '<div class="flavor-watch-media flavor-info-media flavor-watch-placeholder"><img src="assets/flavors/placeholder.svg" alt="" width="56" height="56"><span>Video coming soon</span></div>';
+      const nameHTML = `<h2 id="flavor-info-title">${escapeHTML(cur.label)}</h2>${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}<p>${escapeHTML(media ? media.desc : cur.desc || 'The video and description are coming soon.')}</p>`;
+      const navHTML = list.length > 1 ? `
+          <div class="flavor-info-nav">
+            <button class="flavor-info-step" type="button" data-step="-1"${i === 0 ? ' disabled' : ''}>${FLAVOR_INFO_PREV}Previous</button>
+            <span class="flavor-info-count" aria-live="polite">${i + 1} of ${list.length}</span>
+            <button class="flavor-info-step" type="button" data-step="1"${i === list.length - 1 ? ' disabled' : ''}>Next${FLAVOR_INFO_NEXT}</button>
+          </div>` : '';
+      stage.innerHTML = takeover ? `
+        ${mediaHTML}
         <div class="flavor-info-copy">
-          <h2 id="flavor-info-title">${escapeHTML(cur.label)}</h2>
-          ${stat ? `<span class="flavor-info-stat">${escapeHTML(stat)}</span>` : ''}
-          <p>${escapeHTML(media ? media.desc : cur.desc || 'The video and description are coming soon.')}</p>
+          <div class="flavor-info-body">
+            <button class="flavor-info-back" type="button">${FLAVOR_INFO_PREV}All flavors</button>
+            ${nameHTML}
+            ${opts.customize ? `
+            <div class="flavor-info-custom">
+              <p class="flavor-info-custom-note" hidden>Add this flavor to your pack to customize it.</p>
+              <div class="flavor-exclusions" hidden></div>
+            </div>` : ''}
+          </div>
+          <div class="flavor-info-foot">
+            ${navHTML}
+            <button class="pill-btn dark flavor-info-done" type="button">Done</button>
+          </div>
+        </div>` : `
+        ${mediaHTML}
+        <div class="flavor-info-copy">
+          ${nameHTML}
           ${opts.customize ? `
           <div class="flavor-info-custom">
             <p class="flavor-info-custom-note" hidden>Add this flavor to your pack to customize it.</p>
             <div class="flavor-exclusions" hidden></div>
             <button class="pill-btn dark full flavor-info-done" type="button">Done</button>
           </div>` : ''}
-          ${list.length > 1 ? `
-          <div class="flavor-info-nav">
-            <button class="flavor-info-step" type="button" data-step="-1"${i === 0 ? ' disabled' : ''}>${FLAVOR_INFO_PREV}Previous</button>
-            <span class="flavor-info-count" aria-live="polite">${i + 1} of ${list.length}</span>
-            <button class="flavor-info-step" type="button" data-step="1"${i === list.length - 1 ? ' disabled' : ''}>Next${FLAVOR_INFO_NEXT}</button>
-          </div>` : ''}
+          ${navHTML}
         </div>`;
       stage.querySelectorAll('.flavor-info-step').forEach((btn) => btn.addEventListener('click', () => info.step(Number(btn.dataset.step))));
       if (opts.customize) {
@@ -1708,8 +1745,11 @@
         const qty = state.modalFlavorQty[cur.id] || 0;
         if (has && qty > 0) fvSyncExclusions(box, cur, qty, () => updateFlavorVariant());
         else if (has) stage.querySelector('.flavor-info-custom-note').hidden = false;
-        stage.querySelector('.flavor-info-done').addEventListener('click', () => closeFlavorInfo());
       }
+      const done = stage.querySelector('.flavor-info-done');
+      if (done) done.addEventListener('click', () => closeFlavorInfo());
+      const back = stage.querySelector('.flavor-info-back');
+      if (back) back.addEventListener('click', () => closeFlavorInfo());
       const player = stage.querySelector('button.flavor-info-media');
       info.video = player ? player.querySelector('video') : null;
       if (player) {
@@ -1730,27 +1770,35 @@
       if (next < 0 || next >= list.length) return;
       const hadFocus = stage.contains(document.activeElement);
       show(next);
+      // Stepping on a wide screen is a short crossfade; the sheet just scrolls back to its top.
+      if (takeover && !flavorReduceMotion.matches) { stage.classList.remove('is-swap'); void stage.offsetWidth; stage.classList.add('is-swap'); }
       stage.parentElement.scrollTop = 0;
+      const body = stage.querySelector('.flavor-info-body');
+      if (body) body.scrollTop = 0;
       // The button that was pressed is replaced, so focus goes to the same direction's button (or the other one at an end).
       if (hadFocus) (stage.querySelector(`.flavor-info-step[data-step="${d}"]:not([disabled])`) || stage.querySelector('.flavor-info-step:not([disabled])') || root.querySelector('.flavor-info-close')).focus();
     };
     show(index);
     // Opened from the tile's chip: the ingredient list is the point, so it is brought into view.
     if (opts.scrollToCustom) { const box = stage.querySelector('.flavor-info-custom'); if (box) box.scrollIntoView({ block: 'center' }); }
-    root.querySelector('.flavor-info-backdrop').addEventListener('click', () => closeFlavorInfo());
+    const backdrop = root.querySelector('.flavor-info-backdrop');
+    if (backdrop) backdrop.addEventListener('click', () => closeFlavorInfo());
     root.querySelector('.flavor-info-close').addEventListener('click', () => closeFlavorInfo());
     root.querySelector('.flavor-info-close').focus();
   }
 
   function closeFlavorInfo(restoreFocus = true) {
     if (!flavorInfo) return;
-    const { root, video, getOpener } = flavorInfo;
+    const { root, video, getOpener, takeover, inertEls } = flavorInfo;
     flavorInfo = null;
     if (video) video.pause();
-    itemModal.inert = false;
-    itemModal.classList.remove('is-under');
-    // It slides back down (at once when the modal itself is closing or motion is reduced).
-    if (restoreFocus && !flavorReduceMotion.matches) { root.classList.add('is-closing'); window.setTimeout(() => root.remove(), 220); } else root.remove();
+    if (takeover) inertEls.forEach((el) => { el.inert = false; });
+    else {
+      itemModal.inert = false;
+      itemModal.classList.remove('is-under');
+    }
+    // It slides back down, or fades out on a wide screen (at once when the modal itself is closing or motion is reduced).
+    if (restoreFocus && !flavorReduceMotion.matches) { root.classList.add('is-closing'); window.setTimeout(() => root.remove(), takeover ? 180 : 220); } else root.remove();
     const opener = getOpener();
     if (restoreFocus && opener && opener.isConnected) opener.focus();
   }
@@ -2085,9 +2133,9 @@
     document.getElementById('close-modal').focus();
   }
 
-  // The Sampler's flavors, each a tile: the clip's still, a play mark and the name under it. A tap opens the flavor info sheet on that
-  // flavor, with Previous and Next through all of them. Nothing plays in the grid and no clip loads until the sheet opens it; a flavor
-  // with no clip yet (Gyro, BBQ Chicken) shows the placeholder egg and the sheet says its video is coming.
+  // The Sampler's flavors, in the flavor picker's cards: the clip playing by itself while it is on screen, the name and the calories under it, the "i"
+  // opening the flavor info with Previous and Next through all of them. No stepper: the kit's flavors are fixed. A flavor with no clip yet (Gyro,
+  // BBQ Chicken) shows the placeholder egg and the sheet says its video is coming.
   const SAMPLER_CLIPS = {
     'Traditional': 'traditional', 'Everything Seasoning': 'everything-seasoning', 'Smoked Salmon': 'smoked-salmon',
     'South of the Border': 'south-of-the-border', 'Sriracha Bacon': 'sriracha-bacon', 'Jalapeño Popper': 'jalapeno-popper',
@@ -2096,18 +2144,32 @@
     'Chicken Caesar': 'chicken-caesar', 'Cheeseburger': 'cheeseburger',
   };
   function renderFixedFlavors(names) {
-    const flavors = names.map((label) => ({ id: SAMPLER_CLIPS[label] || null, label }));
     const list = document.getElementById('fixed-flavors-list');
-    document.getElementById('fixed-flavors-sub').textContent = `18 deviled eggs in ${names.length} flavors. Tap one to watch it.`;
-    list.innerHTML = flavors.map((f, i) => {
-      const media = FLAVOR_MEDIA[f.id];
-      return `<li><button class="sampler-tile${media ? '' : ' is-empty'}" type="button" data-i="${i}" aria-haspopup="dialog" aria-label="${media ? 'Watch the ' : 'Details for '}${escapeHTML(f.label)}${media ? ' video' : ''}">
-        <span class="sampler-tile-media"><img src="${media ? `assets/flavors/${media.file}.jpg` : 'assets/flavors/placeholder.svg'}" alt="" width="${media ? 360 : 56}" height="${media ? 540 : 56}" loading="lazy" decoding="async">${media ? `<span class="sampler-tile-play" aria-hidden="true">${PLAY_ICON}</span>` : ''}</span>
-        <span class="sampler-tile-name">${escapeHTML(f.label)}</span>
-      </button></li>`;
-    }).join('');
-    const tiles = [...list.querySelectorAll('.sampler-tile')];
-    tiles.forEach((tile, i) => tile.addEventListener('click', () => openFlavorInfo(flavors[i], tile, { list: flavors, index: i, noStat: true, openerFor: (j) => tiles[j] })));
+    if (!names.length) { list.innerHTML = ''; return; }
+    const flavors = names.map((label) => ({ id: SAMPLER_CLIPS[label] || null, label }));
+    document.getElementById('fixed-flavors-sub').textContent = `18 deviled eggs in ${names.length} flavors.`;
+    fvDispose();
+    list.innerHTML = '';
+    fv.root = list;
+    fv.observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      const video = entry.target.querySelector('video');
+      if (!video) return;
+      if (entry.intersectionRatio >= 0.55) fvPlay(video); else video.pause();
+    }), { root: document.querySelector('#item-modal .item-modal-scroll'), threshold: [0, 0.55] });
+    const tiles = [];
+    flavors.forEach((f, i) => {
+      const el = document.createElement('div');
+      el.className = 'fv-tile';
+      const body = document.createElement('div');
+      body.className = 'fv-body';
+      body.innerHTML = '<span class="fv-name"></span><span class="fv-stat"></span>';
+      body.querySelector('.fv-name').textContent = f.label;
+      body.querySelector('.fv-stat').textContent = pairStat(f);
+      el.append(fvMedia(f, { list: flavors, index: i, noStat: true, openerFor: (j) => tiles[j].querySelector('.fv-info') }), body);
+      tiles.push(el);
+      list.appendChild(el);
+    });
+    fvKick();
   }
 
   function closeDozenModal() {
@@ -3278,8 +3340,7 @@
   document.getElementById('close-cart').addEventListener('click', closeCart);
   cartBackdrop.addEventListener('click', closeCart);
 
-  // A gift card is not taxed when it is bought.
-  const taxableSubtotal = (kind) => state.carts[kind].reduce((sum, item) => sum + (item.giftCard ? 0 : lineTotal(item)), 0);
+  const taxableSubtotal = (kind) => state.carts[kind].reduce((sum, item) => sum + lineTotal(item), 0);
 
   function computeTotals() {
     const subtotal = cartSubtotal('pickup');
@@ -3485,9 +3546,10 @@
     terms: document.getElementById('view-terms'),
     'ship-checkout': document.getElementById('view-ship-checkout'),
     'delivery-checkout': document.getElementById('view-delivery-checkout'),
+    'gift-checkout': document.getElementById('view-gift-checkout'),
   };
   // Each cart checks out on its own page; all of them swap the site header for the checkout header.
-  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'delivery-checkout'];
+  const CHECKOUT_VIEWS = ['checkout', 'ship-checkout', 'delivery-checkout', 'gift-checkout'];
   const CHECKOUT_VIEW_FOR = { pickup: 'checkout', delivery: 'delivery-checkout', shipping: 'ship-checkout' };
   const PAGE_FOR_CART = { pickup: 'order', delivery: 'order', shipping: 'shipping' };
 
@@ -3514,6 +3576,7 @@
     'delivery-checkout': `Secure Checkout, Delivery — ${SITE_NAME}`,
     checkout: `Secure Checkout — ${SITE_NAME}`,
     'ship-checkout': `Secure Checkout, Nationwide Shipping — ${SITE_NAME}`,
+    'gift-checkout': `Secure Checkout, Gift card — ${SITE_NAME}`,
     confirmation: `Order confirmed — ${SITE_NAME}`,
   };
 
@@ -3550,6 +3613,7 @@
     if (name === 'gift-cards') syncGiftCard();
     if (name === 'shipping-returns' || name === 'privacy' || name === 'terms') views[name].dispatchEvent(new Event('pol:shown'));
     if (name === 'delivery-checkout') setSummaryOpen(document.getElementById('dc-toggle-summary'), true);
+    if (name === 'gift-checkout') setSummaryOpen(document.getElementById('gk-toggle-summary'), true);
     if (name === 'checkout') renderCheckoutMap('pickup');
     if (name === 'delivery-checkout') renderCheckoutMap('delivery');
     document.body.classList.toggle('is-checkout', CHECKOUT_VIEWS.includes(name));
@@ -3581,10 +3645,10 @@
 
   // The URL names the page on screen (#shipping, #menu, …), so a reload or a shared link lands where the
   // customer is. Checkout and confirmation keep the page they came from. Home is the bare URL.
-  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'contact', 'flavors', 'gift-cards', 'about', 'franchise', 'egg-bar', 'corporate-gifting', 'corporate-gift-order', 'shipping-returns', 'privacy', 'terms', 'checkout', 'ship-checkout', 'delivery-checkout', 'confirmation'];
+  const PAGE_VIEWS = ['home', 'location-picker', 'menu', 'order', 'shipping', 'catering', 'contact', 'flavors', 'gift-cards', 'about', 'franchise', 'egg-bar', 'corporate-gifting', 'corporate-gift-order', 'shipping-returns', 'privacy', 'terms', 'checkout', 'ship-checkout', 'delivery-checkout', 'gift-checkout', 'confirmation'];
   // Checkout and confirmation have addresses of their own: reached from a page they are pushed onto the history, so
   // Back returns to that page; a link to one with nothing to check out goes back to the page its cart belongs to.
-  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', confirmation: '#confirmation' };
+  const PAGE_HASH_OF = { checkout: '#checkout', 'ship-checkout': '#checkout/shipping', 'delivery-checkout': '#checkout/delivery', 'gift-checkout': '#checkout/gift', confirmation: '#confirmation' };
   // Going to a page on purpose adds a history entry, so Back returns to the page the customer came from (Home, a store page, the
   // menu). Replacing is only for tidying the address while the app starts up, or after a redirect.
   let pageHistoryReady = false;
@@ -3961,7 +4025,7 @@
     if (base === '#delivery') { showView('home'); startDelivery(); return; }
     if (base === '#store') { showStorePage(group); return; }
     let view = PAGE_HASHES[base] || 'home';
-    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'delivery' ? 'delivery-checkout' : 'checkout';
+    if (base === '#checkout') view = group === 'shipping' ? 'ship-checkout' : group === 'delivery' ? 'delivery-checkout' : group === 'gift' ? 'gift-checkout' : 'checkout';
     if (CHECKOUT_VIEWS.includes(view)) { openCheckoutFromLink(view); return; }
     showView(view);
     if (view === 'shipping' && group) setShipVersion(group);
@@ -4596,8 +4660,8 @@
     });
   }
 
-  // Gift cards: an amount, how it arrives, who it is for and from whom. The card on the right is the card as it will look, and Add puts it in
-  // the bag the customer is ordering with (a gift card is not taxed and is never repriced for delivery).
+  // Gift cards: an amount, how it arrives, who it is for and from whom. The card on the right is the card as it will look, and Continue opens
+  // its own short checkout (Review and pay). A gift card never goes in the food bag: it has no store, time or address, no tip, and no tax.
   const giftForm = document.getElementById('gift-form');
   const gc = { amount: 50, delivery: 'email' };
   function giftWhen() {
@@ -4613,7 +4677,7 @@
     document.getElementById('gc-email-wrap').hidden = !email;
     document.getElementById('gc-date-wrap').hidden = !email;
     document.getElementById('gc-card-num').textContent = gc.amount;
-    document.getElementById('gc-add').textContent = `Add to bag · ${money(gc.amount)}`;
+    document.getElementById('gc-add').textContent = `Continue · ${money(gc.amount)}`;
     const msg = document.getElementById('gc-pv-msg');
     msg.textContent = f.message.value.trim();
     msg.hidden = !msg.textContent;
@@ -4653,22 +4717,88 @@
         bad[0].focus();
         return;
       }
-      const [, when] = giftWhen();
-      const note = f.message.value.trim();
-      addToCart({
-        cart: orderKind(), giftCard: true, key: `gift-${Date.now()}`, name: 'DECO Gift Card',
-        sub: `${money(gc.amount)} · ${email ? `Email to ${f.to.value.trim()}, ${when.toLowerCase().replace(/, by email$/, '')}` : `Print at home for ${f.to.value.trim()}`}${note ? ` · “${note}”` : ''}`,
-        price: gc.amount, qty: 1, image: 'assets/pages/gift-card.webp',
-      });
-      landCartPop(document.getElementById('open-cart'), document.getElementById('cart-badge'));
-      giftForm.querySelector('.field-error').hidden = true;
-      document.querySelector('#view-gift-cards .gc-added').hidden = false;
-      // The next card starts fresh for someone else; the sender and the amount stay.
-      f.to.value = ''; f.toEmail.value = ''; f.message.value = '';
-      syncGiftCard();
+      const [whenLabel, when] = giftWhen();
+      giftOrder = {
+        amount: gc.amount, delivery: gc.delivery, to: f.to.value.trim(), toEmail: f.toEmail.value.trim(), from: f.from.value.trim(),
+        message: f.message.value.trim(), whenLabel, when,
+      };
+      saveGiftOrder();
+      renderGiftCheckout();
+      showView('gift-checkout');
     });
-    document.getElementById('gc-view-bag').addEventListener('click', () => openCart(orderKind()));
   }
+
+  // The card being bought, kept for the visit so a reload on the checkout address does not lose it.
+  const GIFT_ORDER_KEY = 'deg-gift-order';
+  let giftOrder = null;
+  function saveGiftOrder() { try { sessionStorage.setItem(GIFT_ORDER_KEY, JSON.stringify(giftOrder)); } catch (_) {} }
+  function loadGiftOrder() {
+    if (!giftOrder) { try { giftOrder = JSON.parse(sessionStorage.getItem(GIFT_ORDER_KEY) || 'null'); } catch (_) { giftOrder = null; } }
+    return giftOrder;
+  }
+  const gkEmail = document.getElementById('gk-email');
+  function renderGiftCheckout() {
+    const g = loadGiftOrder();
+    if (!g) return;
+    const byEmail = g.delivery === 'email';
+    document.getElementById('gk-thumb-num').textContent = g.amount;
+    document.getElementById('gk-to').innerHTML = byEmail ? `${escapeHTML(g.to)}<br><span class="gk-sub">${escapeHTML(g.toEmail)}</span>` : escapeHTML(g.to);
+    document.getElementById('gk-from').textContent = g.from;
+    document.getElementById('gk-when-label').textContent = g.whenLabel;
+    document.getElementById('gk-when').textContent = g.when;
+    document.getElementById('gk-msg').textContent = g.message;
+    document.getElementById('gk-msg-row').hidden = !g.message;
+    document.getElementById('gk-msg-rule').hidden = !g.message;
+    document.getElementById('gk-email-note').textContent = byEmail
+      ? 'Your receipt goes here.'
+      : 'We\u2019ll send the printable card and your receipt here.';
+    if (!gkEmail.value) gkEmail.value = ['co-email', 'dc-email', 'sc-email'].map((id) => document.getElementById(id).value).find(Boolean) || '';
+    document.getElementById('gk-items').innerHTML = `<div class="drawer-item"><span class="gk-item-thumb" aria-hidden="true"><img src="assets/pages/gift-preview.webp" alt="" width="56" height="56"></span><div class="drawer-item-body"><span class="drawer-item-name">DECO Gift Card</span><span class="drawer-item-sub">To ${escapeHTML(g.to)} · ${escapeHTML(g.when)}</span><span class="drawer-item-price">${money(g.amount)}</span></div></div>`;
+    document.getElementById('gk-subtotal').textContent = money(g.amount);
+    document.getElementById('gk-total').textContent = money(g.amount);
+    document.getElementById('gk-pay').textContent = `Pay ${money(g.amount)}`;
+    document.getElementById('gk-pay-note').textContent = byEmail
+      ? `We\u2019ll email the card to ${g.to} ${g.when.startsWith('Today') ? 'as soon as you pay' : `on ${g.when.replace(/, by email$/, '')}`}.`
+      : 'We\u2019ll email a printable card to you as soon as you pay.';
+  }
+  document.getElementById('gk-edit').addEventListener('click', () => showView('gift-cards'));
+  let payingGift = false;
+  document.getElementById('gk-pay').addEventListener('click', () => {
+    if (!giftOrder || payingGift) return;
+    if (!validateFields([[gkEmail, isEmail, 'Enter a valid email so we can send your receipt.']])) return;
+    const g = giftOrder;
+    const btn = document.getElementById('gk-pay');
+    payingGift = true; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = 'Paying\u2026';
+    announceCheckout('Placing your order\u2026');
+    window.setTimeout(() => {
+      payingGift = false; btn.disabled = false; btn.removeAttribute('aria-busy');
+      const byEmail = g.delivery === 'email';
+      const today = g.when.startsWith('Today');
+      const whenText = byEmail ? (today ? 'today' : `on ${g.when.replace(/, by email$/, '')}`) : '';
+      giftOrder = null;
+      try { sessionStorage.removeItem(GIFT_ORDER_KEY); } catch (_) {}
+      // The next card starts fresh for someone else; the sender and the amount stay.
+      giftForm.elements.to.value = ''; giftForm.elements.toEmail.value = ''; giftForm.elements.message.value = '';
+      giftForm.elements.date.value = '';
+      syncGiftCard();
+      showConfirmation({
+        gift: true,
+        title: byEmail ? (today ? 'Gift card sent!' : 'Gift card scheduled!') : 'Your gift card is ready!',
+        number: orderNumber(),
+        subHTML: byEmail
+          ? `Order {number} · A <strong>${money(g.amount)}</strong> gift card for <strong>${escapeHTML(g.to)}</strong> ${today ? 'is on its way' : 'goes out'} ${whenText}. Your receipt is in your inbox.`
+          : `Order {number} · Your <strong>${money(g.amount)}</strong> gift card for <strong>${escapeHTML(g.to)}</strong> is in your inbox, ready to print. Your receipt is there too.`,
+        steps: ['', ''],
+        name: g.from,
+        cheer: 'Good egg.',
+        items: [{ label: 'DECO Gift Card', sub: `To ${escapeHTML(g.to)} · ${escapeHTML(g.when)}`, amount: money(g.amount) }],
+        total: g.amount,
+        cardHTML: `${MAIL_ICON}<span>${byEmail ? `${escapeHTML(g.to)}<br>${escapeHTML(g.toEmail)}` : `Printable card sent to<br>${escapeHTML(gkEmail.value.trim())}`}${g.message ? `<br><em class="gk-quote">\u201c${escapeHTML(g.message)}\u201d</em>` : ''}</span>`,
+        backLabel: '\u2190 Back to home', backView: 'home',
+      });
+    }, 900);
+  });
+
 
   // Gift card preview, held in the hand. The card is a real 3D plane under a camera: at rest it lies flat on its shadow, and when it comes into view it lifts off the
   // surface and floats, drifting a little. The pointer tilts it toward you with a moving highlight; pressing picks it up (it comes closer, the shadow falls away), dragging
@@ -4825,6 +4955,8 @@
   // An address that points at a checkout (a bookmark, Back, a shared link) only opens it when there is something to
   // pay for; otherwise it lands on the page that cart is filled from.
   function openCheckoutFromLink(view) {
+    // The gift card checkout is its own flow: it opens only with a card built on the Gift Cards page.
+    if (view === 'gift-checkout') { if (!loadGiftOrder()) { showView('gift-cards'); return; } renderGiftCheckout(); showView('gift-checkout'); return; }
     const kind = Object.keys(CHECKOUT_VIEW_FOR).find((k) => CHECKOUT_VIEW_FOR[k] === view);
     if (kind === 'delivery' && (!state.carts.delivery.length || !deliverySessionValid())) { startDelivery(); return; }
     if (!state.carts[kind].length || (kind === 'pickup' && !pickupSessionValid())) { showView(PAGE_FOR_CART[kind]); return; }
@@ -4832,6 +4964,8 @@
   }
 
   document.getElementById('back-to-cart').addEventListener('click', () => {
+    // The gift card checkout goes back to the card being built, with everything still filled in.
+    if (!views['gift-checkout'].hidden) { showView('gift-cards'); return; }
     showView(PAGE_FOR_CART[checkoutCart]);
     openCart(checkoutCart);
   });
@@ -6674,7 +6808,7 @@
     toggle.nextElementSibling.classList.toggle('collapsed', !open);
   }
   // The shipping and delivery checkouts collapse their summaries the same way.
-  ['sc', 'dc'].forEach((p) => {
+  ['sc', 'dc', 'gk'].forEach((p) => {
     const toggle = document.getElementById(p + '-toggle-summary');
     toggle.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -6706,6 +6840,7 @@
   }
 
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
+  const MAIL_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2.5" stroke="#402D00" stroke-width="1.8"/><path d="M4 7.5l8 6 8-6" stroke="#402D00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 
   // ---------- Delivery checkout ----------
@@ -6997,15 +7132,20 @@
     if (navigator.vibrate) navigator.vibrate([14, 50, 22]);
   }
 
-  function showConfirmation({ number, subHTML, steps, items, total, cardHTML, backLabel, backView, name, cheer }) {
+  function showConfirmation({ number, subHTML, steps, items, total, cardHTML, backLabel, backView, name, cheer, gift, title }) {
     const who = firstNameOf(name);
-    document.getElementById('confirm-title').textContent = who ? `Order confirmed, ${who}!` : 'Order confirmed!';
+    // A gift card has nothing to prepare or collect: no tracker, and a way to send another.
+    views.confirmation.classList.toggle('is-gift', !!gift);
+    document.getElementById('confirm-another').hidden = !gift;
+    document.getElementById('confirm-title').textContent = title || (who ? `Order confirmed, ${who}!` : 'Order confirmed!');
     const cheerEl = document.getElementById('confirm-cheer');
     cheerEl.textContent = cheer || '';
     cheerEl.hidden = !cheer;
     document.getElementById('confirm-sub').innerHTML = subHTML.replace('{number}', `<strong>${number}</strong>`);
-    document.getElementById('progress-step2-label').textContent = steps[0];
-    document.getElementById('progress-step3-label').textContent = steps[1];
+    if (!gift) {
+      document.getElementById('progress-step2-label').textContent = steps[0];
+      document.getElementById('progress-step3-label').textContent = steps[1];
+    }
     document.getElementById('fulfillment-card').innerHTML = cardHTML;
     const confirmItems = document.getElementById('confirm-items');
     confirmItems.innerHTML = '';
@@ -7037,7 +7177,7 @@
     if (!lines.length) return 0;
     lines.forEach((line) => {
       if (line.cart) line.cart = to;
-      if (!line.catering && !line.giftCard && typeof line.basePrice === 'number') line.price = to === 'delivery' ? forDelivery(line.basePrice) : line.basePrice;
+      if (!line.catering && typeof line.basePrice === 'number') line.price = to === 'delivery' ? forDelivery(line.basePrice) : line.basePrice;
     });
     state.carts[to].push(...lines);
     state.carts[from] = [];
@@ -7059,7 +7199,8 @@
   const checkoutStatus = document.getElementById('checkout-status');
   let statusTimer = null;
   function announceCheckout(message, delay = 50) {
-    const region = !views['ship-checkout'].hidden ? document.getElementById('sc-status')
+    const region = !views['gift-checkout'].hidden ? document.getElementById('gk-status')
+      : !views['ship-checkout'].hidden ? document.getElementById('sc-status')
       : !views['delivery-checkout'].hidden ? document.getElementById('dc-status') : checkoutStatus;
     window.clearTimeout(statusTimer);
     region.textContent = '';
@@ -7121,6 +7262,7 @@
 
   // A placed order ends its pickup or delivery session, so the order page is no longer open to the customer: pickup and
   // delivery confirmations go back Home, where the next order starts. Shipping and Catering go back to their own pages.
+  document.getElementById('confirm-another').addEventListener('click', () => { showView('gift-cards'); });
   document.getElementById('back-to-menu').addEventListener('click', () => {
     if (confirmBack === 'home') history.replaceState(null, '', '#home');
     showView(confirmBack);
@@ -7221,27 +7363,24 @@
     const daysLeft = (w) => Math.ceil((new Date(`${w.cutoff}T23:59:59`) - new Date()) / 864e5);
     const left = (w) => { const d = daysLeft(w); return d <= 1 ? 'Last day to order' : `${d} days left`; };
     const nextOpen = SHIP_WINDOWS.find(shipWindowOpen);
-    // Polished: the art, the name over its dates, "Next window" on the first open one, and on the right the cutoff over the days left.
-    document.getElementById('ship-holiday-list-p').innerHTML = SHIP_WINDOWS.map((w) => `
-      <li class="ship-window${shipWindowOpen(w) ? '' : ' is-closed'}${w === nextOpen ? ' is-next' : ''}">
-        <img class="ship-window-art" src="${png(w)}" alt="" width="64" height="64" loading="lazy" decoding="async">
+    // Custom: the mascot standing on its tile, the name over its dates, "Next window" on the first open one, and on the right the cutoff over the days left.
+    const windowRows = SHIP_WINDOWS.map((w) => `
+      <li class="ship-window${shipWindowOpen(w) ? '' : ' is-closed'}">
+        <div class="ship-window-art" aria-hidden="true"><img src="assets/shipping/custom/holiday-${w.id}.webp" alt="" width="101" height="101" loading="lazy" decoding="async"></div>
         <div class="ship-window-text"><strong>${w.label}</strong><span>Arrives ${w.range}</span>${w === nextOpen ? '<em>Next window</em>' : ''}</div>
         <div class="ship-window-when">${shipWindowOpen(w) ? `<strong>Order by ${w.cutoffLabel}</strong><span>${left(w)}</span>` : '<strong>Closed</strong>'}</div>
       </li>`).join('');
+    document.getElementById('ship-holiday-list-c').innerHTML = windowRows;
     // Distilled: words only, one tile per window.
     document.getElementById('ship-holiday-list-d').innerHTML = SHIP_WINDOWS.map((w) => `
       <li class="${shipWindowOpen(w) ? '' : 'is-closed'}"><strong>${w.label}</strong><span>${w.range}</span><b>${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</b></li>`).join('');
-    // Optimized: the Polished rows with 128px WebP art (twice the size shown), flat: no wrapper elements around the name and dates.
-    document.getElementById('ship-holiday-list-o').innerHTML = SHIP_WINDOWS.map((w) => `
-      <li class="ship-window${shipWindowOpen(w) ? '' : ' is-closed'}${w === nextOpen ? ' is-next' : ''}">
-        <img class="ship-window-art" src="assets/shipping/opt/${SHIP_WINDOW_ART[w.id]}-128.webp" alt="" width="64" height="64" loading="lazy" decoding="async">
-        <strong>${w.label}</strong><span>Arrives ${w.range}</span>${w === nextOpen ? '<em>Next window</em>' : ''}
-        <b class="ship-window-cut">${shipWindowOpen(w) ? `Order by ${w.cutoffLabel}` : 'Closed'}</b>${shipWindowOpen(w) ? `<small>${left(w)}</small>` : ''}
-      </li>`).join('');
+    document.getElementById('shc-next').innerHTML = nextOpen
+      ? `<span>Next window</span><strong>${nextOpen.label}</strong><span>Order by ${nextOpen.cutoffLabel}</span>`
+      : '<span>Holiday windows are closed for now</span>';
   }
 
-  // TEMPORARY COMPARISON of four versions of the Shipping page (see index.html). The choice is kept for the visit.
-  const SHIP_VERSIONS = ['current', 'distilled', 'polished', 'optimized'];
+  // TEMPORARY COMPARISON of three versions of the Shipping page (see index.html). The choice is kept for the visit.
+  const SHIP_VERSIONS = ['current', 'distilled', 'custom'];
   let shipVersion = 'current';
   try { const saved = localStorage.getItem('deg-ship-version'); if (SHIP_VERSIONS.includes(saved)) shipVersion = saved; } catch (e) { /* ignore */ }
   function setShipVersion(name) {
@@ -7252,24 +7391,46 @@
     document.querySelectorAll('#view-shipping [data-ship-version]').forEach((btn) => btn.setAttribute('aria-checked', String(btn.dataset.shipVersion === name)));
     // A banner image is lazy while its version is hidden, so the page does not fetch what nobody is looking at; shown, it loads at once.
     if (!document.getElementById('view-shipping').hidden) document.querySelectorAll('#view-shipping .ship-v:not([hidden]) img[data-eager]').forEach((img) => { img.loading = 'eager'; });
-    // Optimized: a photo still loading is held clear over its reserved color and fades in when it arrives; a cached one never goes clear.
-    document.querySelectorAll('#view-shipping .ship-o img[data-fade], #view-shipping .ship-o .ship-kit-media img, #view-shipping .ship-o .ship-window-art').forEach((img) => {
-      if ((img.complete && img.naturalWidth) || img.dataset.fadeBound) return;
-      img.dataset.fadeBound = '1';
-      img.classList.add('is-loading');
-      const done = () => img.classList.remove('is-loading');
-      img.addEventListener('load', done, { once: true });
-      img.addEventListener('error', done, { once: true });
-    });
+    if (name === 'custom' && !document.getElementById('view-shipping').hidden) replayShipHero();
     updateBarReveal();
   }
+  // Custom: the dispatch hero plays when it is shown (the routes draw out of Texas, the boxes land, the egg takes off), then the egg drifts, paused
+  // whenever the hero is off screen. Under reduced motion it is the finished picture.
+  let shipHeroWatch = null;
+  // The egg's takeoff: from the middle of Texas up to its place over the Midwest, along a curve, easing out, tilting level and growing as it goes.
+  function shipEggFlight() {
+    const P0 = [-845, 916], P1 = [-900, -260], P2 = [0, 0], frames = [];
+    for (let i = 0; i <= 28; i++) {
+      const t = i / 28, e = 1 - Math.pow(1 - t, 3), u = 1 - e;
+      const x = u * u * P0[0] + 2 * u * e * P1[0] + e * e * P2[0];
+      const y = u * u * P0[1] + 2 * u * e * P1[1] + e * e * P2[1];
+      frames.push({ offset: t, opacity: Math.min(1, t * 5), transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(-18 * u).toFixed(2)}deg) scale(${(0.5 + 0.5 * e).toFixed(3)})` });
+    }
+    return frames;
+  }
+  function replayShipHero() {
+    const hero = document.getElementById('shc-hero');
+    if (!hero || reduceMotionQuery.matches) return;
+    hero.classList.remove('is-play');
+    void hero.offsetWidth;
+    hero.classList.add('is-play');
+    const fly = hero.querySelector('.shc-fly');
+    if (fly && fly.animate) {
+      fly.getAnimations().forEach((x) => x.cancel());
+      fly.animate(shipEggFlight(), { duration: 1600, delay: 150, easing: 'linear', fill: 'backwards' });
+    }
+    if (!shipHeroWatch && 'IntersectionObserver' in window) {
+      shipHeroWatch = new IntersectionObserver(([entry]) => hero.classList.toggle('is-away', !entry.isIntersecting), { threshold: .1 });
+      shipHeroWatch.observe(hero);
+    }
+  }
   document.querySelectorAll('#view-shipping [data-ship-version]').forEach((btn) => btn.addEventListener('click', () => setShipVersion(btn.dataset.shipVersion)));
-  // Polished: the sidebar and the phone's pill bar follow the section on screen, not only the last tap. The current section is
+  // Custom: the sidebar and the phone's pill bar follow the section on screen, not only the last tap. The current section is
   // the last one whose top has passed the header; a scroll listener (like the reveal bar's) does it, throttled to one frame.
   let shipSpyTicking = false;
   function updateShipSpy() {
     shipSpyTicking = false;
-    const polished = document.querySelector('#view-shipping .ship-v:not([hidden]):is(.ship-p, .ship-o)');
+    const polished = document.querySelector('#view-shipping .ship-v:not([hidden]).ship-c');
     if (!polished) return;
     const sections = [...polished.querySelectorAll('.menu-section')];
     const current = sections.filter((sec) => sec.getBoundingClientRect().top <= 220).pop() || sections[0];

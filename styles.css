@@ -1572,7 +1572,7 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .fv-tile.selected { border-color: var(--deg-ink-deep); box-shadow: 0 0 0 1px var(--deg-ink-deep); }
 .fv-media { position: relative; overflow: hidden; background: var(--deg-cream-cool); }
 .fv-media video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
-.fv-play { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+.fv-play { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; display: grid; place-items: center; touch-action: manipulation; cursor: pointer; }
 .fv-play-icon { display: grid; place-items: center; width: 48px; height: 48px; padding-left: 2px; border-radius: 50%; background: var(--deg-ink-deep); color: #fff; opacity: 0; transition: opacity .15s ease; }
 .fv-play-icon svg { width: 20px; height: 20px; }
 .fv-media.is-paused .fv-play-icon { opacity: 1; }
@@ -1706,6 +1706,37 @@ input[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--de
 .item-modal-inner { transition: border-radius .3s cubic-bezier(.2, .8, .2, 1); }
 #item-modal.is-under .item-modal-inner { border-radius: 17px; }
 #item-modal.is-under .item-modal-header .close-btn { visibility: hidden; }
+/* Flavor page on wide screens (901px and up): it takes over the open product modal's own panel instead of stacking a sheet on it. The clip is a rounded
+   panel inset 24px from the dialog's edges (cropped to fill: the clip is 2:3, the panel is taller and narrower), the name, description and ingredients are on
+   the right, and a bar along the bottom, the full width of the dialog, holds Previous / Next and Done. */
+.item-modal-inner { position: relative; }
+.flavor-info.is-takeover { position: absolute; inset: 0; z-index: 6; display: block; background: var(--deg-cream); animation: flavor-info-fade .22s ease both; }
+.flavor-info.is-takeover.is-closing { animation: flavor-info-fade .18s ease-in reverse both; }
+.flavor-info.is-takeover .flavor-info-sheet { width: 100%; max-width: none; height: 100%; max-height: none; border-radius: 0; box-shadow: none; overflow: hidden; animation: none; }
+.flavor-info.is-takeover.is-closing .flavor-info-sheet { animation: none; }
+.flavor-info.is-takeover .flavor-info-close { top: 16px; left: auto; right: 16px; background: var(--deg-cream-cool); box-shadow: none; }
+.flavor-info.is-takeover .flavor-info-close:hover { background: var(--deg-border-chip); }
+.flavor-info.is-takeover .flavor-info-stage { display: grid; grid-template-columns: minmax(0, 456px) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; height: 100%; }
+.flavor-info.is-takeover .flavor-info-stage.is-swap { animation: flavor-info-fade .2s ease both; }
+.flavor-info.is-takeover .flavor-info-media.flavor-watch-media { grid-column: 1; grid-row: 1; width: auto; height: auto; max-height: none; aspect-ratio: auto; margin: 24px 0 24px 24px; border-radius: 24px; }
+.flavor-info.is-takeover .flavor-info-media video { object-position: 50% 40%; }
+.flavor-info.is-takeover .flavor-info-copy { display: contents; }
+.flavor-info-body { grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 16px 72px 24px 40px; overflow-y: auto; overscroll-behavior: contain; }
+.flavor-info-back { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0 0 32px -10px; padding: 0 10px; border: 0; border-radius: 12px; background: none; font-family: var(--deg-font-body); font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-deep); cursor: pointer; transition: background-color .15s ease; }
+.flavor-info-back:hover { background: var(--deg-cream-cool); }
+.flavor-info-back:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); }
+.flavor-info.is-takeover .flavor-info-copy h2 { font-size: 34px; line-height: 40px; letter-spacing: -.01em; text-wrap: balance; }
+.flavor-info.is-takeover .flavor-info-stat { font-size: 15px; line-height: 22px; }
+.flavor-info.is-takeover .flavor-info-copy p { max-width: 46ch; margin: 14px 0 0; font-size: 17px; line-height: 28px; text-wrap: pretty; }
+.flavor-info.is-takeover .flavor-info-custom { margin-top: 28px; }
+.flavor-info-foot { grid-column: 1 / -1; grid-row: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px 20px; border-top: 1px solid var(--deg-border-chip); }
+.flavor-info-foot .flavor-info-nav { flex: none; justify-content: flex-start; gap: 4px; margin: 0; padding: 0; border: 0; }
+.flavor-info-foot .flavor-info-count { min-width: 64px; text-align: center; }
+.flavor-info-foot .flavor-info-done { flex: none; width: auto; min-width: 152px; margin: 0 0 0 auto; }
+@media (prefers-reduced-motion: reduce) {
+  .flavor-info.is-takeover, .flavor-info.is-takeover.is-closing, .flavor-info.is-takeover .flavor-info-stage.is-swap { animation: none; }
+  .flavor-info-back { transition: none; }
+}
 @keyframes flavor-info-rise { from { transform: translateY(100%); } }
 @keyframes flavor-info-drop { to { transform: translateY(100%); } }
 @keyframes flavor-info-fade { from { opacity: 0; } }
@@ -2149,7 +2180,6 @@ body:has(#cart-bar:not([hidden])) .site-footer { padding-bottom: 88px; }
 @keyframes gc-swap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .gc-pv-msg { padding: 12px 14px; border-radius: var(--deg-radius-compact); background: var(--deg-cream-cool); font-size: 15px; line-height: 22px; color: var(--deg-ink-body); overflow-wrap: anywhere; }
 .gc-buy { display: grid; gap: 12px; }
-.gc-added { margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
 @media (prefers-reduced-motion: reduce) { .gc-card-amount.is-swap { animation: none; } }
 
 @media (max-width: 1100px) {
@@ -2562,3 +2592,28 @@ body:has(#cart-bar:not([hidden])) .site-footer { padding-bottom: 88px; }
 .eb-card h2 { font-size: 28px; line-height: 36px; font-weight: 800; color: var(--deg-ink-deep); }
 @media (max-width: 900px) { .eb-head h1 { font-size: 40px; line-height: 44px; } .eb-card { margin-top: 32px; } }
 @media (max-width: 640px) { .eb-head h1 { font-size: 34px; line-height: 38px; } .eb-card { padding: 24px 20px; } .eb-card h2 { font-size: 24px; line-height: 32px; } }
+
+
+/* Gift card checkout (Review and pay): the checkout look, with a recap of the card in place of a store, a time and an address. */
+.gk-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.gk-head h2 { margin: 0; }
+.gk-recap { display: grid; grid-template-columns: 216px minmax(0, 1fr); gap: 28px; align-items: start; }
+.gk-thumb { position: relative; overflow: hidden; container-type: inline-size; border-radius: 14px; box-shadow: var(--deg-shadow-card); }
+.gk-thumb img { display: block; width: 100%; height: auto; aspect-ratio: 2000 / 1158; object-fit: cover; }
+/* The facts are laid out as the order total is: the label on the left, the detail on the right, a line between one and the next. */
+.gk-rows { display: grid; gap: 12px; min-width: 0; }
+.gk-rows .summary-line { align-items: baseline; gap: 20px; }
+.gk-rows .summary-line > span:first-child { flex: none; }
+.gk-rows [hidden] { display: none; }
+.gk-val { min-width: 0; text-align: right; font-weight: 600; color: var(--deg-ink-deep); overflow-wrap: anywhere; text-wrap: pretty; }
+.gk-sub { display: block; font-weight: 500; color: var(--deg-ink-muted); }
+.gk-item-thumb { flex: none; width: 56px; height: 56px; overflow: hidden; border-radius: 10px; }
+.gk-item-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 82% 50%; }
+.gk-quote { font-style: normal; color: var(--deg-ink-muted); }
+#gk-pay-note { display: block; font-size: 14px; font-weight: 600; color: var(--deg-ink-heading); }
+/* A gift card has nothing to prepare or collect, so its confirmation has no tracker, and offers another card. */
+#view-confirmation.is-gift .progress-track { display: none; }
+#confirm-another { align-self: center; }
+@media (max-width: 640px) {
+  .gk-recap { grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+}

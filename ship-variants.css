@@ -1,9 +1,10 @@
-/* TEMPORARY COMPARISON: four versions of the Nationwide Shipping page (Current, Distilled, Polished, Optimized), switched by the floating pill bar on
+/* TEMPORARY COMPARISON: three versions of the Nationwide Shipping page (Current, Distilled, Custom), switched by the floating pill bar on
    #view-shipping. Delete this file, the bar and the data-ship-variant blocks in index.html, and setShipVersion / renderShipKits in app.js once the owner
-   has chosen; the winner's rules then move into styles.css. Everything is scoped to .ship-d, .ship-p or .ship-o, so Current is untouched. */
+   has chosen; the winner's rules then move into styles.css. Everything is scoped to .ship-d or .ship-c, so Current is untouched. */
 
 /* ---------- The comparison bar ---------- */
-#view-shipping { padding-bottom: 72px; }
+/* The bar floats over the foot of the page, so the room it needs is added under the footer, not between the last section and the footer. */
+body:has(#view-shipping:not([hidden])) .site-footer { padding-bottom: 72px; }
 .ship-versions { position: fixed; left: 50%; bottom: 20px; z-index: 40; display: flex; gap: 2px; padding: 4px; transform: translateX(-50%); border-radius: var(--deg-radius-pill); background: var(--deg-ink-deep); box-shadow: var(--deg-shadow-float); }
 .ship-versions button { min-height: 36px; padding: 0 16px; border: 0; border-radius: var(--deg-radius-pill); background: transparent; font-size: 13px; line-height: 20px; font-weight: 600; color: #FBF3E3; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .ship-versions button:hover { background: rgba(251, 243, 227, .14); }
@@ -12,7 +13,7 @@
 .ship-v[hidden] { display: none; }
 @media (max-width: 640px) { .ship-versions { bottom: 12px; max-width: calc(100% - 24px); } .ship-versions button { padding: 0 11px; font-size: 12px; } }
 
-/* ---------- The kit card, shared by the three new versions ---------- */
+/* ---------- The kit card, shared by Distilled and Custom ---------- */
 .ship-kit { background: var(--deg-white); border: 1px solid var(--deg-border-chip); border-radius: var(--deg-radius-card); overflow: hidden; cursor: pointer; }
 .ship-kit-media { position: relative; flex: none; background: var(--deg-cream-cool); }
 .ship-kit-media img, .ship-kit-media .thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0; }
@@ -78,31 +79,22 @@
   .ship-d-when { margin-top: 40px; text-align: left; }
 }
 
-/* ---------- 2 and 3. Polished and Optimized: the same finished page ---------- */
-:is(.ship-p, .ship-o) .menu-layout { gap: 48px; }
-:is(.ship-p, .ship-o) .menu-section { margin-top: 56px; scroll-margin-top: 100px; }
-:is(.ship-p, .ship-o) .menu-section:first-of-type { margin-top: 24px; }
-:is(.ship-p, .ship-o) .menu-section h2 { margin-bottom: 8px; }
-:is(.ship-p, .ship-o) .menu-section-sub { margin: 0 0 24px; }
-:is(.ship-p, .ship-o) .ship-kits { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-:is(.ship-p, .ship-o) .ship-kit { display: flex; flex-direction: row-reverse; min-height: 184px; }
-:is(.ship-p, .ship-o) .ship-kit-media { width: 200px; }
-:is(.ship-p, .ship-o) .ship-kit-body { flex: 1 1 0; padding: 20px 24px; }
-:is(.ship-p, .ship-o) .ship-kit-name { font-family: var(--deg-font-display); font-weight: 700; font-size: 20px; line-height: 28px; }
-:is(.ship-p, .ship-o) .ship-kit-price { font-size: 16px; line-height: 24px; }
-:is(.ship-p, .ship-o) .ship-kit-desc { margin: 8px 0 16px; }
-:is(.ship-p, .ship-o) .ship-kit-cta { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 6px 0; border: 0; background: none; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--deg-border-secondary); transition: text-decoration-color .15s ease; }
-:is(.ship-p, .ship-o) .ship-kit:hover .ship-kit-cta { text-decoration-color: var(--deg-ink-deep); }
+/* ---------- Custom's page body (the side nav, kits, steps and windows, written first for the Polished version and kept here) ---------- */
+.ship-c .menu-layout { gap: 48px; }
+.ship-c .menu-section { margin-top: 56px; scroll-margin-top: 100px; }
+.ship-c .menu-section:first-of-type { margin-top: 24px; }
+.ship-c .menu-section h2 { margin-bottom: 8px; }
+.ship-c .menu-section-sub { margin: 0 0 24px; }
 /* How It Ships: three steps across in one white card, a round mark over each. */
-:is(.ship-p, .ship-o) .ship-how { padding: 28px 24px 20px; }
-:is(.ship-p, .ship-o) .ship-how ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
-:is(.ship-p, .ship-o) .ship-how li { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 16px; padding: 0 24px; border: 0; border-left: 1px solid var(--deg-border-chip); }
-:is(.ship-p, .ship-o) .ship-how li:first-child { padding-left: 0; border-left: 0; }
-:is(.ship-p, .ship-o) .ship-how li:last-child { padding-right: 0; }
-:is(.ship-p, .ship-o) .ship-how li strong { display: block; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); }
-:is(.ship-p, .ship-o) .ship-how li p { margin: 4px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
-.ship-how-icon, .ship-o .ship-how-flat li::before { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
-:is(.ship-p, .ship-o) .ship-policy-link { display: block; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--deg-border-chip); font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
+.ship-c .ship-how { padding: 28px 24px 20px; }
+.ship-c .ship-how ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.ship-c .ship-how li { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 16px; padding: 0 24px; border: 0; border-left: 1px solid var(--deg-border-chip); }
+.ship-c .ship-how li:first-child { padding-left: 0; border-left: 0; }
+.ship-c .ship-how li:last-child { padding-right: 0; }
+.ship-c .ship-how li strong { display: block; font-size: 16px; line-height: 24px; color: var(--deg-ink-deep); }
+.ship-c .ship-how li p { margin: 4px 0 0; font-size: 14px; line-height: 21px; color: var(--deg-ink-muted); }
+.ship-how-icon { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--deg-cream-cool); color: var(--deg-ink-deep); }
+.ship-c .ship-policy-link { display: block; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--deg-border-chip); font-size: 14px; font-weight: 600; text-underline-offset: 3px; }
 /* The windows: one row each, the art, the name over when it arrives, and on the right the last day to order and the days left. */
 .ship-windows-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .ship-window { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; column-gap: 20px; padding: 16px 20px; border-radius: var(--deg-radius-card); background: var(--deg-white); border: 1px solid var(--deg-border-chip); }
@@ -113,75 +105,142 @@
 .ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep); border-color: transparent; }
 .ship-window.is-closed .ship-window-art { opacity: .5; }
 .ship-window.is-closed strong, .ship-window.is-closed .ship-window-when strong, .ship-window.is-closed .ship-window-cut { color: var(--deg-ink-muted); }
-.ship-p .ship-window-text { display: flex; flex-direction: column; align-items: flex-start; }
-.ship-p .ship-window-when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
-.ship-p .ship-window-when strong { font-size: 15px; line-height: 22px; }
-
-/* Polished only: what answers the hand and the keyboard. */
-.ship-p .ship-kit { box-shadow: var(--deg-shadow-card); transition: box-shadow .2s ease, border-color .2s ease; }
-.ship-p .ship-kit:hover { box-shadow: var(--deg-shadow-ambient); }
-.ship-p .ship-kit-media img { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
-.ship-p .ship-kit:hover .ship-kit-media img { transform: scale(1.04); }
-.ship-p .ship-banner { gap: 3px; background: var(--deg-cream); }
-.ship-p .ship-window { box-shadow: var(--deg-shadow-card); }
-.ship-p .ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep), var(--deg-shadow-card); }
-
-/* Optimized only: built to load fast and hold still. */
-.ship-o .ship-banner-one { aspect-ratio: 1200 / 250; background: linear-gradient(90deg, #B27442 0 33.4%, #F4E6CB 33.4% 66.6%, #A6885B 66.6%); }
-.ship-o .ship-banner-one img { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* Photos are visible by default. One still loading is held clear over its average color and fades in when it arrives, so nothing pops or moves. */
-.ship-o img[data-fade], .ship-o .ship-kit-media img, .ship-o .ship-window-art { transition: opacity .3s ease; }
-.ship-o img.is-loading { opacity: 0; }
-/* Below the fold the browser skips layout and paint until a section nears the screen; the placeholder height keeps the scrollbar steady. */
-.ship-o .ship-skip { content-visibility: auto; contain-intrinsic-size: auto 520px; }
-/* Each card and row is its own layout island, drawn with a border and no shadow. */
-.ship-o .ship-kit, .ship-o .ship-window { contain: layout style; box-shadow: none; }
-.ship-o .ship-window.is-next { box-shadow: inset 0 0 0 2px var(--deg-ink-deep); }
-/* The step numbers are drawn by a counter, so a step is a plain <li> with no helper element. */
-.ship-o .ship-how-flat ol { counter-reset: ship-step; }
-.ship-o .ship-how-flat li { counter-increment: ship-step; display: grid; justify-items: start; align-content: start; gap: 0; }
-.ship-o .ship-how-flat li::before { margin-bottom: 16px; }
-.ship-o .ship-how-flat li::before { content: counter(ship-step); font-size: 16px; font-weight: 700; }
-/* A window is one grid of plain children: the art over three lines, the cutoff and the days left at the right. */
-.ship-o .ship-window { grid-template-rows: auto auto; row-gap: 2px; }
-.ship-o .ship-window.is-next { grid-template-rows: auto auto auto; }
-.ship-o .ship-window .ship-window-art { grid-column: 1; grid-row: 1 / span 2; }
-.ship-o .ship-window.is-next .ship-window-art { grid-row: 1 / span 3; }
-.ship-o .ship-window > strong { grid-column: 2; grid-row: 1; align-self: end; }
-.ship-o .ship-window > span { grid-column: 2; grid-row: 2; align-self: start; }
-.ship-o .ship-window > em { grid-column: 2; grid-row: 3; justify-self: start; }
-.ship-o .ship-window-cut { grid-column: 3; grid-row: 1; justify-self: end; align-self: end; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--deg-ink-deep); }
-.ship-o .ship-window > small { grid-column: 3; grid-row: 2; justify-self: end; align-self: start; text-align: right; }
-.ship-o .ship-window.is-next .ship-window-cut { grid-row: 2; }
-.ship-o .ship-window.is-next > small { grid-row: 3; }
+.ship-c .ship-window-text { display: flex; flex-direction: column; align-items: flex-start; }
+.ship-c .ship-window-when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.ship-c .ship-window-when strong { font-size: 15px; line-height: 22px; }
 
 @media (max-width: 900px) {
-  :is(.ship-p, .ship-o) .ship-how ol { grid-template-columns: minmax(0, 1fr); }
-  :is(.ship-p, .ship-o) .ship-how li, :is(.ship-p, .ship-o) .ship-how li:first-child, :is(.ship-p, .ship-o) .ship-how li:last-child { flex-direction: row; gap: 16px; padding: 16px 0; border-left: 0; border-bottom: 1px solid var(--deg-border-chip); }
-  :is(.ship-p, .ship-o) .ship-how li:last-child { border-bottom: 0; }
-  :is(.ship-p, .ship-o) .ship-how { padding: 8px 20px 20px; }
-  .ship-o .ship-how-flat li { grid-template-columns: 48px minmax(0, 1fr); column-gap: 16px; align-items: start; }
-  .ship-o .ship-how-flat li::before { grid-row: 1 / span 2; margin: 0; }
-  .ship-o .ship-how-flat li > strong, .ship-o .ship-how-flat li > p { grid-column: 2; }
+  .ship-c .ship-how ol { grid-template-columns: minmax(0, 1fr); }
+  .ship-c .ship-how li, .ship-c .ship-how li:first-child, .ship-c .ship-how li:last-child { flex-direction: row; gap: 16px; padding: 16px 0; border-left: 0; border-bottom: 1px solid var(--deg-border-chip); }
+  .ship-c .ship-how li:last-child { border-bottom: 0; }
+  .ship-c .ship-how { padding: 8px 20px 20px; }
 }
 @media (max-width: 640px) {
-  /* The page's phone banner is a fixed-height edge-to-edge band; a ratio on top of that would size its width from its height. */
-  .ship-o .ship-banner-one { aspect-ratio: auto; }
-  :is(.ship-p, .ship-o) .menu-layout { gap: 0; }
-  :is(.ship-p, .ship-o) .menu-section { scroll-margin-top: 140px; }
-  :is(.ship-p, .ship-o) .menu-section:first-of-type { margin-top: 0; }
-  :is(.ship-p, .ship-o) .ship-kit { min-height: 168px; }
-  :is(.ship-p, .ship-o) .ship-kit-media { width: 128px; }
-  :is(.ship-p, .ship-o) .ship-kit-body { padding: 16px; }
-  :is(.ship-p, .ship-o) .ship-kit-desc { margin-bottom: 12px; }
+  .ship-c .menu-layout { gap: 0; }
+  .ship-c .menu-section { scroll-margin-top: 140px; }
+  .ship-c .menu-section:first-of-type { margin-top: 0; }
   .ship-window { grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; padding: 16px; }
   .ship-window-art { width: 56px; height: 56px; }
-  .ship-p .ship-window-when { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); text-align: left; }
-  .ship-o .ship-window .ship-window-cut, .ship-o .ship-window.is-next .ship-window-cut { grid-column: 1 / -1; grid-row: auto; justify-self: stretch; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); }
-  .ship-o .ship-window > small, .ship-o .ship-window.is-next > small { grid-column: 1 / -1; grid-row: auto; justify-self: start; text-align: left; }
+  .ship-c .ship-window-when { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--deg-border-chip); text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ship-p .ship-kit-media img, .ship-d .ship-kit, .ship-kit-cta svg, .ship-o img[data-fade], .ship-o .ship-kit-media img, .ship-o .ship-window-art { transition: none; }
+  .ship-d .ship-kit, .ship-kit-cta svg { transition: none; }
   .ship-d .ship-kit:hover { transform: none; }
   .ship-d-more summary::after { transition: none; }
+}
+
+/* ---------- 2. Custom: a dispatch-map hero over the rest of the site's page rhythm ---------- */
+/* The page runs the full width of the window so the hero band can too; the sections keep the 1280px column (.ip-wrap). */
+#view-shipping:has(.ship-c:not([hidden])) { max-width: none; padding-left: 0; padding-right: 0; overflow-x: clip; }
+#view-shipping:has(.ship-c:not([hidden])) .page-signup { box-sizing: border-box; width: calc(100% - 2 * var(--deg-view-pad-x)); max-width: 1200px; margin-left: auto; margin-right: auto; }
+@media (max-width: 640px) { #view-shipping:has(.ship-c:not([hidden])) .page-signup { border-radius: var(--deg-radius-panel); padding: 32px 20px; } }
+.ship-c .shc-hero { margin: -24px 0 0; background: var(--deg-cream-deep); overflow: clip; }
+.shc-hero-in { display: grid; grid-template-columns: minmax(0, 4.4fr) minmax(0, 7.6fr); gap: 24px; align-items: center; max-width: 1280px; margin: 0 auto; padding: 56px var(--deg-view-pad-x) 48px; }
+.shc-copy h1 { font-size: 56px; line-height: 60px; letter-spacing: -.01em; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
+.shc-lede { margin-top: 16px; max-width: 38ch; font-size: 18px; line-height: 28px; color: var(--deg-ink-heading); text-wrap: pretty; }
+.shc-copy .ip-actions { margin-top: 28px; }
+.shc-next { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 24px 0 0; font-size: 15px; line-height: 22px; color: var(--deg-ink-body); }
+.shc-next strong { font-weight: 700; color: var(--deg-ink-deep); }
+.shc-next > * + *::before { content: "\00B7" / ""; margin-right: 8px; font-weight: 700; color: var(--deg-ink-muted); }
+.shc-next span:first-child { font-weight: 600; color: var(--deg-ink-muted); }
+.shc-map { min-width: 0; }
+.shc-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.shc-tx, .shc-box, .shc-shadow, .shc-fly, .shc-float, .shc-pin-ring { transform-box: fill-box; }
+.shc-tx { transform-origin: 50% 62%; }
+.shc-box { transform-origin: 50% 100%; }
+.shc-shadow { transform-origin: 50% 50%; fill: #1C1A10; opacity: .3; }
+.shc-fly, .shc-float { transform-origin: 50% 50%; }
+.shc-pin-ring { transform-origin: 50% 50%; fill: none; stroke: #FFEFD5; stroke-width: 12; opacity: 0; }
+/* The designer's map (assets/shipping/custom/, cut from the supplied PSD, drawn on its own 2976 x 1813 canvas). On arrival the map spreads out of Texas, Texas
+   settles in, the five routes draw one after another, and the egg takes off from Texas (that flight is run from app.js along a curve) and then drifts.
+   Each box has its own start (--d, worked out from its nearest route and the moment that route's tip passes closest to it, less the fall's lead-in): it is dropped from
+   the sky as the line reaches it, so a box at the end of a route lands just as the line arrives. Its contact shadow grows as it comes down.
+   Without .is-play (reduced motion, or before the page runs) it is the finished picture. */
+.shc-hero.is-play .shc-reveal-c { animation: shc-reveal 1.4s cubic-bezier(.22, 1, .36, 1) both; }
+.shc-hero.is-play .shc-tx { animation: shc-tx .7s cubic-bezier(.22, 1, .36, 1) .2s both; }
+.shc-hero.is-play .shc-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: shc-draw 1.3s cubic-bezier(.45, .05, .4, 1) var(--d) forwards; }
+.shc-hero.is-play .shc-box { animation: shc-land .95s linear var(--d) both; }
+.shc-hero.is-play .shc-shadow { animation: shc-shade .95s linear var(--d) both; }
+.shc-hero.is-play .shc-float { animation: shc-float 6s ease-in-out 1.7s infinite; }
+.shc-hero.is-play .shc-pin-ring { animation: shc-pulse 1.6s ease-out .25s 2; }
+.shc-hero.is-away * { animation-play-state: paused; }
+@keyframes shc-reveal { from { r: 0px; } to { r: 3600px; } }
+@keyframes shc-tx { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes shc-draw { to { stroke-dashoffset: 0; } }
+/* A box is dropped from the sky: it starts small and high up (far away), falls with gravity, grows to its real size as it comes down, and settles with a small bounce. */
+@keyframes shc-land {
+  0% { opacity: 0; transform: translateY(-560px) scale(.18); animation-timing-function: cubic-bezier(.5, 0, .85, .55); }
+  30% { opacity: 1; }
+  68% { opacity: 1; transform: translateY(14px) scale(1.04); animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  84% { transform: translateY(-7px) scale(.995); animation-timing-function: ease-in-out; }
+  100% { opacity: 1; transform: none; }
+}
+/* The shadow on the map under a box: it appears as the box nears, widens to its full size at the landing, and settles with the bounce. */
+@keyframes shc-shade {
+  0% { opacity: 0; transform: scale(.12); }
+  30% { opacity: 0; }
+  68% { opacity: .3; transform: scale(1.04); }
+  84% { opacity: .27; transform: scale(.96); }
+  100% { opacity: .3; transform: none; }
+}
+@keyframes shc-float { 0%, 100% { transform: translate(0, 0) rotate(0); } 50% { transform: translate(16px, -34px) rotate(-1.6deg); } }
+@keyframes shc-pulse { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(3.4); } }
+
+.ship-c .shc-body { padding-top: 56px; }
+.ship-c .ship-how-num { font-size: 18px; line-height: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ship-c .menu-content { min-width: 0; flex: 1 1 auto; }
+/* Touch target: the policy link is at least 44px tall (its look is unchanged; the room is padding). */
+.ship-c .ship-policy-link { display: flex; align-items: center; min-height: 44px; padding-top: 0; }
+/* Like every other card on the site, a window row does not move, grow or change shadow on hover. */
+.ship-c .ship-window { grid-template-columns: 88px minmax(0, 1fr) auto; box-shadow: var(--deg-shadow-card); }
+/* The window art, as in the Figma list: an 88 x 70 Cool Linen tile with the mascot (a 101px picture, centered, standing on the tile's bottom edge) rising above
+   it, so the head and hands are not cropped. "Next window" is the pill under the dates; no card is outlined. */
+.ship-c .ship-window { position: relative; border-color: var(--deg-border-chip); }
+.ship-c .ship-window-art { position: relative; width: 88px; height: 70px; border-radius: 10px; background: var(--deg-cream-cool); }
+.ship-c .ship-window-art img { position: absolute; left: 50%; bottom: 0; width: 101px; height: 101px; max-width: none; transform: translateX(-50%); object-fit: contain; pointer-events: none; }
+.ship-c .ship-window.is-closed .ship-window-art { opacity: 1; }
+.ship-c .ship-window.is-closed .ship-window-art img { opacity: .5; }
+@media (max-width: 640px) {
+  .ship-c .ship-window { grid-template-columns: 88px minmax(0, 1fr); }
+}
+
+/* Shipping questions: a full-width white band between hairlines, so the page's last working section (the windows) clearly ends above it, and the
+   dark closing panel sits below it. The band is a pseudo-element that runs to the edges of the screen; the words stay in the page's column. */
+.shc-faq { position: relative; isolation: isolate; margin-top: 112px; padding: 96px 0; }
+.shc-faq::before { content: ''; position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); background: var(--deg-white); border-top: 1px solid var(--deg-border-chip); border-bottom: 1px solid var(--deg-border-chip); }
+
+/* The closing band */
+.shc-close { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 32px; margin-top: 72px; padding: 56px; overflow: hidden; border-radius: var(--deg-radius-panel); background: var(--deg-ink-deep); color: #FBF3E3; }
+.shc-close h2 { max-width: 13em; font-size: 40px; line-height: 46px; font-weight: 800; color: #FBF3E3; text-wrap: balance; }
+/* Each sentence is a unit: it wraps whole, so the heading is two clean lines (one under the other when they don't fit side by side), never a lone word. */
+.shc-close h2 span { display: inline-block; }
+.shc-close p { max-width: 42ch; margin: 12px 0 0; font-size: 17px; line-height: 26px; color: #BDB3A2; text-wrap: pretty; }
+.shc-close .ip-actions { margin-top: 28px; }
+.shc-close .pill-btn.primary { box-shadow: none; }
+.shc-close-plane { display: block; width: 280px; height: auto; transform: rotate(-4deg); }
+
+@media (max-width: 900px) {
+  .shc-hero-in { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 24px var(--deg-view-pad-x) 36px; }
+  .shc-copy h1 { font-size: 40px; line-height: 44px; }
+  /* Phones: the map and its animation come first, then the copy, all centered. */
+  .shc-map { order: -1; }
+  .shc-copy { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .shc-lede { margin-left: auto; margin-right: auto; }
+  .shc-copy .ip-actions { align-self: stretch; justify-content: center; }
+  .shc-copy .ip-actions .pill-btn { width: 100%; justify-content: center; }
+  .shc-next { justify-content: center; }
+  .shc-faq { margin-top: 72px; padding: 56px 0; }
+  /* Phones, as in the Figma: the egg on its paper plane flies over the panel's top right corner, half out of it; the words and a full-width button below.
+     On a 343px panel the second line of the heading runs close to the corner, so the plane is smaller and higher than the Figma's 424px frame. */
+  .shc-close { grid-template-columns: minmax(0, 1fr); padding: 36px 24px; margin-top: 64px; overflow: visible; }
+  .shc-close h2 { max-width: 390px; font-size: 30px; line-height: 36px; }
+  .shc-close .ip-actions { margin-top: 28px; }
+  .shc-close .ip-actions .pill-btn { width: 100%; justify-content: center; }
+  .shc-close-plane { position: absolute; z-index: 1; top: -46px; right: -8px; width: 140px; pointer-events: none; }
+}
+@media (max-width: 640px) {
+  .shc-copy h1 { font-size: 34px; line-height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shc-hero .shc-reveal-c, .shc-hero .shc-tx, .shc-hero .shc-draw, .shc-hero .shc-box, .shc-hero .shc-shadow, .shc-hero .shc-float, .shc-hero .shc-pin-ring { animation: none; }
 }

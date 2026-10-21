@@ -346,14 +346,13 @@
   <!-- Nationwide Shipping follows the Catering and location pages: a banner, a sidebar with the name and the sections, and
        sections of the same product cards the menu uses. The kit cards are drawn from SHIPPING_KITS in app.js and each opens
        its in-app modal, adding to the Shipping bag. -->
-  <!-- TEMPORARY COMPARISON: four versions of this page (the current one, plus a distilled, a polished and an optimized take) behind a
+  <!-- TEMPORARY COMPARISON: three versions of this page (the current one, plus a distilled and a custom take) behind a
        floating pill bar, as the Pair and Grow flavor pickers were. The owner picks one; the rest and this bar are then deleted
        (ship-variants.css, setShipVersion in app.js, the data-ship-variant blocks below). "#shipping/distilled" etc. open a version directly. -->
   <div class="ship-versions" role="radiogroup" aria-label="Compare page versions (temporary)">
     <button type="button" role="radio" aria-checked="true" data-ship-version="current">Current</button>
     <button type="button" role="radio" aria-checked="false" data-ship-version="distilled">Distilled</button>
-    <button type="button" role="radio" aria-checked="false" data-ship-version="polished">Polished</button>
-    <button type="button" role="radio" aria-checked="false" data-ship-version="optimized">Optimized</button>
+    <button type="button" role="radio" aria-checked="false" data-ship-version="custom">Custom</button>
   </div>
 
   <div class="ship-v" data-ship-variant="current">
@@ -445,114 +444,95 @@
     </div>
   </div>
 
-  <!-- 2. POLISHED: the current page's structure and content, finished: kit cards that say what they cost and what to do, step icons, windows that count their
-       days down and mark the next one, a sidebar that follows the page, one spacing scale, hover, focus and loading states. -->
-  <div class="ship-v ship-p" data-ship-variant="polished" hidden>
-    <div class="store-hero ship-banner" aria-hidden="true">
-      <img src="assets/shipping/kit-sampler.png" alt="" width="662" height="662" loading="lazy" decoding="async"><img src="assets/shipping/shipping-map.png" alt="" width="1182" height="837" loading="lazy" decoding="async"><img src="assets/shipping/kit-24.png" alt="" width="662" height="662" loading="lazy" decoding="async">
-    </div>
-    <div class="menu-layout">
-      <aside class="store-sidebar" aria-label="Shipping details and sections">
-        <div class="store-card">
-          <h1 class="store-name" id="ship-title-p">Nationwide Shipping</h1>
-          <p class="store-address">Deviled eggs hand-packed in our Texas kitchen and cold-shipped to all 48 contiguous states.</p>
+  <!-- 3. CUSTOM: a page of its own, built from the rest of the site: a dispatch-map hero (built from the designer's PSD: the US map, Texas, the five dashed routes as vector paths, the kit boxes and the egg on the plane
+       as separate layers; routes drawn out of Texas, boxes landing), the kits, "How it ships" as three numbered steps joined by a dashed route, the holiday windows as one timeline, the FAQ
+       from the Shipping & Returns page, and a closing band. Same kits, windows and modals as the other versions. -->
+  <div class="ship-v ship-c" data-ship-variant="custom" hidden>
+    <section class="shc-hero" id="shc-hero" aria-labelledby="ship-title-c">
+      <div class="shc-hero-in">
+        <div class="shc-copy">
+          <h1 id="ship-title-c">Nationwide Shipping</h1>
+          <p class="shc-lede">Hand-packed in our Texas kitchen and shipped cold to all 48 contiguous states.</p>
+          <div class="ip-actions">
+            <a class="pill-btn primary" href="#ship-section-kits-c" data-scroll="ship-section-kits-c">Choose a kit</a>
+          </div>
+          <p class="shc-next" id="shc-next"></p>
         </div>
-        <div class="sidebar-divider"></div>
+        <div class="shc-map" aria-hidden="true">
+      <svg class="shc-svg" viewBox="0 0 2976 1813" role="presentation" focusable="false">
+        <defs>
+          <mask id="shc-reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><circle class="shc-reveal-c" cx="1340" cy="1450" r="3600" fill="#fff"/></mask>
+          <mask id="shc-m0" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><path class="shc-draw" d="M1349 1602C1349 1602 1347 1282 1535 1307C1710 1330 1746 1465 1746 1465" pathLength="1" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round" style="--d:0.50s"/></mask><mask id="shc-m1" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><path class="shc-draw" d="M1344 1520C1344 1520 1276 1092 1101 1086C954 1081 900 1257 900 1257" pathLength="1" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round" style="--d:0.66s"/></mask><mask id="shc-m2" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><path class="shc-draw" d="M1336 1334C1336 1334 1317 506 1056 433C554 292 314 984 314 984" pathLength="1" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round" style="--d:0.82s"/></mask><mask id="shc-m3" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><path class="shc-draw" d="M1346 1354C1346 1354 1558 1040 1798 1028C2226 1007 2458 1647 2458 1647" pathLength="1" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round" style="--d:0.98s"/></mask><mask id="shc-m4" maskUnits="userSpaceOnUse" x="0" y="0" width="2976" height="1813"><path class="shc-draw" d="M1341 1293C1341 1293 1341 1167 1440 1026C1534 891 1722 821 1722 821" pathLength="1" fill="none" stroke="#fff" stroke-width="64" stroke-linecap="round" style="--d:1.14s"/></mask>
+        </defs>
+        <g mask="url(#shc-reveal)"><image href="assets/shipping/custom/map.webp" x="0" y="0" width="2976" height="1813"/></g>
+        <image class="shc-tx" href="assets/shipping/custom/texas.webp" x="867" y="1043" width="801" height="770"/>
+        <circle class="shc-pin-ring" cx="1340" cy="1450" r="70"/>
+        <path class="shc-arc" d="M1349 1602C1349 1602 1347 1282 1535 1307C1710 1330 1746 1465 1746 1465" fill="none" stroke="#1C1A10" stroke-width="16" stroke-linecap="round" stroke-dasharray="24 32" mask="url(#shc-m0)"/><path class="shc-arc" d="M1344 1520C1344 1520 1276 1092 1101 1086C954 1081 900 1257 900 1257" fill="none" stroke="#1C1A10" stroke-width="16" stroke-linecap="round" stroke-dasharray="24 32" mask="url(#shc-m1)"/><path class="shc-arc" d="M1336 1334C1336 1334 1317 506 1056 433C554 292 314 984 314 984" fill="none" stroke="#1C1A10" stroke-width="16" stroke-linecap="round" stroke-dasharray="24 32" mask="url(#shc-m2)"/><path class="shc-arc" d="M1346 1354C1346 1354 1558 1040 1798 1028C2226 1007 2458 1647 2458 1647" fill="none" stroke="#1C1A10" stroke-width="16" stroke-linecap="round" stroke-dasharray="24 32" mask="url(#shc-m3)"/><path class="shc-arc" d="M1341 1293C1341 1293 1341 1167 1440 1026C1534 891 1722 821 1722 821" fill="none" stroke="#1C1A10" stroke-width="16" stroke-linecap="round" stroke-dasharray="24 32" mask="url(#shc-m4)"/>
+        <ellipse class="shc-shadow" cx="2582" cy="1733" rx="104" ry="17" style="--d:1.83s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="2449" y="1477" width="267" height="274" style="--d:1.83s"/><ellipse class="shc-shadow" cx="2740" cy="330" rx="104" ry="17" style="--d:1.16s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="2607" y="74" width="267" height="274" style="--d:1.16s"/><ellipse class="shc-shadow" cx="1354" cy="764" rx="104" ry="17" style="--d:0.79s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="1221" y="508" width="267" height="274" style="--d:0.79s"/><ellipse class="shc-shadow" cx="1788" cy="1554" rx="104" ry="17" style="--d:1.35s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="1654" y="1298" width="267" height="274" style="--d:1.35s"/><ellipse class="shc-shadow" cx="944" cy="349" rx="104" ry="17" style="--d:0.97s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="810" y="93" width="267" height="274" style="--d:0.97s"/><ellipse class="shc-shadow" cx="134" cy="431" rx="104" ry="17" style="--d:1.19s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="0" y="175" width="267" height="274" style="--d:1.19s"/><ellipse class="shc-shadow" cx="254" cy="1275" rx="104" ry="17" style="--d:1.67s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="121" y="1019" width="267" height="274" style="--d:1.67s"/><ellipse class="shc-shadow" cx="736" cy="1502" rx="104" ry="17" style="--d:1.51s"/><image class="shc-box" href="assets/shipping/custom/box.webp" x="602" y="1246" width="267" height="274" style="--d:1.51s"/>
+        <g class="shc-fly"><g class="shc-float"><image href="assets/shipping/custom/egg.webp" x="1724" y="167" width="922" height="734"/></g></g>
+      </svg>
+        </div>
+      </div>
+    </section>
+    <div class="ip-wrap shc-body">
+          <div class="menu-layout">
+      <aside class="store-sidebar" aria-label="Shipping details and sections">
         <div class="sidebar-menu-head">
           <span class="sidebar-menu-label">Menu</span>
           <span class="sidebar-menu-hours">You choose a holiday window at checkout</span>
         </div>
         <nav class="drawer-nav" aria-label="Shipping sections">
-          <button class="category-item active" type="button" data-target="ship-section-kits-p">Shipping Kits</button>
-          <button class="category-item" type="button" data-target="ship-section-how-p">How It Ships</button>
-          <button class="category-item" type="button" data-target="ship-section-holiday-p">Holiday Windows</button>
+          <button class="category-item active" type="button" data-target="ship-section-kits-c">Shipping Kits</button>
+          <button class="category-item" type="button" data-target="ship-section-how-c">How It Ships</button>
+          <button class="category-item" type="button" data-target="ship-section-holiday-c">Holiday Windows</button>
         </nav>
       </aside>
       <div class="menu-content">
         <nav class="drawer-nav-mobile" aria-label="Shipping sections">
-          <button class="category-item active" type="button" data-target="ship-section-kits-p">Shipping Kits</button>
-          <button class="category-item" type="button" data-target="ship-section-how-p">How It Ships</button>
-          <button class="category-item" type="button" data-target="ship-section-holiday-p">Holiday Windows</button>
+          <button class="category-item active" type="button" data-target="ship-section-kits-c">Shipping Kits</button>
+          <button class="category-item" type="button" data-target="ship-section-how-c">How It Ships</button>
+          <button class="category-item" type="button" data-target="ship-section-holiday-c">Holiday Windows</button>
         </nav>
-        <section class="menu-section" id="ship-section-kits-p" aria-labelledby="ship-h-kits-p">
-          <h2 id="ship-h-kits-p">Shipping Kits</h2>
+        <section class="menu-section" id="ship-section-kits-c" aria-labelledby="ship-h-kits-c">
+          <h2 id="ship-h-kits-c">Shipping Kits</h2>
           <p class="menu-section-sub">Three ways to send our signature deviled eggs anywhere in the US. Pick a size, choose your flavors, send the wow.</p>
-          <div class="ship-kits" id="ship-kits-grid-p"></div>
+          <div class="shop-grid" id="ship-kits-grid-c"></div>
         </section>
-        <section class="menu-section" id="ship-section-how-p" aria-labelledby="ship-h-how-p">
-          <h2 id="ship-h-how-p">How It Ships</h2>
+        <section class="menu-section" id="ship-section-how-c" aria-labelledby="ship-h-how-c">
+          <h2 id="ship-h-how-c">How It Ships</h2>
           <p class="menu-section-sub">Cold-shipped to all 48 contiguous states, in the holiday window you choose.</p>
           <div class="cater-addons-list ship-how">
             <ol>
-              <li><span class="ship-how-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/><path d="m9.5 14.5 1.8 1.8 3.4-3.6"/></svg></span><div><strong>Pick a holiday window</strong><p>You reserve a delivery window, not a guaranteed date. We hand-pack every order in our Texas kitchen the morning we ship.</p></div></li>
-              <li><span class="ship-how-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/><path d="m9.5 4.8 2.5 2 2.5-2M9.5 19.2l2.5-2 2.5 2M3.9 10.6l3.1-.4-.6-3M20.1 13.4l-3.1.4.6 3M20.1 10.6l-3.1-.4.6-3M3.9 13.4l3.1.4-.6 3"/></svg></span><div><strong>Cold-shipped by air</strong><p>Insulated boxes with gel packs ship by UPS Next Day Air or 2nd Day Air to all 48 contiguous states.</p></div></li>
-              <li><span class="ship-how-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8 12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8 12 12.5 20.5 8M12 12.5v8"/><path d="m8 5.8 8.5 4.5"/></svg></span><div><strong>Fresh on arrival</strong><p>You'll get a tracking link the morning we ship. Eat within 3 days of arrival and keep refrigerated.</p></div></li>
+              <li><span class="ship-how-icon ship-how-num" aria-hidden="true">1</span><div><strong>Pick a holiday window</strong><p>You reserve a delivery window, not a guaranteed date. We hand-pack every order in our Texas kitchen the morning we ship.</p></div></li>
+              <li><span class="ship-how-icon ship-how-num" aria-hidden="true">2</span><div><strong>Cold-shipped by air</strong><p>Insulated boxes with gel packs ship by UPS Next Day Air or 2nd Day Air to all 48 contiguous states.</p></div></li>
+              <li><span class="ship-how-icon ship-how-num" aria-hidden="true">3</span><div><strong>Fresh on arrival</strong><p>You'll get a tracking link the morning we ship. Eat within 3 days of arrival and keep refrigerated.</p></div></li>
             </ol>
-            <a class="text-btn ship-policy-link" href="https://deviledeggco.com/shipping-policy/" target="_blank" rel="noopener">Shipping &amp; Returns</a>
+            <a class="text-btn ship-policy-link" href="#shipping-returns" data-view="shipping-returns">Shipping &amp; Returns</a>
           </div>
         </section>
-        <section class="menu-section" id="ship-section-holiday-p" aria-labelledby="ship-h-holiday-p">
-          <h2 id="ship-h-holiday-p">Holiday Windows</h2>
+        <section class="menu-section" id="ship-section-holiday-c" aria-labelledby="ship-h-holiday-c">
+          <h2 id="ship-h-holiday-c">Holiday Windows</h2>
           <p class="menu-section-sub">Themed flavors, festive packaging and seasonal touches, hand packed in our Texas kitchen and shipped to land before the holiday. You choose your window at checkout.</p>
-          <ul class="ship-windows-list" id="ship-holiday-list-p"></ul>
+          <ul class="ship-windows-list" id="ship-holiday-list-c"></ul>
         </section>
       </div>
     </div>
-  </div>
-
-  <!-- 3. OPTIMIZED: the same finished page, engineered to load fast and hold still: one banner file, WebP images cut to the size they show, colors reserved
-       behind every photo so it fades in instead of popping, the first photos loaded at once and the rest lazy, the lower sections skipped until they
-       near the screen, and a flatter DOM (step numbers by counter, flat window rows, borders instead of shadows). -->
-  <div class="ship-v ship-o" data-ship-variant="optimized" hidden>
-    <div class="store-hero ship-banner-one" aria-hidden="true">
-      <img data-eager data-fade src="assets/shipping/opt/banner-1200.webp" srcset="assets/shipping/opt/banner-1200.webp 1200w, assets/shipping/opt/banner-2400.webp 2400w" sizes="(max-width: 640px) 100vw, 1200px" alt="" width="1200" height="250" loading="lazy" fetchpriority="high" decoding="async">
-    </div>
-    <div class="menu-layout">
-      <aside class="store-sidebar" aria-label="Shipping details and sections">
-        <div class="store-card">
-          <h1 class="store-name" id="ship-title-o">Nationwide Shipping</h1>
-          <p class="store-address">Deviled eggs hand-packed in our Texas kitchen and cold-shipped to all 48 contiguous states.</p>
+      <section class="cg-faq shc-faq" aria-labelledby="shc-h-faq">
+        <div class="cg-faq-copy">
+          <h2 id="shc-h-faq">Shipping questions</h2>
+          <p>The short answers, from our Shipping &amp; Returns page.</p>
+          <div class="ip-actions"><a class="pill-btn outline" href="#shipping-returns" data-view="shipping-returns">Read the full policy</a></div>
         </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-menu-head">
-          <span class="sidebar-menu-label">Menu</span>
-          <span class="sidebar-menu-hours">You choose a holiday window at checkout</span>
+        <div class="cg-qs"><details class="cg-q" name="ship-faq" open><summary>How soon will my order ship?</summary><div class="cg-a"><p>Orders typically ship within 1–3 business days unless otherwise stated. During holidays or high demand, processing may take longer.</p></div></details><details class="cg-q" name="ship-faq"><summary>Which carriers do you use?</summary><div class="cg-a"><p>We use carriers such as UPS, FedEx, and USPS depending on location, product, and speed. We may use insulated packaging or cold packs depending on the item.</p></div></details><details class="cg-q" name="ship-faq"><summary>How much does shipping cost?</summary><div class="cg-a"><p>Shipping costs are calculated at checkout based on weight, location, and service level.</p></div></details><details class="cg-q" name="ship-faq"><summary>Will I get a tracking number?</summary><div class="cg-a"><p>Once your order ships, you will receive a tracking number via email.</p></div></details><details class="cg-q" name="ship-faq"><summary>What about hot weather?</summary><div class="cg-a"><p>During hot months, we may pack items with ice packs or limit shipping days to ensure freshness.</p></div></details><details class="cg-q" name="ship-faq"><summary>What if my order arrives damaged or wrong?</summary><div class="cg-a"><p>Contact us within 24 hours of delivery with photos of the product and packaging and your order number. We will either replace the item or issue store credit at our discretion.</p></div></details><details class="cg-q" name="ship-faq"><summary>Can I return my order?</summary><div class="cg-a"><p>Because our products are fresh and perishable, all sales are final. We cannot accept returns of food products once they have shipped.</p></div></details><details class="cg-q" name="ship-faq"><summary>Do you ship outside the United States?</summary><div class="cg-a"><p>Currently, we ship only within the United States.</p></div></details></div>
+      </section>
+      <section class="shc-close" aria-labelledby="shc-h-close">
+        <div class="shc-close-copy">
+          <h2 id="shc-h-close"><span>Pick a kit.</span> <span>We'll pack it cold.</span></h2>
+          <p>Hand-packed in Texas, on its way to anyone in the 48 states.</p>
+          <div class="ip-actions"><a class="pill-btn primary" href="#ship-section-kits-c" data-scroll="ship-section-kits-c">Choose a kit</a></div>
         </div>
-        <nav class="drawer-nav" aria-label="Shipping sections">
-          <button class="category-item active" type="button" data-target="ship-section-kits-o">Shipping Kits</button>
-          <button class="category-item" type="button" data-target="ship-section-how-o">How It Ships</button>
-          <button class="category-item" type="button" data-target="ship-section-holiday-o">Holiday Windows</button>
-        </nav>
-      </aside>
-      <div class="menu-content">
-        <nav class="drawer-nav-mobile" aria-label="Shipping sections">
-          <button class="category-item active" type="button" data-target="ship-section-kits-o">Shipping Kits</button>
-          <button class="category-item" type="button" data-target="ship-section-how-o">How It Ships</button>
-          <button class="category-item" type="button" data-target="ship-section-holiday-o">Holiday Windows</button>
-        </nav>
-        <section class="menu-section" id="ship-section-kits-o">
-          <h2>Shipping Kits</h2>
-          <p class="menu-section-sub">Three ways to send our signature deviled eggs anywhere in the US. Pick a size, choose your flavors, send the wow.</p>
-          <div class="ship-kits" id="ship-kits-grid-o"></div>
-        </section>
-        <section class="menu-section ship-skip" id="ship-section-how-o">
-          <h2>How It Ships</h2>
-          <p class="menu-section-sub">Cold-shipped to all 48 contiguous states, in the holiday window you choose.</p>
-          <div class="cater-addons-list ship-how ship-how-flat">
-            <ol>
-              <li><strong>Pick a holiday window</strong><p>You reserve a delivery window, not a guaranteed date. We hand-pack every order in our Texas kitchen the morning we ship.</p></li>
-              <li><strong>Cold-shipped by air</strong><p>Insulated boxes with gel packs ship by UPS Next Day Air or 2nd Day Air to all 48 contiguous states.</p></li>
-              <li><strong>Fresh on arrival</strong><p>You'll get a tracking link the morning we ship. Eat within 3 days of arrival and keep refrigerated.</p></li>
-            </ol>
-            <a class="text-btn ship-policy-link" href="https://deviledeggco.com/shipping-policy/" target="_blank" rel="noopener">Shipping &amp; Returns</a>
-          </div>
-        </section>
-        <section class="menu-section ship-skip" id="ship-section-holiday-o">
-          <h2>Holiday Windows</h2>
-          <p class="menu-section-sub">Themed flavors, festive packaging and seasonal touches, hand packed in our Texas kitchen and shipped to land before the holiday. You choose your window at checkout.</p>
-          <ul class="ship-windows-list" id="ship-holiday-list-o"></ul>
-        </section>
-      </div>
+        <img class="shc-close-plane" src="assets/shipping/custom/egg.webp" alt="" width="922" height="734" loading="lazy" decoding="async">
+      </section>
     </div>
   </div>
 
@@ -581,6 +561,7 @@
       <p class="page-success" role="status" hidden>You're on the list. We'll email you when each holiday kit opens.</p>
     </form>
   </section>
+
 
 </main>
 
@@ -808,9 +789,8 @@
         <p class="field-error" role="alert" hidden></p>
       </form>
     <div class="gc-buy">
-      <button class="pill-btn dark full" type="submit" form="gift-form" id="gc-add">Add to bag · $50.00</button>
-      <p class="gc-added" role="status" hidden>Added to your bag. <button class="text-btn" type="button" id="gc-view-bag">View bag</button></p>
-      <p class="ip-note">Gift cards aren't taxed. They go in the bag you're ordering with, and the code is sent after you check out.</p>
+      <button class="pill-btn dark full" type="submit" form="gift-form" id="gc-add">Continue · $50.00</button>
+      <p class="ip-note">Gift cards aren't taxed. You'll review and pay on the next step, and the card is sent as soon as you do.</p>
     </div>
     </div>
     <aside class="gc-preview" aria-label="Gift card preview">
@@ -1427,6 +1407,82 @@
   <div class="visually-hidden" id="checkout-status" role="status" aria-live="polite" aria-atomic="true"></div>
 </main>
 
+<main id="view-gift-checkout" class="view" hidden>
+  <div class="checkout-title">
+    <h1>Secure Checkout</h1>
+    <p class="checkout-title-sub">Gift card</p>
+  </div>
+  <div class="checkout-layout">
+    <div class="checkout-main">
+
+      <section class="checkout-card gk-card">
+        <div class="gk-head">
+          <h2>Your gift card</h2>
+          <button class="text-btn" id="gk-edit" type="button">Edit</button>
+        </div>
+        <div class="gk-recap">
+          <div class="gk-thumb" aria-hidden="true">
+            <img src="assets/pages/gift-preview.webp" alt="" width="1000" height="579" decoding="async">
+            <span class="gc-card-amount"><span class="gc-cur">$</span><span id="gk-thumb-num">50</span></span>
+          </div>
+          <div class="gk-rows">
+            <div class="summary-line"><span>To</span><span class="gk-val" id="gk-to"></span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-line"><span>From</span><span class="gk-val" id="gk-from"></span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-line"><span id="gk-when-label">Arrives</span><span class="gk-val" id="gk-when"></span></div>
+            <div class="summary-divider" id="gk-msg-rule"></div>
+            <div class="summary-line" id="gk-msg-row"><span>Message</span><span class="gk-val" id="gk-msg"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Your details</h2>
+        <label class="field-group">
+          <span class="field-label">Email</span>
+          <input type="email" id="gk-email" autocomplete="email" inputmode="email" placeholder="name@example.com" maxlength="120" aria-required="true">
+          <span class="field-note" id="gk-email-note"></span>
+        </label>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Payment method</h2>
+        <div id="gk-payment-picker" class="radio-list payment-picker" role="radiogroup" aria-label="Payment method"></div>
+        <button class="payment-add-row" data-add-payment type="button">
+          <span class="payment-add-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+          Add payment method
+        </button>
+      </section>
+    </div>
+
+    <aside class="summary-col">
+      <section class="summary-panel">
+        <button class="order-summary-toggle" id="gk-toggle-summary" type="button" aria-expanded="true" aria-controls="gk-items">
+          <span class="order-summary-toggle-title">Order summary <span class="order-summary-count">(1 item)</span></span>
+          <svg class="order-summary-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 15l6-6 6 6" stroke="#130D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="order-summary-collapse">
+          <div id="gk-items" class="drawer-items"></div>
+        </div>
+      </section>
+
+      <section class="summary-panel">
+        <h2>Order total</h2>
+        <div class="summary-line"><span>Subtotal</span><span id="gk-subtotal">$0.00</span></div>
+        <div class="summary-divider"></div>
+        <div class="summary-line"><span>Tax</span><span>$0.00</span></div>
+        <p class="summary-note">Gift cards aren't taxed.</p>
+        <div class="summary-divider"></div>
+        <div class="summary-line total"><span>Total</span><span id="gk-total">$0.00</span></div>
+        <p class="pay-note"><span id="gk-pay-note"></span></p>
+        <button class="pill-btn dark full" id="gk-pay" type="button">Pay $0.00</button>
+      </section>
+    </aside>
+  </div>
+  <div class="visually-hidden" id="gk-status" role="status" aria-live="polite" aria-atomic="true"></div>
+</main>
+
 <main id="view-delivery-checkout" class="view" hidden>
   <div class="checkout-title">
     <h1>Secure Checkout</h1>
@@ -1706,6 +1762,7 @@
 
       <div class="address-card" id="fulfillment-card"></div>
 
+      <button class="pill-btn outline" id="confirm-another" type="button" hidden>Send another gift card</button>
       <button class="text-btn" id="back-to-menu" type="button">← Back to home</button>
     </div>
   </div>
@@ -1837,7 +1894,7 @@
               <span class="modal-section-title">Flavors</span>
               <span class="modal-section-sub" id="fixed-flavors-sub"></span>
             </div>
-            <ul class="sampler-grid" id="fixed-flavors-list"></ul>
+            <div class="flavor-grid" id="fixed-flavors-list" data-variant="2"></div>
           </div>
           <p class="modal-notice" id="dozen-modal-notice" hidden></p>
           <label class="field-group">
