@@ -554,6 +554,166 @@
     return state.carts[kind].reduce((sum, item) => sum + lineTotal(item), 0);
   }
 
+  // ---------- Promo and gift card codes ----------
+  // One field takes both kinds, as on the live site's cart and checkout. A promo code takes money off the food (never the fee, tax, shipping or tip: tip
+  // stays a share of the full subtotal). A gift card code pays for the order, after tax, fees and tip, up to its balance. One code per bag, kept with the bag
+  // like everything else in it. These are prototype codes: the live site checks codes on its server, and none of these exist there.
+  const PROMO_CODES = {
+    WELCOME10: { percent: 10, label: '10% off your items' },
+    SAVE5: { amount: 5, min: 25, label: '$5 off $25 or more' },
+  };
+  const GIFT_BALANCES = { GIFT25: 25, GIFT100: 100 };
+  state.codes = { pickup: null, delivery: null, shipping: null };
+  const lastSettle = { pickup: null, delivery: null, shipping: null };
+  const codeKey = (text) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const isGiftCode = (code) => !!code && Object.prototype.hasOwnProperty.call(GIFT_BALANCES, code);
+
+  // What the code on a bag does: the promo's saving on its items, or the gift card's balance to spend.
+  function codeEffect(kind, subtotal) {
+    const code = state.codes[kind];
+    if (!code) return { code: null, discount: 0, voucher: 0 };
+    if (isGiftCode(code)) return { code, discount: 0, voucher: GIFT_BALANCES[code] };
+    const p = PROMO_CODES[code];
+    if (!p || subtotal < (p.min || 0)) return { code, discount: 0, voucher: 0, lapsed: !!p, short: p ? p.min - subtotal : 0 };
+    return { code, discount: p.percent ? Math.round(subtotal * p.percent) / 100 : Math.min(p.amount, subtotal), voucher: 0 };
+  }
+
+  // A gift card is spent on the whole total; what is left to pay, and what is left on the card, go to the totals panel.
+  function settleCode(kind, subtotal, gross) {
+    const e = codeEffect(kind, subtotal);
+    const used = Math.min(e.voucher, Math.max(0, gross));
+    const settle = { code: e.code, discount: e.discount, used, due: gross - used, balance: e.voucher - used };
+    lastSettle[kind] = settle;
+    paintCodeTotals(kind, settle);
+    return settle;
+  }
+
+  function paintCodeTotals(kind, s) {
+    const q = (cls) => document.querySelector(`.${cls}[data-code-kind="${kind}"]`);
+    const gift = isGiftCode(s.code);
+    const hasDiscount = s.discount > 0;
+    q('code-discount').hidden = q('code-discount-div').hidden = !hasDiscount;
+    q('code-discount').querySelector('.code-line-label').textContent = `Discount · ${s.code}`;
+    q('code-discount').querySelector('.code-line-amt').textContent = `−${money(s.discount)}`;
+    q('code-voucher').hidden = q('code-due').hidden = !gift;
+    q('code-voucher').querySelector('.code-line-label').textContent = `Gift card · ${s.code}`;
+    q('code-voucher').querySelector('.code-line-amt').textContent = `−${money(s.used)}`;
+    q('code-due').querySelector('.code-line-amt').textContent = money(s.due);
+    const note = q('code-balance');
+    note.hidden = !(gift && s.balance > 0);
+    note.textContent = `${money(s.balance)} stays on this gift card.`;
+  }
+
+  // The receipt's lines for the code, for the confirmation.
+  function codeRecapLines(kind) {
+    const s = lastSettle[kind];
+    const lines = [];
+    if (!s || !s.code) return lines;
+    if (s.discount > 0) lines.push({ label: `Discount · ${s.code}`, amount: `−${money(s.discount)}` });
+    if (s.used > 0) lines.push({ label: `Gift card · ${s.code}`, amount: `−${money(s.used)}` });
+    return lines;
+  }
+
+  // An order that is placed spends the gift card (for the rest of this visit) and clears the bag's code.
+  function redeemCode(kind) {
+    const s = lastSettle[kind];
+    if (s && isGiftCode(s.code)) GIFT_BALANCES[s.code] = Math.round((GIFT_BALANCES[s.code] - s.used) * 100) / 100;
+    state.codes[kind] = null;
+  }
+
+  // The field itself: in each checkout's order total (not in the bag drawer). It keeps one code per bag.
+  const CODE_TAG_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12.2V4.5A1.5 1.5 0 0 1 4.5 3h7.7a1.5 1.5 0 0 1 1.06.44l7.3 7.3a1.5 1.5 0 0 1 0 2.12l-7.7 7.7a1.5 1.5 0 0 1-2.12 0l-7.3-7.3A1.5 1.5 0 0 1 3 12.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg>';
+  let codeBoxSeq = 0;
+  var codeBoxes = [...document.querySelectorAll('.code-box')].map((el) => {
+    const n = ++codeBoxSeq;
+    el.innerHTML = `
+      <button class="text-btn code-open" type="button" aria-expanded="false" aria-controls="code-form-${n}">Have a promo or gift card code?</button>
+      <form class="code-form" id="code-form-${n}" novalidate hidden>
+        <label class="visually-hidden" for="code-input-${n}">Promo or gift card code</label>
+        <div class="code-row">
+          <input type="text" id="code-input-${n}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Promo or gift card code" aria-describedby="code-error-${n}">
+          <button class="pill-btn dark" type="submit">Apply</button>
+        </div>
+        <p class="field-error code-error" id="code-error-${n}" role="alert" hidden></p>
+      </form>
+      <div class="code-applied" hidden>
+        <span class="code-tag">${CODE_TAG_ICON}<span class="code-tag-text"></span></span>
+        <button class="text-btn code-remove" type="button">Remove</button>
+      </div>
+      <p class="visually-hidden code-status" role="status" aria-live="polite"></p>`;
+    const box = {
+      el, fixed: el.dataset.kind || null, open: false,
+      form: el.querySelector('.code-form'), input: el.querySelector('input'), error: el.querySelector('.code-error'),
+      openBtn: el.querySelector('.code-open'), applied: el.querySelector('.code-applied'), tag: el.querySelector('.code-tag-text'),
+      removeBtn: el.querySelector('.code-remove'), status: el.querySelector('.code-status'),
+    };
+    const kindOf = () => box.fixed;
+    box.kindOf = kindOf;
+    box.openBtn.addEventListener('click', () => { box.open = true; renderCodeUI(); box.input.focus(); });
+    box.input.addEventListener('input', () => { box.error.hidden = true; box.input.removeAttribute('aria-invalid'); });
+    box.form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const kind = kindOf();
+      const key = codeKey(box.input.value);
+      const fail = (message) => { box.error.textContent = message; box.error.hidden = false; box.input.setAttribute('aria-invalid', 'true'); box.input.focus(); };
+      if (!key) return fail('Enter a code.');
+      const promo = PROMO_CODES[key];
+      if (promo) {
+        const short = (promo.min || 0) - cartSubtotal(kind);
+        if (short > 0) return fail(`${key} needs ${money(promo.min)} in items. Add ${money(short)} more.`);
+      } else if (isGiftCode(key)) {
+        if (GIFT_BALANCES[key] <= 0) return fail('That gift card has no balance left.');
+      } else {
+        return fail("That code isn't valid. Check it and try again.");
+      }
+      state.codes[kind] = key;
+      box.input.value = '';
+      box.open = false;
+      refreshCodeTotals(kind);
+      box.status.textContent = '';
+      window.setTimeout(() => { box.status.textContent = promo ? `${key} applied: ${promo.label}.` : `Gift card ${key} applied, ${money(GIFT_BALANCES[key])} to spend.`; }, 50);
+    });
+    box.removeBtn.addEventListener('click', () => {
+      const kind = kindOf();
+      const was = state.codes[kind];
+      state.codes[kind] = null;
+      box.open = false;
+      refreshCodeTotals(kind);
+      box.status.textContent = '';
+      window.setTimeout(() => { box.status.textContent = `${was} removed.`; }, 50);
+      box.openBtn.focus();
+    });
+    return box;
+  });
+
+  function renderCodeUI() {
+    if (!codeBoxes) return;
+    codeBoxes.forEach((box) => {
+      const kind = box.kindOf();
+      const code = state.codes[kind];
+      const effect = codeEffect(kind, cartSubtotal(kind));
+      box.applied.hidden = !code;
+      box.openBtn.hidden = !!code || box.open;
+      box.openBtn.setAttribute('aria-expanded', String(box.open));
+      box.form.hidden = !!code || !box.open;
+      if (code) {
+        const detail = isGiftCode(code) ? `${money(GIFT_BALANCES[code])} gift card`
+          : effect.lapsed ? `add ${money(effect.short)} to use it` : PROMO_CODES[code].label;
+        box.tag.innerHTML = `<strong>${code}</strong> <span>${detail}</span>`;
+        box.removeBtn.setAttribute('aria-label', `Remove code ${code}`);
+      } else if (!box.open) {
+        box.error.hidden = true;
+        box.input.removeAttribute('aria-invalid');
+      }
+    });
+  }
+
+  // The totals follow the code: the checkout of that bag, and the drawer's subtotal when the bag is reopened.
+  function refreshCodeTotals(kind) {
+    if (kind === 'pickup') renderCheckoutTotals(); else if (kind === 'delivery') renderDeliveryTotals(); else renderShipTotals();
+    renderDrawer();
+  }
+
   // Which cart an entry belongs to travels with it (`entry.cart`). Otherwise it follows the page it was added on:
   // the delivery order page fills the Delivery cart, every other menu the Pickup cart.
   const orderKind = () => (state.orderMode === 'delivery' && (!views.order.hidden || !views.menu.hidden) ? 'delivery' : 'pickup');
@@ -3344,9 +3504,10 @@
 
   function computeTotals() {
     const subtotal = cartSubtotal('pickup');
-    const tax = taxableSubtotal('pickup') * TAX_RATE;
-    const total = subtotal + tax;
-    return { subtotal, tax, total };
+    const { discount } = codeEffect('pickup', subtotal);
+    const tax = Math.max(0, taxableSubtotal('pickup') - discount) * TAX_RATE;
+    const total = subtotal - discount + tax;
+    return { subtotal, discount, tax, total };
   }
 
   const DRAWER_EMPTY = {
@@ -3508,6 +3669,7 @@
     // left out the tip would not match the one at checkout.
     document.getElementById('drawer-total-label').textContent = 'Subtotal';
     document.getElementById('drawer-total').textContent = money(cartSubtotal(kind));
+    renderCodeUI();
     const note = document.getElementById('drawer-total-note');
     // Delivery has a minimum: below it the note says how much is missing, and checkout waits.
     const short = kind === 'delivery' ? Math.max(0, DELIVERY_MINIMUM - cartSubtotal('delivery')) : 0;
@@ -4352,6 +4514,10 @@
     view.addEventListener('click', (e) => {
       if (e.target.closest('[data-template]')) download('corporate-gifting-template.csv', [COLUMNS, SAMPLE_ROW]);
       if (e.target.closest('[data-sample]')) download('corporate-gifting-sample.csv', [COLUMNS, SAMPLE_ROW]);
+    });
+    // The Corporate Gifting page's "How it works" offers the same template.
+    document.getElementById('view-corporate-gifting').addEventListener('click', (e) => {
+      if (e.target.closest('[data-template]')) download('corporate-gifting-template.csv', [COLUMNS, SAMPLE_ROW]);
     });
 
     const cardError = (id, msg) => { const p = el(`cgo-error-${id}`); p.textContent = msg || ''; p.hidden = !msg; };
@@ -6824,7 +6990,7 @@
     // A tip is a percentage of the food, not of a gift card.
     const tipBase = taxableSubtotal('pickup');
     const tipAmt = state.tipPct === 'custom' ? state.tipCustom : tipBase * (state.tipPct / 100);
-    const total = preTipTotal + tipAmt;
+    const gross = preTipTotal + tipAmt;
 
     document.getElementById('sum-subtotal').textContent = money(subtotal);
     document.getElementById('sum-tax').textContent = money(tax);
@@ -6834,9 +7000,11 @@
       const pct = chip.dataset.value === 'custom' ? null : Number(chip.dataset.value);
       chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.tipCustom : tipBase * (pct / 100));
     });
-    document.getElementById('sum-total').textContent = money(total);
+    document.getElementById('sum-total').textContent = money(gross);
+    // A gift card is spent on all of it; what is left to pay is the figure the order is placed for.
+    const { due } = settleCode('pickup', subtotal, gross);
     if (!placingOrder) document.getElementById('place-order').textContent = 'Place order';
-    return total;
+    return due;
   }
 
   const PIN_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12Z" stroke="#402D00" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="#402D00" stroke-width="1.8"/></svg>';
@@ -6850,11 +7018,12 @@
 
   function deliveryTotals() {
     const subtotal = cartSubtotal('delivery');
-    const tax = taxableSubtotal('delivery') * TAX_RATE;
+    const { discount } = codeEffect('delivery', subtotal);
+    const tax = Math.max(0, taxableSubtotal('delivery') - discount) * TAX_RATE;
     const tip = state.dTipPct === 'custom' ? state.dTipCustom : taxableSubtotal('delivery') * (state.dTipPct / 100);
     // Catering in the bag brings the catering delivery fee: a flat fee, free over the threshold.
     const fee = bagHasCatering('delivery') ? (subtotal >= CATERING_FREE_DELIVERY_AT ? 0 : CATERING_DELIVERY_FEE) : DELIVERY_FEE;
-    return { subtotal, fee, tax, tip, total: subtotal + fee + tax + tip };
+    return { subtotal, discount, fee, tax, tip, total: subtotal - discount + fee + tax + tip };
   }
 
   function renderDeliveryTotals() {
@@ -6868,12 +7037,13 @@
       chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.dTipCustom : taxableSubtotal('delivery') * (pct / 100));
     });
     document.getElementById('dc-total').textContent = money(t.total);
+    const settled = settleCode('delivery', t.subtotal, t.total);
     // Below the minimum the order cannot be placed; the note says by how much, and the cart is where to fix it.
     const short = Math.max(0, DELIVERY_MINIMUM - t.subtotal);
     dcMinNote.hidden = short === 0;
     dcMinNote.textContent = short > 0 ? `Add ${money(short)} to reach the ${money(DELIVERY_MINIMUM)} delivery minimum.` : '';
     if (!placingOrder) document.getElementById('dc-place-order').disabled = short > 0;
-    return t.total;
+    return settled.due;
   }
 
   function renderDeliveryCheckout() {
@@ -7045,8 +7215,10 @@
       items.push({ label: 'Delivery fee', amount: money(t.fee) });
       items.push({ label: 'Tax', amount: money(t.tax) });
       if (t.tip > 0) items.push({ label: 'Courier tip', amount: money(t.tip) });
+      items.push(...codeRecapLines('delivery'));
       const addressLines = `<strong>${escapeHTML(deliveryLabel())}</strong><br>${escapeHTML(deliveryStreetLine())}<br>${escapeHTML(d.city)}, ${d.state} ${escapeHTML(d.zip)}<br>${escapeHTML(deliveryDropoffLine())}`;
 
+      redeemCode('delivery');
       clearCart('delivery');
       endDeliverySession();
       showConfirmation({
@@ -7181,6 +7353,9 @@
     });
     state.carts[to].push(...lines);
     state.carts[from] = [];
+    // The bag's code goes with its lines.
+    state.codes[to] = state.codes[to] || state.codes[from];
+    state.codes[from] = null;
     persistCart();
     renderCartBadge();
     renderDrawer();
@@ -7189,6 +7364,7 @@
 
   function clearCart(kind) {
     state.carts[kind] = [];
+    state.codes[kind] = null;
     persistCart();
     renderCartBadge();
     renderDrawer();
@@ -7242,7 +7418,9 @@
         : dateLabel === 'Tomorrow' ? `tomorrow at <strong>${readyBy}</strong>`
         : `on <strong>${dateLabel}</strong> at <strong>${readyBy}</strong>`;
       const items = recapLines(state.carts.pickup);
+      items.push(...codeRecapLines('pickup'));
 
+      redeemCode('pickup');
       clearCart('pickup');
       clearPickupSession();
       showConfirmation({
@@ -7468,9 +7646,10 @@
 
   function shipTotals() {
     const subtotal = cartSubtotal('shipping');
+    const { discount } = codeEffect('shipping', subtotal);
     const shipping = shipAddressKnown() ? SHIPPING_RATE_PLACEHOLDER : null;
     const tip = state.sTipPct === 'custom' ? state.sTipCustom : subtotal * (state.sTipPct / 100);
-    return { subtotal, shipping, tip, total: subtotal + (shipping || 0) + tip };
+    return { subtotal, discount, shipping, tip, total: subtotal - discount + (shipping || 0) + tip };
   }
 
   function renderShipTotals() {
@@ -7486,7 +7665,7 @@
       chip.querySelector('.tip-chip-amt').textContent = money(pct === null ? state.sTipCustom : t.subtotal * (pct / 100));
     });
     scField('total').textContent = money(t.total);
-    return t;
+    return { ...t, due: settleCode('shipping', t.subtotal, t.total).due };
   }
 
   function renderShipCheckout() {
@@ -7572,10 +7751,12 @@
     const items = recapLines(state.carts.shipping);
     items.push({ label: 'Shipping and handling', amount: money(t.shipping) });
     if (t.tip > 0) items.push({ label: 'Tip', amount: money(t.tip) });
+    items.push(...codeRecapLines('shipping'));
     const apt = f('street2').value.trim();
     const who = scGift.checked ? f('recipient').value.trim() : f('name').value.trim();
     const addressLines = `${escapeHTML(who)}<br>${escapeHTML(f('street').value.trim())}${apt ? ', ' + escapeHTML(apt) : ''}<br>${escapeHTML(f('city').value.trim())}, ${f('state').value} ${f('zip').value.trim()}`;
 
+    redeemCode('shipping');
     clearCart('shipping');
     showConfirmation({
       number: orderNumber(),
@@ -7583,7 +7764,7 @@
       steps: ['Packing', 'Shipped'],
       name: f('name').value,
       cheer: 'Your kit is reserved. Good egg.',
-      items, total: t.total,
+      items, total: t.due,
       cardHTML: `${PIN_ICON}<span>${addressLines}</span>`,
       backLabel: '← Back to Nationwide Shipping', backView: 'shipping',
     });

@@ -2433,14 +2433,35 @@ body:has(#cart-bar:not([hidden])) .site-footer { padding-bottom: 88px; }
    steps (after Givingli and Calm); the three packages are side-by-side white cards with the price first (after OpenTable and Dollar Shave Club) and the live
    tagline at the foot of each; e-gifts are a Cool Linen box with a stack of cards (after Airbnb's business gift cards); the FAQs are a plain list that opens in
    place, one at a time, beside the heading (after Maze and Bird). */
+/* Corporate gifting hero: the page's name is the title; "Nostalgic. Unique. Delicious." is the quieter line under it (still inside the h1), so the heading is two lines, not three
+   of the same weight, and no word is left alone. The two buttons sit side by side; under them a plain line of the facts a buyer asks first. */
+.cg-tagline { display: block; margin-top: 8px; font-size: 30px; line-height: 38px; font-weight: 700; letter-spacing: 0; color: var(--deg-ink-heading); text-wrap: balance; }
+.cg-facts { display: flex; flex-wrap: wrap; gap: 4px 0; margin: 28px 0 0; padding: 0; list-style: none; }
+.cg-facts li { font-size: 14px; line-height: 20px; font-weight: 600; color: var(--deg-ink-heading); }
+.cg-facts li + li::before { content: ""; display: inline-block; width: 1px; height: 14px; margin: 0 14px; vertical-align: -2px; background: var(--deg-border-control); }
+@media (max-width: 640px) { .cg-facts { flex-direction: column; gap: 6px; } .cg-facts li + li::before { display: none; } }
 .cg-sub { margin-top: 20px; font-size: 20px; line-height: 28px; font-weight: 700; color: var(--deg-ink-deep); }
 .cg-sub + .ip-lede { margin-top: 8px; }
 .cg-section { margin-top: 112px; text-align: center; }
 .ip-head + .cg-section { margin-top: 48px; }
 .cg-section h2, .cg-egift h2, .cg-faq h2 { font-size: 32px; line-height: 42px; font-weight: 800; color: var(--deg-ink-deep); text-wrap: balance; }
-.cg-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; max-width: 880px; margin: 40px auto 0; padding: 0; list-style: none; }
-.cg-num { display: grid; place-items: center; width: 44px; height: 44px; margin: 0 auto; border-radius: 50%; background: var(--deg-gold); color: var(--deg-ink-on-gold); font-size: 18px; line-height: 1; font-weight: 700; }
+.cg-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; max-width: 960px; margin: 40px auto 0; padding: 0; list-style: none; }
+.cg-num { display: grid; place-items: center; width: 44px; height: 44px; margin: 0 auto; border: 1.5px solid var(--deg-ink-deep); border-radius: 50%; color: var(--deg-ink-deep); font-size: 18px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
 .cg-how h3 { margin-top: 16px; font-size: 22px; line-height: 29px; color: var(--deg-ink-deep); text-wrap: balance; }
+.cg-how p { margin: 8px auto 0; max-width: 28ch; font-size: 16px; line-height: 24px; color: var(--deg-ink-body); text-wrap: pretty; }
+.cg-nb { white-space: nowrap; }
+.cg-how .cg-how-link { padding: 0 4px; margin-top: 4px; min-height: 44px; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; color: var(--deg-link); cursor: pointer; }
+/* On a phone each step is a row (the number at the left, the words beside it), divided by hairlines, so the three read as one short list. */
+@media (max-width: 640px) {
+  .cg-how { gap: 0; margin-top: 24px; text-align: left; }
+  .cg-how li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 16px; align-items: start; padding: 20px 0; border-top: 1px solid var(--deg-border-chip); }
+  .cg-how li:last-child { border-bottom: 1px solid var(--deg-border-chip); }
+  .cg-how .cg-num { grid-row: 1 / span 3; margin: 0; }
+  .cg-how h3 { margin-top: 0; font-size: 20px; line-height: 26px; }
+  .cg-how h3, .cg-how p, .cg-how .cg-how-link { grid-column: 2; }
+  .cg-how p { margin: 4px 0 0; max-width: none; }
+  .cg-how .cg-how-link { justify-self: start; margin: 0 0 -10px; padding: 0; min-height: 44px; }
+}
 .cg-intro { max-width: 64ch; margin: 16px auto 0; font-size: 17px; line-height: 28px; color: var(--deg-ink-body); text-wrap: pretty; }
 .cg-tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 48px; text-align: left; }
 .cg-tier { display: flex; flex-direction: column; padding: 32px 28px 28px; border-radius: var(--deg-radius-panel); background: var(--deg-white); box-shadow: var(--deg-shadow-ambient); }
@@ -2617,3 +2638,28 @@ body:has(#cart-bar:not([hidden])) .site-footer { padding-bottom: 88px; }
 @media (max-width: 640px) {
   .gk-recap { grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
 }
+
+
+/* ---------- Promo and gift card code ----------
+   One field for both kinds, in each checkout's order total (not in the bag drawer). It starts as an underlined line of text (the live site's "Have a coupon?"),
+   opens in place to a field and an Apply button, and once a code is on it becomes a tag with a Remove link. The saving appears as its own line under
+   the subtotal; a gift card appears under the total with what is left to pay. The standard field, the dark pill, no new colors or hover effects. */
+.code-box { display: flex; flex-direction: column; gap: 8px; }
+.code-box [hidden], .code-box[hidden], .summary-line[hidden], .summary-divider[hidden] { display: none; }
+.code-open { align-self: flex-start; min-height: 44px; padding: 0; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.code-form { display: flex; flex-direction: column; gap: 8px; }
+.code-row { display: flex; gap: 8px; }
+.code-row input { flex: 1 1 auto; min-width: 0; text-transform: uppercase; }
+.code-row input::placeholder { text-transform: none; }
+.code-row .pill-btn { flex: none; min-height: 48px; padding: 0 22px; }
+.code-form .field-error { margin: 0; }
+.code-applied { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 4px 12px; border-radius: var(--deg-radius-tight); background: var(--deg-cream-cool); }
+.code-tag { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; line-height: 20px; color: var(--deg-ink-deep); }
+.code-tag svg { flex: none; }
+.code-tag-text { min-width: 0; }
+.code-tag-text strong { font-weight: 700; letter-spacing: .02em; }
+.code-tag-text span { color: var(--deg-ink-muted); }
+.code-remove { flex: none; min-height: 44px; padding: 0 8px; color: var(--deg-ink-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.code-box :focus-visible { outline: none; box-shadow: 0 0 0 2px var(--deg-cream), 0 0 0 4px var(--deg-ink-deep); border-radius: var(--deg-radius-tight); }
+.summary-line.code-discount .code-line-amt, .summary-line.code-voucher .code-line-amt { font-weight: 600; color: var(--deg-ink-deep); }
+.summary-line.code-due { font-weight: 700; color: var(--deg-ink-deep); }

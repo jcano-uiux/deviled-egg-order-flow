@@ -1009,14 +1009,20 @@
 </main>
 
 <main id="view-corporate-gifting" class="view page-view ip-view" hidden>
-  <header class="ip-head">
+  <header class="ip-head is-copy-first">
     <div class="ip-head-copy">
-      <h1>Corporate gifting<br>Nostalgic. Unique. Delicious.</h1>
+      <h1>Corporate gifting<span class="cg-tagline">Nostalgic. Unique. Delicious.</span></h1>
       <p class="cg-sub">Savory gifts for every occasion.</p>
-      <p class="ip-lede">At Deviled Egg Co., we believe every occasion deserves a burst of flavor. Our gourmet deviled eggs are more than just a snack; they create memorable moments. Ideal for corporate events, celebrations, or as thoughtful gifts, our creations are made with premium ingredients and culinary passion. Elevate your gifting with our unique offerings that will delight any palate.</p>
+      <p class="ip-lede">Gourmet deviled eggs, hand-packed and shipped to every name on your list. Choose a price, upload your recipients, and we handle the rest.</p>
       <div class="ip-actions">
-        <a class="pill-btn primary" href="mailto:info@deviledeggco.com">Send us email</a>
+        <a class="pill-btn primary" href="#corporate-gift-order" data-view="corporate-gift-order">Order now</a>
+        <a class="pill-btn outline" href="mailto:info@deviledeggco.com">Send us email</a>
       </div>
+      <ul class="cg-facts" aria-label="At a glance">
+        <li>$30, $50 or $75 a gift</li>
+        <li>10 or more recipients</li>
+        <li>We ship to every address on your list</li>
+      </ul>
     </div>
     <div class="ip-media"><div class="ip-egg"><div class="ip-egg-photo"><img src="assets/pages/corporate-gifting.webp" alt="Deviled egg gift boxes for a company" width="1200" height="723" decoding="async"></div></div></div>
   </header>
@@ -1024,9 +1030,9 @@
   <section class="cg-section" aria-labelledby="cg-how">
     <h2 id="cg-how">How it works</h2>
     <ol class="cg-how">
-      <li><span class="cg-num" aria-hidden="true">1</span><h3>Select your price point</h3></li>
-      <li><span class="cg-num" aria-hidden="true">2</span><h3>Upload your list</h3></li>
-      <li><span class="cg-num" aria-hidden="true">3</span><h3>We ship to your recipients!</h3></li>
+      <li><span class="cg-num" aria-hidden="true">1</span><h3>Select your price point</h3><p>Choose the Eggsecutive Sampler ($30), the VIP Egg-sperience ($50) or the <span class="cg-nb">Boardroom Egg-stravaganza</span> ($75).</p></li>
+      <li><span class="cg-num" aria-hidden="true">2</span><h3>Upload your list</h3><p>Add a CSV with at least 10 recipients: first and last name, email, address and ZIP.</p><button class="text-btn cg-how-link" type="button" data-template>Download the CSV template</button></li>
+      <li><span class="cg-num" aria-hidden="true">3</span><h3>We ship to your recipients!</h3><p>We work out shipping and email you a pay link. Once you've paid, we pack and send every gift.</p></li>
     </ol>
   </section>
 
@@ -1374,8 +1380,11 @@
 
       <section class="summary-panel">
         <h2>Order total</h2>
+        <div class="code-box" data-kind="pickup"></div>
         <div class="summary-line"><span>Subtotal</span><span id="sum-subtotal">$0.00</span></div>
         <div class="summary-divider"></div>
+        <div class="summary-line code-discount" data-code-kind="pickup" hidden><span class="code-line-label">Discount</span><span class="code-line-amt"></span></div>
+        <div class="summary-divider code-discount-div" data-code-kind="pickup" hidden></div>
         <div class="summary-line"><span>Tax</span><span id="sum-tax">$0.00</span></div>
         <div class="summary-divider"></div>
 
@@ -1397,6 +1406,9 @@
 
         <div class="summary-divider"></div>
         <div class="summary-line total"><span>Total</span><span id="sum-total">$0.00</span></div>
+        <div class="summary-line code-voucher" data-code-kind="pickup" hidden><span class="code-line-label">Gift card</span><span class="code-line-amt"></span></div>
+        <div class="summary-line code-due" data-code-kind="pickup" hidden><span>Amount due</span><span class="code-line-amt"></span></div>
+        <p class="summary-note code-balance" data-code-kind="pickup" hidden></p>
 
         <p class="pay-note"><span id="pay-note-ready"></span></p>
         <button class="pill-btn dark full" id="place-order" type="button">Place order</button>
@@ -1561,8 +1573,11 @@
 
       <section class="summary-panel">
         <h2>Order total</h2>
+        <div class="code-box" data-kind="delivery"></div>
         <div class="summary-line"><span>Subtotal</span><span id="dc-subtotal">$0.00</span></div>
         <div class="summary-divider"></div>
+        <div class="summary-line code-discount" data-code-kind="delivery" hidden><span class="code-line-label">Discount</span><span class="code-line-amt"></span></div>
+        <div class="summary-divider code-discount-div" data-code-kind="delivery" hidden></div>
         <div class="summary-line"><span>Delivery fee</span><span id="dc-fee">$0.00</span></div>
         <div class="summary-divider"></div>
         <div class="summary-line"><span>Tax</span><span id="dc-tax">$0.00</span></div>
@@ -1587,6 +1602,9 @@
 
         <div class="summary-divider"></div>
         <div class="summary-line total"><span>Total</span><span id="dc-total">$0.00</span></div>
+        <div class="summary-line code-voucher" data-code-kind="delivery" hidden><span class="code-line-label">Gift card</span><span class="code-line-amt"></span></div>
+        <div class="summary-line code-due" data-code-kind="delivery" hidden><span>Amount due</span><span class="code-line-amt"></span></div>
+        <p class="summary-note code-balance" data-code-kind="delivery" hidden></p>
 
         <p class="pay-note"><span id="dc-pay-note"></span></p>
         <p class="field-error dc-min-note" id="dc-min-note" hidden></p>
@@ -1695,8 +1713,11 @@
 
       <section class="summary-panel">
         <h2>Order total</h2>
+        <div class="code-box" data-kind="shipping"></div>
         <div class="summary-line"><span>Subtotal</span><span id="sc-subtotal">$0.00</span></div>
         <div class="summary-divider"></div>
+        <div class="summary-line code-discount" data-code-kind="shipping" hidden><span class="code-line-label">Discount</span><span class="code-line-amt"></span></div>
+        <div class="summary-divider code-discount-div" data-code-kind="shipping" hidden></div>
         <div class="summary-line"><span>Shipping and handling</span><span id="sc-shipping"></span></div>
         <p class="summary-note" id="sc-shipping-note">Enter your address to view shipping options.</p>
         <div class="summary-divider"></div>
@@ -1719,6 +1740,9 @@
 
         <div class="summary-divider"></div>
         <div class="summary-line total"><span>Total</span><span id="sc-total">$0.00</span></div>
+        <div class="summary-line code-voucher" data-code-kind="shipping" hidden><span class="code-line-label">Gift card</span><span class="code-line-amt"></span></div>
+        <div class="summary-line code-due" data-code-kind="shipping" hidden><span>Amount due</span><span class="code-line-amt"></span></div>
+        <p class="summary-note code-balance" data-code-kind="shipping" hidden></p>
         <button class="pill-btn dark full" id="sc-place-order" type="button">Place order</button>
       </section>
     </aside>
