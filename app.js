@@ -563,8 +563,12 @@
     SAVE5: { amount: 5, min: 25, label: '$5 off $25 or more' },
   };
   const GIFT_BALANCES = { GIFT25: 25, GIFT100: 100 };
-  state.codes = { pickup: null, delivery: null, shipping: null };
-  const lastSettle = { pickup: null, delivery: null, shipping: null };
+  state.codes = { pickup: null, delivery: null, shipping: null, corporate: null };
+  const lastSettle = { pickup: null, delivery: null, shipping: null, corporate: null };
+  // The corporate gift order is not a bag: its subtotal and its totals panel come from that page (see initCorporateOrder).
+  let corporateSubtotal = () => 0;
+  let corporateRender = () => {};
+  const codeSubtotal = (kind) => (kind === 'corporate' ? corporateSubtotal() : cartSubtotal(kind));
   const codeKey = (text) => text.toUpperCase().replace(/[^A-Z0-9]/g, '');
   const isGiftCode = (code) => !!code && Object.prototype.hasOwnProperty.call(GIFT_BALANCES, code);
 
@@ -628,14 +632,14 @@
     const n = ++codeBoxSeq;
     el.innerHTML = `
       <button class="text-btn code-open" type="button" aria-expanded="false" aria-controls="code-form-${n}">Have a promo or gift card code?</button>
-      <form class="code-form" id="code-form-${n}" novalidate hidden>
+      <div class="code-form" id="code-form-${n}" role="group" aria-label="Promo or gift card code" hidden>
         <label class="visually-hidden" for="code-input-${n}">Promo or gift card code</label>
         <div class="code-row">
           <input type="text" id="code-input-${n}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Promo or gift card code" aria-describedby="code-error-${n}">
-          <button class="pill-btn dark" type="submit">Apply</button>
+          <button class="pill-btn dark code-apply" type="button">Apply</button>
         </div>
         <p class="field-error code-error" id="code-error-${n}" role="alert" hidden></p>
-      </form>
+      </div>
       <div class="code-applied" hidden>
         <span class="code-tag">${CODE_TAG_ICON}<span class="code-tag-text"></span></span>
         <button class="text-btn code-remove" type="button">Remove</button>
@@ -651,15 +655,17 @@
     box.kindOf = kindOf;
     box.openBtn.addEventListener('click', () => { box.open = true; renderCodeUI(); box.input.focus(); });
     box.input.addEventListener('input', () => { box.error.hidden = true; box.input.removeAttribute('aria-invalid'); });
-    box.form.addEventListener('submit', (e) => {
-      e.preventDefault();
+    // This is a group, not a form: the checkout pages the field sits in are forms themselves, and forms cannot nest.
+    box.input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
+    el.querySelector('.code-apply').addEventListener('click', () => apply());
+    const apply = () => {
       const kind = kindOf();
       const key = codeKey(box.input.value);
       const fail = (message) => { box.error.textContent = message; box.error.hidden = false; box.input.setAttribute('aria-invalid', 'true'); box.input.focus(); };
       if (!key) return fail('Enter a code.');
       const promo = PROMO_CODES[key];
       if (promo) {
-        const short = (promo.min || 0) - cartSubtotal(kind);
+        const short = (promo.min || 0) - codeSubtotal(kind);
         if (short > 0) return fail(`${key} needs ${money(promo.min)} in items. Add ${money(short)} more.`);
       } else if (isGiftCode(key)) {
         if (GIFT_BALANCES[key] <= 0) return fail('That gift card has no balance left.');
@@ -672,7 +678,7 @@
       refreshCodeTotals(kind);
       box.status.textContent = '';
       window.setTimeout(() => { box.status.textContent = promo ? `${key} applied: ${promo.label}.` : `Gift card ${key} applied, ${money(GIFT_BALANCES[key])} to spend.`; }, 50);
-    });
+    };
     box.removeBtn.addEventListener('click', () => {
       const kind = kindOf();
       const was = state.codes[kind];
@@ -691,7 +697,7 @@
     codeBoxes.forEach((box) => {
       const kind = box.kindOf();
       const code = state.codes[kind];
-      const effect = codeEffect(kind, cartSubtotal(kind));
+      const effect = codeEffect(kind, codeSubtotal(kind));
       box.applied.hidden = !code;
       box.openBtn.hidden = !!code || box.open;
       box.openBtn.setAttribute('aria-expanded', String(box.open));
@@ -710,7 +716,7 @@
 
   // The totals follow the code: the checkout of that bag, and the drawer's subtotal when the bag is reopened.
   function refreshCodeTotals(kind) {
-    if (kind === 'pickup') renderCheckoutTotals(); else if (kind === 'delivery') renderDeliveryTotals(); else renderShipTotals();
+    if (kind === 'pickup') renderCheckoutTotals(); else if (kind === 'delivery') renderDeliveryTotals(); else if (kind === 'corporate') corporateRender(); else renderShipTotals();
     renderDrawer();
   }
 
@@ -3771,6 +3777,7 @@
     if (name === 'flavors') renderFlavorsPage();
     if (name === 'about') renderAboutFlavors();
     if (name === 'about') { initAboutHero(); initAboutValues(); }
+    if (name === 'corporate-gifting') initGiftingHero();
     if (name === 'gift-cards') replayGiftStrip();
     if (name === 'gift-cards') syncGiftCard();
     if (name === 'shipping-returns' || name === 'privacy' || name === 'terms') views[name].dispatchEvent(new Event('pol:shown'));
@@ -4348,13 +4355,13 @@
   // its angle to a light from the upper left (the back of the paper, plain cream, shows on the outside of the coil), and the coil throws a soft shadow on the
   // egg. When it is flat the strips give way to the plain image, the sticker swings a little as it settles, and its shadow arrives last. Nothing shows before
   // it starts, and a replay (or leaving the page) cancels the run in progress.
-  let heroBadgeRun = 0;
-  function startHeroBadge() {
-    const badge = document.getElementById('ab-hero-badge');
+  // Used by the About hero and the Corporate Gifting hero; each badge keeps its own run count, so a replay or leaving the page cancels only its own run.
+  function startHeroBadge(id = 'ab-hero-badge') {
+    const badge = document.getElementById(id);
     if (!badge) return;
     const stage = badge.querySelector('.ip-badge-stage');
     const cast = badge.querySelector('.ip-badge-cast');
-    const run = ++heroBadgeRun;
+    const run = (badge._run = (badge._run || 0) + 1);
     // Fewer strips where the device is likely to be modest: a phone (the badge is small there anyway) or a machine reporting few cores or little memory.
     const modest = window.innerWidth <= 767 || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
     const N = modest ? 36 : 56;
@@ -4426,7 +4433,7 @@
     }
     const startAt = performance.now() + DELAY;
     const tick = (now) => {
-      if (run !== heroBadgeRun) return;
+      if (run !== badge._run) return;
       const e = now - startAt;
       if (e < 0) { requestAnimationFrame(tick); return; }
       if (badge.dataset.state !== 'play') { stage.style.display = ''; strips.forEach((st) => { st._flat = undefined; }); badge.dataset.state = 'play'; }
@@ -4443,13 +4450,14 @@
         { transform: 'rotate(8.7deg)', offset: 0.88 },
         { transform: 'rotate(8deg) scale(1)' },
       ], { duration: SWING, easing: 'ease-out' });
-      swing.onfinish = () => { if (run === heroBadgeRun) badge.dataset.state = 'done'; };
+      swing.onfinish = () => { if (run === badge._run) badge.dataset.state = 'done'; };
     };
     requestAnimationFrame(tick);
   }
 
-  // Corporate gift order: pick any mix of the three kits, give each one a recipient list (a CSV, at least 10 recipients; the count fills in from the file), choose
-  // a delivery week, and send the request. Nothing is sent from this prototype; the live site calculates shipping and emails a pay link.
+  // Corporate gift order, in two steps on one page. Step 1: pick any mix of the three kits and give each one a recipient list (a CSV of at least 10 people; the
+  // count is read from the file and cannot be typed), then choose a delivery week. Step 2: who is ordering and where the pay link goes. Nothing is sent from this
+  // prototype; the live site calculates shipping and emails a pay link.
   (function initCorporateOrder() {
     const view = views['corporate-gift-order'];
     const form = document.getElementById('cgo-form');
@@ -4462,24 +4470,29 @@
     const MIN = 10;
     const COLUMNS = ['First Name', 'Last Name', 'Email', 'Phone', 'Address', 'Address 2', 'City', 'State', 'Zip', 'Business (B) or Residential (R)'];
     const SAMPLE_ROW = ['John', 'Doe', 'john.doe@example.com', '5551234567', '123 Main Street', 'Suite 100', 'Dallas', 'TX', '75001', 'B'];
-    const state = {};
-    PRODUCTS.forEach((p) => { state[p.id] = { rows: 0, file: '' }; });
+    const NEEDED = ['First Name', 'Last Name', 'Email', 'Address', 'Zip'];
+    const rec = {};
+    PRODUCTS.forEach((p) => { rec[p.id] = { rows: 0, file: '', size: 0 }; });
     const money = (n) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const el = (id) => document.getElementById(id);
     const card = (id) => form.querySelector(`.cgo-card[data-product="${id}"]`);
+    const details = el('cgo-details');
+    const qtyOf = (id) => rec[id].rows;
+    corporateSubtotal = () => PRODUCTS.reduce((sum, p) => sum + qtyOf(p.id) * p.price, 0);
 
-    // The flavors a kit can be filled with.
+    // The flavors a kit can be filled with, each with the site's checkbox (the 24px box that fills Deep Ink with a white check, as on the other pages).
+    const FLAVOR_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     PRODUCTS.filter((p) => Object.keys(p.kits).length).forEach((p) => {
       const list = el(`cgo-flavors-${p.id}`).querySelector('.cgo-flavor-list');
-      list.innerHTML = FLAVORS.map((f) => `<label class="cgo-flavor"><input type="checkbox" name="flavor-${p.id}" value="${f.id}"><span>${f.label}</span></label>`).join('');
+      list.innerHTML = FLAVORS.map((f) => `<label class="cgo-flavor"><input type="checkbox" name="flavor-${p.id}" value="${f.id}"><span class="page-consent-box" aria-hidden="true">${FLAVOR_CHECK}</span><span class="cgo-flavor-name">${f.label}</span></label>`).join('');
     });
 
-    // Delivery weeks: Monday to Sunday, starting with the first Monday that is at least five days away, twelve of them.
+    // Delivery weeks, as on the live page: Monday to Sunday, the first being the week that starts next Monday, twelve of them.
     const week = el('cgo-week');
     const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     (() => {
-      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 5);
-      d.setDate(d.getDate() + ((8 - d.getDay()) % 7));
+      const d = new Date(); d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + (((8 - d.getDay()) % 7) || 7));
       for (let i = 0; i < 12; i++) {
         const end = new Date(d); end.setDate(end.getDate() + 6);
         const o = document.createElement('option');
@@ -4489,6 +4502,7 @@
         d.setDate(d.getDate() + 7);
       }
     })();
+    const weekText = () => (week.value ? week.options[week.selectedIndex].textContent : '');
 
     function csvRows(text) {
       const rows = []; let row = []; let cell = ''; let q = false;
@@ -4523,28 +4537,62 @@
     const cardError = (id, msg) => { const p = el(`cgo-error-${id}`); p.textContent = msg || ''; p.hidden = !msg; };
     function option(id) { const r = card(id).querySelector('input[type="radio"]:checked'); return r ? r.value : ''; }
     function need(id) { const p = PRODUCTS.find((x) => x.id === id); return p.kits[option(id)] || 0; }
+    const lineHTML = (l) => `<div class="summary-line"><span class="summary-line-text"><span>${l.p.name}</span><small class="summary-line-sub">${l.qty} recipients × ${money(l.p.price)}</small></span><span>${money(l.sum)}</span></div>`;
+
+    // Everything that shows the order follows the files: each card's count and status, the order lines, the week, the total, the checklist, the phone bar.
     function sync() {
       const lines = []; let total = 0;
       PRODUCTS.forEach((p) => {
-        const qty = Number(el(`cgo-qty-${p.id}`).value) || 0;
+        const qty = qtyOf(p.id);
         const fl = el(`cgo-flavors-${p.id}`);
         const n = need(p.id);
         if (fl) { fl.hidden = !n; if (n) el(`cgo-flavors-${p.id}-title`).textContent = `Choose ${n} flavors`; }
         card(p.id).querySelectorAll('.cgo-options .radio-choice').forEach((row) => row.classList.toggle('selected', row.querySelector('input').checked));
-        if (qty > 0) { lines.push({ p, qty, sum: qty * p.price }); total += qty * p.price; }
+        el(`cgo-qty-${p.id}`).textContent = String(qty);
+        const math = el(`cgo-math-${p.id}`);
+        card(p.id).classList.toggle('is-included', qty > 0);
+        if (qty > 0) {
+          lines.push({ p, qty, sum: qty * p.price }); total += qty * p.price;
+          el(`cgo-status-${p.id}`).textContent = `Included in your order: ${qty} recipients, ${money(qty * p.price)}`;
+          math.textContent = `${qty} recipients × ${money(p.price)} = ${money(qty * p.price)}`; math.hidden = false;
+        } else {
+          el(`cgo-status-${p.id}`).textContent = 'Optional. Add a recipient file to include this gift.';
+          math.hidden = true;
+        }
       });
-      el('cgo-lines').innerHTML = lines.length
-        ? lines.map((l) => `<div class="cgo-line"><div><p class="cgo-line-name">Corporate Gift - ${l.p.name}</p><p class="cgo-line-sub">(${l.qty} recipients)</p></div><p class="cgo-line-sum">${money(l.sum)}</p></div>`).join('')
-        : '<p class="cgo-none">No items selected yet.</p>';
+      el('cgo-lines').innerHTML = lines.length ? lines.map(lineHTML).join('') : '<p class="cgo-none">No gifts added yet.</p>';
+      el('cgo-week-sum').textContent = weekText() || 'Not chosen yet';
       el('cgo-total').textContent = money(total);
-      return lines;
+      el('cgo-todo').querySelector('[data-k="gift"]').classList.toggle('is-done', lines.length > 0);
+      el('cgo-todo').querySelector('[data-k="week"]').classList.toggle('is-done', !!week.value);
+      return { lines, total };
+    }
+
+    // Step 2's totals: the code takes money off the gifts; shipping is not known yet, so it is not in the figure.
+    function renderStep2() {
+      const { lines, total } = sync();
+      const { discount } = codeEffect('corporate', total);
+      el('cgo-d-lines').innerHTML = lines.map(lineHTML).join('');
+      el('cgo-d-week').textContent = weekText() || 'Not chosen yet';
+      el('cgo-d-subtotal').textContent = money(total);
+      el('cgo-d-total').textContent = money(total - discount);
+      return settleCode('corporate', total, total - discount);
+    }
+    corporateRender = renderStep2;
+
+    function showStep(n) {
+      el('cgo-step1').hidden = n !== 1; el('cgo-step2').hidden = n !== 2; el('cgo-done').hidden = n !== 3;
+      if (n === 2) { renderStep2(); renderCodeUI(); }
+      window.scrollTo(0, 0);
+      const heading = n === 1 ? view.querySelector('#cgo-step1 h1') : n === 2 ? view.querySelector('#cgo-step2 h1') : el('cgo-done').querySelector('h2');
+      heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
     }
 
     form.addEventListener('input', (e) => {
       const c = e.target.closest('.cgo-card');
       if (c) {
         cardError(c.dataset.product, '');
-        if (e.target.matches('input[type="number"]')) setFieldError(e.target, '');
         if (e.target.matches('input[type="checkbox"]')) {
           const p = PRODUCTS.find((x) => x.id === c.dataset.product); const n = need(p.id);
           const boxes = [...c.querySelectorAll('.cgo-flavor input')];
@@ -4564,29 +4612,64 @@
       }
       if (e.target.matches('input[type="file"]')) readFile(e.target);
     });
+
+    // A file's three states: none (the drop area), counted (a chip with its name and recipients), or a problem (the drop area and a message that says what to fix).
+    function showFile(id, chip) {
+      const box = el(`cgo-filestat-${id}`);
+      box.hidden = !chip;
+      card(id).querySelector('.cgo-drop').hidden = !!chip;
+      if (chip) {
+        box.querySelector('.cgo-file-name').textContent = chip.file;
+        box.querySelector('.cgo-file-meta').textContent = `${chip.rows} recipients · ${chip.size < 1024 ? `${chip.size} bytes` : `${(chip.size / 1024).toFixed(1)} KB`}`;
+      }
+    }
+    function clearFile(id) { rec[id] = { rows: 0, file: '', size: 0 }; showFile(id, null); cardError(id, ''); }
     function readFile(input) {
       const id = input.id.replace('cgo-file-', '');
       const file = input.files[0];
-      const stat = el(`cgo-filestat-${id}`);
-      const qty = el(`cgo-qty-${id}`);
-      state[id] = { rows: 0, file: '' };
-      stat.hidden = true; cardError(id, '');
-      if (!file) return;
+      clearFile(id);
+      if (!file) { sync(); return; }
       const reader = new FileReader();
       reader.onload = () => {
+        const bad = (msg) => { input.value = ''; cardError(id, msg); sync(); };
         const rows = csvRows(String(reader.result).replace(/^﻿/, ''));
         const head = (rows[0] || []).map((x) => x.trim().toLowerCase());
-        const missing = ['first name', 'last name', 'email', 'address', 'zip'].filter((c) => !head.includes(c));
-        if (missing.length) { input.value = ''; cardError(id, `That file is missing a column: ${missing.map((m) => m.replace(/\b\w/g, (c) => c.toUpperCase())).join(', ')}. Use the template.`); sync(); return; }
+        const missing = NEEDED.filter((c) => !head.includes(c.toLowerCase()));
+        if (missing.length) { bad(`That file has no ${missing.join(', ')} column. Start from the template so the column names match.`); return; }
         const count = rows.length - 1;
-        if (count < MIN) { input.value = ''; cardError(id, `That file has ${count} recipient${count === 1 ? '' : 's'}. Each product needs at least ${MIN}.`); sync(); return; }
-        state[id] = { rows: count, file: file.name };
-        qty.value = String(count); setFieldError(qty, '');
-        stat.textContent = `${file.name}: ${count} recipients`; stat.hidden = false;
+        if (count < MIN) { bad(`That file has ${count} recipient${count === 1 ? '' : 's'}. Each gift needs at least ${MIN}.`); return; }
+        const at = NEEDED.map((c) => ({ c, i: head.indexOf(c.toLowerCase()) }));
+        const gaps = [];
+        rows.slice(1).forEach((r, n) => { const lack = at.filter(({ i }) => !(r[i] || '').trim()).map(({ c }) => c); if (lack.length) gaps.push(`row ${n + 2} (${lack.join(', ')})`); });
+        if (gaps.length) { bad(`${gaps.length} row${gaps.length === 1 ? ' is' : 's are'} missing information: ${gaps.slice(0, 3).join('; ')}${gaps.length > 3 ? `; and ${gaps.length - 3} more` : ''}. Fix the file and upload it again.`); return; }
+        rec[id] = { rows: count, file: file.name, size: file.size };
+        showFile(id, rec[id]);
         sync();
       };
       reader.readAsText(file);
     }
+    form.addEventListener('click', (e) => {
+      const rm = e.target.closest('[data-remove]');
+      if (!rm) return;
+      const id = rm.closest('.cgo-card').dataset.product;
+      el(`cgo-file-${id}`).value = '';
+      clearFile(id); sync();
+      el(`cgo-file-${id}`).focus();
+    });
+    // Dropping a file on the drop area does the same as choosing one.
+    form.querySelectorAll('.cgo-drop').forEach((zone) => {
+      zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('is-over'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('is-over'));
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault(); zone.classList.remove('is-over');
+        const input = el(zone.getAttribute('for'));
+        const file = e.dataTransfer && e.dataTransfer.files[0];
+        if (!file) return;
+        if (!/\.csv$/i.test(file.name)) { cardError(input.id.replace('cgo-file-', ''), 'That is not a CSV file. Use the template and save it as a CSV.'); return; }
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        readFile(input);
+      });
+    });
 
     function fail(message, target) {
       const box = el('cgo-form-error');
@@ -4595,35 +4678,54 @@
     }
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      let first = null; let any = false;
+      let first = null;
       const flag = (node) => { if (!first) first = node; };
-      PRODUCTS.forEach((p) => {
-        cardError(p.id, '');
-        const qtyEl = el(`cgo-qty-${p.id}`);
-        const qty = Number(qtyEl.value) || 0;
-        if (!qty) return;
-        any = true;
-        if (qty < MIN) { setFieldError(qtyEl, `Minimum ${MIN} recipients per product.`); flag(qtyEl); return; }
-        if (state[p.id].rows !== qty) { cardError(p.id, 'Upload a CSV or set the number of recipients to 0.'); flag(el(`cgo-file-${p.id}`).labels[0]); return; }
+      const { lines } = sync();
+      if (!lines.length) { fail('Add at least one gift: upload a recipient CSV (10 people or more) for any kit.', el('cgo-file-eggsecutive')); return; }
+      lines.forEach(({ p }) => {
         const n = need(p.id);
         if (n && card(p.id).querySelectorAll('.cgo-flavor input:checked').length !== n) { cardError(p.id, `Choose ${n} flavors for the kit.`); flag(card(p.id).querySelector('.cgo-flavor input')); }
       });
-      if (!any) { fail('Pick at least one gift: set a number of recipients and upload their CSV.', el('cgo-qty-eggsecutive')); return; }
       if (!week.value) { setFieldError(week, 'Choose a delivery week.'); flag(week); }
       if (first) { first.focus(); return; }
-      const lines = sync();
-      el('cgo-done-lines').innerHTML = lines.map((l) => `<div class="cgo-line"><div><p class="cgo-line-name">Corporate Gift - ${l.p.name}${need(l.p.id) ? ` (${option(l.p.id) === '24kit' ? '24-count kit' : '36-count kit'}: ${[...card(l.p.id).querySelectorAll('.cgo-flavor input:checked')].map((b) => FLAVORS.find((f) => f.id === b.value).label).join(', ')})` : ''}</p><p class="cgo-line-sub">${l.qty} recipients</p></div><p class="cgo-line-sum">${money(l.sum)}</p></div>`).join('')
-        + `<div class="cgo-line"><div><p class="cgo-line-name">Delivery week</p><p class="cgo-line-sub">${week.options[week.selectedIndex].textContent}</p></div></div><div class="cgo-line"><div><p class="cgo-line-name">Estimated total</p></div><p class="cgo-line-sum">${el('cgo-total').textContent}</p></div>`;
-      form.hidden = true; view.querySelector('.cgo-how').hidden = true; el('cgo-done').hidden = false;
-      window.scrollTo(0, 0);
-      el('cgo-done').querySelector('h2').setAttribute('tabindex', '-1');
-      el('cgo-done').querySelector('h2').focus({ preventScroll: true });
+      showStep(2);
     });
+    el('cgo-back2').addEventListener('click', () => showStep(1));
+
+    details.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = (id) => el(`cgo-d-${id}`);
+      if (!validateFields([
+        [f('name'), present, 'Enter your name.'],
+        [f('email'), isEmail, 'Enter a valid email so we can send your pay link.'],
+        [f('phone'), isPhone, 'Enter a phone number with area code.'],
+        [f('street'), present, 'Enter the street address for your invoice.'],
+        [f('city'), present, 'Enter the city.'],
+        [f('state'), present, 'Choose the state.'],
+        [f('zip'), (v) => /^\d{5}$/.test(v), 'Enter a 5-digit ZIP code.'],
+      ])) return;
+      const settled = renderStep2();
+      const { lines } = sync();
+      const flavorsOf = (p) => [...card(p.id).querySelectorAll('.cgo-flavor input:checked')].map((b) => FLAVORS.find((x) => x.id === b.value).label);
+      const row = (label, sub, amount) => `<div class="summary-line"><span class="summary-line-text"><span>${label}</span>${sub ? `<small class="summary-line-sub">${sub}</small>` : ''}</span>${amount ? `<span>${amount}</span>` : ''}</div>`;
+      el('cgo-done-lines').innerHTML = lines.map((l) => {
+        const kit = need(l.p.id) ? `${option(l.p.id) === '24kit' ? '24-count kit' : '36-count kit'}: ${flavorsOf(l.p).join(', ')}. ` : '';
+        return row(`Corporate Gift - ${l.p.name}`, `${kit}${l.qty} recipients × ${money(l.p.price)}`, money(l.sum));
+      }).join('')
+        + row('Delivery week', weekText(), '')
+        + codeRecapLines('corporate').map((c) => row(c.label, '', c.amount)).join('')
+        + row('Estimated total', 'Shipping is added to your pay link.', money(settled.due));
+      el('cgo-done-email').textContent = `to ${f('email').value.trim()}`;
+      redeemCode('corporate');
+      showStep(3);
+    });
+
     el('cgo-again').addEventListener('click', () => {
-      form.reset();
-      PRODUCTS.forEach((p) => { state[p.id] = { rows: 0, file: '' }; el(`cgo-filestat-${p.id}`).hidden = true; cardError(p.id, ''); card(p.id).querySelectorAll('.cgo-flavor input').forEach((b) => { b.checked = false; b.disabled = false; }); });
-      form.hidden = false; view.querySelector('.cgo-how').hidden = false; el('cgo-done').hidden = true;
-      sync(); window.scrollTo(0, 0);
+      form.reset(); details.reset();
+      PRODUCTS.forEach((p) => { clearFile(p.id); card(p.id).querySelectorAll('.cgo-flavor input').forEach((b) => { b.checked = false; b.disabled = false; }); });
+      state.codes.corporate = null;
+      sync(); renderCodeUI();
+      showStep(1);
     });
     sync();
   })();
@@ -4672,6 +4774,15 @@
       }, { threshold: 0.2 });
       heroWatch.observe(video);
     } else play();
+  }
+  // Corporate Gifting, hero: the egg-shaped photo fades in, then the same "We ship anywhere in the USA" sticker unrolls onto it as on the About page, every time the page is shown.
+  function initGiftingHero() {
+    const photo = document.getElementById('cg-hero-photo');
+    if (!photo) return;
+    photo.classList.remove('is-fading');
+    void photo.offsetWidth;
+    photo.classList.add('is-fading');
+    startHeroBadge('cg-hero-badge');
   }
   document.addEventListener('visibilitychange', () => {
     const video = document.getElementById('ab-hero-video');
