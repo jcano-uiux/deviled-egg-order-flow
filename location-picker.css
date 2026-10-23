@@ -40,7 +40,7 @@
   overflow: clip;
 }
 #view-location-picker .finder-copy { padding: 16px 40px 60px; display: flex; flex-direction: column; align-items: flex-start; }
-#view-location-picker .finder-copy h1 { font-size: 48px; line-height: 1.05; letter-spacing: -0.02em; color: var(--deg-ink-deep); text-wrap: balance; margin: 0 0 24px; }
+#view-location-picker .finder-copy h1 { font-size: 40px; line-height: 1.05; letter-spacing: -0.02em; color: var(--deg-ink-deep); text-wrap: balance; margin: 0 0 24px; }
 #view-location-picker .finder-lede { font-size: 16px; line-height: 1.5; color: var(--deg-ink-heading); max-width: 411px; margin: 0 0 40px; }
 #view-location-picker .zip-form {
   position: relative; width: 100%; max-width: 350px; height: 50px;
@@ -75,7 +75,7 @@
 @media (min-width: 901px) and (max-width: 1200px) {
   #view-location-picker .finder { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); column-gap: 32px; padding-right: 32px; }
   #view-location-picker .finder-copy { padding: 16px 24px 48px 32px; }
-  #view-location-picker .finder-copy h1 { font-size: 42px; }
+  #view-location-picker .finder-copy h1 { font-size: 40px; }
 }
 #view-location-picker .finder.is-state-view { position: relative; display: flex; flex-direction: column; height: 40vh; min-height: 300px; padding: 16px var(--page-gutter); }
 #view-location-picker .finder.is-state-view .finder-copy { display: none; }
@@ -144,7 +144,7 @@
 #view-location-picker .result-lead { grid-column: 1 / -1; }
 #view-location-picker .loc-card.is-lead { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; padding: 28px 32px; }
 #view-location-picker .lead-main { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
-#view-location-picker .loc-card.is-lead h3 { font-size: 30px; line-height: 1.1; letter-spacing: -0.01em; }
+#view-location-picker .loc-card.is-lead h3 { font-size: 32px; line-height: 1.1; letter-spacing: -0.01em; }
 #view-location-picker .lead-meta { margin: 0; font-size: 15px; line-height: 22px; font-weight: 600; color: var(--deg-ink-heading); font-variant-numeric: tabular-nums; }
 #view-location-picker .lead-side { flex: none; }
 #view-location-picker .lead-pick { min-height: 52px; padding: 0 30px; }
@@ -162,7 +162,7 @@
 #view-location-picker .directory { background: var(--deg-white); padding: clamp(40px, 6vw, 72px) clamp(16px, 4vw, 48px) 72px; outline: none; }
 #view-location-picker .directory > * { max-width: 1224px; margin-left: auto; margin-right: auto; }
 #view-location-picker .results:not([hidden]) + .directory { border-top: 1px solid var(--deg-border-input); }
-#view-location-picker .directory-head h2 { font-size: clamp(30px, 3.4vw, 40px); line-height: 1.15; color: var(--deg-ink-deep); letter-spacing: -0.02em; }
+#view-location-picker .directory-head h2 { font-size: clamp(32px, 3.4vw, 40px); line-height: 1.15; color: var(--deg-ink-deep); letter-spacing: -0.02em; }
 #view-location-picker .directory-head p { color: var(--deg-ink-muted); margin: 8px 0 0; }
 #view-location-picker .state-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 40px; align-items: start; margin-top: 32px; }
 #view-location-picker .state-column { border-top: 1px solid var(--deg-border-chip); }
@@ -174,7 +174,7 @@
 #view-location-picker .state-group summary::-webkit-details-marker { display: none; }
 #view-location-picker .state-group summary:hover { background: var(--deg-cream-alt); }
 #view-location-picker .state-group summary:focus-visible { outline: 3px solid var(--deg-ink-deep); outline-offset: -3px; }
-#view-location-picker .state-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 19px; line-height: 1.2; color: var(--deg-ink-heading); }
+#view-location-picker .state-name { font-family: var(--deg-font-body); font-weight: 700; font-size: 18px; line-height: 1.2; color: var(--deg-ink-heading); }
 #view-location-picker .state-group .count { font-size: 13px; font-weight: 600; color: var(--deg-ink-muted); font-variant-numeric: tabular-nums; }
 #view-location-picker .state-chevron { margin-left: auto; flex: none; color: var(--deg-ink-muted); transition: transform .25s cubic-bezier(.16,1,.3,1); }
 #view-location-picker .state-group[open] .state-chevron { transform: rotate(180deg); }
@@ -228,7 +228,7 @@ body.has-dock #view-location-picker { padding-bottom: 92px; }
   #view-location-picker .result-list { gap: 16px; }
   #view-location-picker .loc-card { padding: 20px 24px; }
   #view-location-picker .loc-card.is-lead { flex-direction: column; align-items: stretch; gap: 16px; padding: 24px; }
-  #view-location-picker .loc-card.is-lead h3 { font-size: 26px; }
+  #view-location-picker .loc-card.is-lead h3 { font-size: 24px; }
   #view-location-picker .lead-pick { width: 100%; justify-content: center; }
 }
 
